@@ -124,5 +124,5 @@ int main() {
   cout << (FieldElement(3, 31)/FieldElement(24, 31)).toString() << endl;
   cout << (FieldElement(17, 31).power(-3)).toString() << endl;
   cout << (FieldElement(4, 31).power(-4)*FieldElement(11, 31)).toString() << endl;
-  
+  return 0;
 }

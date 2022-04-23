@@ -4,6 +4,12 @@
     "atomic": "cpp",
     "*.tcc": "cpp",
     "istream": "cpp",
-    "ostream": "cpp"
+    "ostream": "cpp",
+    "cmath": "cpp",
+    "bitset": "cpp",
+    "bit": "cpp",
+    "complex": "cpp",
+    "random": "cpp",
+    "iostream": "cpp"
   }
 }

@@ -47,32 +47,60 @@ bool Point::operator==(const Point& other) const
 Point Point::operator+(const Point& other)
 {
   // ICYW: This is overloading, not overriding lol
+  if (*this == other || this->y == 0) {
+    return Point(FLT_MAX, FLT_MAX, this->a, this->b);
+  }
   if (this->a != other.a || this->b != other.b) {
     throw std::invalid_argument("Two points are not on the same curve");
   }
+  // FLT_MAX represents infinity
   if (this->x == FLT_MAX) { return other; }
   if (other.x == FLT_MAX) { return *this; }
-  if (this->x == other.x && this->y != other.y) { 
-    return Point(FLT_MAX, FLT_MAX, this->a, this->b);
-    }
-  throw std::invalid_argument("Impossible!");
+  if (this->x == other.x && this->y != other.y) {
+    return Point(FLT_MAX, FLT_MAX, this->a, this->b);//point at infinity
+  }
+
+  float slope = 0;
+  if (this->x == other.x && this->y == other.y) {
+    // P1 == P2, need some calculus to derive this formula
+    slope = (3 * this->x * this->x + this->a) / (this->y * 2);
+  } else {
+    // general case
+    slope = (other.y - this->y) / (other.x - this->x);
+  }
+  float x3 = slope * slope - this->x - other.x;
+  float y3 = slope * (this->x - x3) - this->y;
+  return Point(x3, y3, this->a, this->b);
 }
 
 string Point::toString() {
   return "Point(" + (this->x == FLT_MAX ? "Inf" : to_string(this->x)) + ", "
-                  + (this->y == FLT_MAX ? "Inf" : to_string(this->y))  + ")_"
+                  + (this->y == FLT_MAX ? "Inf" : to_string(this->y)) + ")_"
                   + to_string(this->a) + "_" + to_string(this->b);
 }
 
-void testPointAddition() {
+void testPointAdditionInfinity() {
   Point p1 = Point(-1, -1, 5, 7);
   Point p2 = Point(-1, 1, 5, 7);
   Point pInf = Point(FLT_MAX, FLT_MAX, 5, 7);
-  cout << "testPointAddition:\n"
+  cout << "testPointAdditionInfinity:\n"
        << (p1 + pInf).toString() << "\n"
        << (p2 + pInf).toString() << "\n"
        << (p1 + p2).toString() << endl;
   
+}
+
+void testPointAddinitionDifferentXs() {
+  cout << "testPointAdditionInfinity:\n"
+       << (Point(2, 5, 5, 7) + Point(-1, -1, 5, 7)).toString()
+       << endl;
+}
+
+
+void testPointAddinitionSamePoint() {
+  cout << "testPointAddinitionSamePoint:\n"
+       << (Point(-1, -1, 5, 7) + Point(-1, -1, 5, 7)).toString()
+       << endl;
 }
 
 int main() {
@@ -98,6 +126,8 @@ int main() {
   catch (const invalid_argument& ia) {
     cerr << "p5: Invalid argument: " << ia.what() << '\n';
   }
-  testPointAddition();
+  testPointAdditionInfinity();
+  testPointAddinitionDifferentXs();
+  testPointAddinitionSamePoint();
   return 0;
 }
