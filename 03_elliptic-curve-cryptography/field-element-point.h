@@ -19,17 +19,17 @@ class FieldElementPoint {
     FieldElement* x = nullptr;
     FieldElement* y = nullptr;
   public:
-    FieldElementPoint(FieldElement x, FieldElement y, FieldElement a, FieldElement b);
+    FieldElementPoint(FieldElement* x, FieldElement* y, FieldElement* a, FieldElement* b);
     bool operator==(const FieldElementPoint& other) const;
     FieldElementPoint operator+(const FieldElementPoint& other);
     string toString();
 };
 
-FieldElementPoint::FieldElementPoint(FieldElement x, FieldElement y, FieldElement a, FieldElement b) {  
-  this->x = &x;
-  this->y = &y;
-  this->a = &a;
-  this->b = &b;
+FieldElementPoint::FieldElementPoint(FieldElement* x, FieldElement* y, FieldElement* a, FieldElement* b) {  
+  this->x = x;
+  this->y = y;
+  this->a = a;
+  this->b = b;
   if (this->x == nullptr && this->y == nullptr) { return; }
   if (this->y->power(2) != this->x->power(3) + (*(this->a) * *(this->x)) + *(this->b)) {
     throw std::invalid_argument(

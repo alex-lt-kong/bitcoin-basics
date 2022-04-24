@@ -8,11 +8,16 @@
 
 using namespace std;
 
-int main() {
-
-  FieldElementPoint p1 = FieldElementPoint(
-    FieldElement(192, 223), FieldElement(105, 223), FieldElement(0, 223), FieldElement(7, 223)
+void test0(FieldElementPoint **p) {
+  // A fancy way to initialize a pointer by reference
+  *p = new FieldElementPoint(
+    new FieldElement(192, 223), new FieldElement(105, 223), new FieldElement(0, 223), new FieldElement(7, 223)
   );
-  cout << p1.toString() << endl;
+}
+
+int main() {
+  FieldElementPoint* p0;
+  test0(&p0);
+  cout << p0->toString() << endl;
   return 0;
 }
