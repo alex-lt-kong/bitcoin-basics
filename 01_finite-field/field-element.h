@@ -12,6 +12,7 @@ class FieldElement {
     bool operator==(const FieldElement& other) const;
     bool operator!=(const FieldElement& other) const;
     FieldElement operator+(const FieldElement& other);
+    FieldElement operator-(const FieldElement& other);
     FieldElement operator*(const FieldElement& other);
     FieldElement operator/(const FieldElement& other);
     FieldElement power(int exponent);
@@ -48,6 +49,17 @@ FieldElement FieldElement::operator+(const FieldElement& other)
     throw std::invalid_argument("prime numbers are different");
   }
   return FieldElement((this->num + other.num) % this->prime, this->prime);
+}
+
+FieldElement FieldElement::operator-(const FieldElement& other)
+{
+  // ICYW: This is overloading, not overriding lol
+  if (this->prime != other.prime) {
+    throw std::invalid_argument("prime numbers are different");
+  }
+  int result = (this->num - other.num) % this->prime;
+  if (result < 0) { result += this->prime; }
+  return FieldElement(result, this->prime);
 }
 
 FieldElement FieldElement::operator*(const FieldElement& other)
