@@ -70,7 +70,7 @@ FieldElementPoint FieldElementPoint::operator+(const FieldElementPoint& other)
   if (*(this->a) != *(other.a) || *(this->b) != *(other.b)) {
     throw std::invalid_argument("Two FieldElementPoints are not on the same curve");
   }
-  cout << "here!" << endl;
+
   // FLT_MAX represents infinity
   if (this->x == nullptr) { return other; }
   if (other.x == nullptr) { return *this; }
@@ -80,7 +80,7 @@ FieldElementPoint FieldElementPoint::operator+(const FieldElementPoint& other)
   
   FieldElement slope = FieldElement(0, this->x->prime);
   if (this->x == other.x && this->y == other.y) {
-    // P1 == P2, need some calculus to derive this formula
+    // P1 == P2, need some calculus to derive formula: slope = 3x^2 + a / 2y
     slope = (FieldElement(3, this->x->prime) * *(this->x) * *(this->x) + *(this->a)) / (*(this->y) * FieldElement(2, this->x->prime));
   } else {
     // general case

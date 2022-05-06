@@ -54,14 +54,56 @@ void testFieldElementPointAddition() {
   int prime = 223;
   FieldElement* a = new FieldElement(0, prime);
   FieldElement* b = new FieldElement(7, prime);
-  FieldElement* x1 = new FieldElement(192, prime);
-  FieldElement* y1 = new FieldElement(105, prime);
-  FieldElement* x2 = new FieldElement(17, prime);
-  FieldElement* y2 = new FieldElement(56, prime);
 
+  FieldElement* x1 = nullptr;
+  FieldElement* y1 = nullptr;
+  FieldElement* x2 = nullptr;
+  FieldElement* y2 = nullptr;
+
+  x1 = new FieldElement(192, prime);
+  y1 = new FieldElement(105, prime);
+  x2 = new FieldElement(17, prime);
+  y2 = new FieldElement(56, prime);
   FieldElementPoint p1 = FieldElementPoint(x1, y1, a, b);
   FieldElementPoint p2 = FieldElementPoint(x2, y2, a, b);
   cout << (p1 + p2).toString() << endl;
+  delete x1;
+  delete y1;
+  delete x2;
+  delete y2;
+
+  x1 = new FieldElement(170, prime);
+  y1 = new FieldElement(142, prime);
+  x2 = new FieldElement(60, prime);
+  y2 = new FieldElement(139, prime);
+  cout << (FieldElementPoint(x1, y1, a, b) + FieldElementPoint(x2, y2, a, b)).toString() << endl;
+  delete x1;
+  delete y1;
+  delete x2;
+  delete y2;
+
+  x1 = new FieldElement(47, prime);
+  y1 = new FieldElement(71, prime);
+  x2 = new FieldElement(17, prime);
+  y2 = new FieldElement(56, prime);
+  cout << (FieldElementPoint(x1, y1, a, b) + FieldElementPoint(x2, y2, a, b)).toString() << endl;
+  delete x1;
+  delete y1;
+  delete x2;
+  delete y2;
+
+  x1 = new FieldElement(143, prime);
+  y1 = new FieldElement(98, prime);
+  x2 = new FieldElement(76, prime);
+  y2 = new FieldElement(66, prime);
+  cout << (FieldElementPoint(x1, y1, a, b) + FieldElementPoint(x2, y2, a, b)).toString() << endl;
+  delete x1;
+  delete y1;
+  delete x2;
+  delete y2;
+
+  delete a;
+  delete b;
 }
 
 int main() {
@@ -69,6 +111,7 @@ int main() {
   defineFieldElementPoint(&p0);  
   cout << p0->toString() << endl;
   testIfPointsOnCurve();
+  cout << endl;
   testFieldElementPointAddition();
   return 0;
 }
