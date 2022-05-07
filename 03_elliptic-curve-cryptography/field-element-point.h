@@ -15,6 +15,8 @@ class FieldElementPoint {
 
   private:
     // The canonical form of an elliptic curve is y^2 = x^3 + ax + b, thus the following a, b, x, y for a point
+    // In the book's implementation, a and b are also FieldElements. However, it seems to me that b does not
+    // have to be a FieldElement though.
     FieldElement* a = nullptr;
     FieldElement* b = nullptr;
     FieldElement* x = nullptr;
@@ -34,6 +36,7 @@ FieldElementPoint::FieldElementPoint(FieldElement* x, FieldElement* y, FieldElem
   // will point to nothing. 
   this->x = x == nullptr ? nullptr: new FieldElement(x->num, x->prime);
   this->y = y == nullptr ? nullptr: new FieldElement(y->num, y->prime);
+  if (a == nullptr || b == nullptr) { throw std::invalid_argument("parameters a or b cannot be nullptr"); }
   this->a = new FieldElement(a->num, a->prime);
   this->b = new FieldElement(b->num, b->prime);
   if (x == nullptr && y == nullptr) {

@@ -14,6 +14,7 @@ class FieldElement {
     FieldElement operator+(const FieldElement& other);
     FieldElement operator-(const FieldElement& other);
     FieldElement operator*(const FieldElement& other);
+    FieldElement operator*(const int other);
     FieldElement operator/(const FieldElement& other);
     FieldElement power(int exponent);
     int modulusPower(int exponent, int modulus);
@@ -68,6 +69,15 @@ FieldElement FieldElement::operator*(const FieldElement& other)
     throw std::invalid_argument("prime numbers are different");
   }
   return FieldElement((this->num * other.num) % this->prime, this->prime);
+}
+
+FieldElement FieldElement::operator*(const int other)
+{
+  FieldElement fe = FieldElement(*this);
+  for (int i = 0; i < other - 1; i ++) {
+    fe = fe + *this;
+  }
+  return fe;
 }
 
 FieldElement FieldElement::operator/(const FieldElement& other)
