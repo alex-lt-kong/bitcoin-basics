@@ -32,10 +32,10 @@ FieldElementPoint::FieldElementPoint(FieldElement* x, FieldElement* y, FieldElem
   // seems here we need to point the internal pointers to new objects--if we point to the same objects 
   // as x, y, a, b, if these objects get deleted by some other function, the this->x, this->y, this->a, this->b,
   // will point to nothing. 
-  this->x = x == nullptr ? nullptr: new FieldElement(*x);
-  this->y = y == nullptr ? nullptr: new FieldElement(*y);
-  this->a = new FieldElement(*a);
-  this->b = new FieldElement(*b);
+  this->x = x == nullptr ? nullptr: new FieldElement(x->num, x->prime);
+  this->y = y == nullptr ? nullptr: new FieldElement(y->num, y->prime);
+  this->a = new FieldElement(a->num, a->prime);
+  this->b = new FieldElement(b->num, b->prime);
   if (x == nullptr && y == nullptr) {
     // we only check if (x, y) is at the curve if the point is not at infinity
     // x == nullptr or y == nullptr means the point is at infinity.
@@ -60,7 +60,11 @@ FieldElementPoint::~FieldElementPoint() {
 bool FieldElementPoint::operator==(const FieldElementPoint& other) const
 {
   // ICYW: This is overloading, not overriding
-  return this->a == other.a && this->b == other.b && this->x == other.x && this->y == other.y;
+  bool xyEqual = false;
+  if (this->x == nullptr && other.x == nullptr && this->y == nullptr && other.y == nullptr) { xyEqual = true; }
+  else if (this->x == nullptr || other.x == nullptr || this->y == nullptr || other.y == nullptr) { xyEqual = false; }
+  else { xyEqual = (this->x == other.x && this->y == other.y); }
+  return this->a == other.a && this->b == other.b && xyEqual;
 }
 
 FieldElementPoint FieldElementPoint::operator+(const FieldElementPoint& other)
@@ -78,7 +82,7 @@ FieldElementPoint FieldElementPoint::operator+(const FieldElementPoint& other)
     return *this; 
   }
 
-  if (*this == other && *(this->y) == 0) {
+  if (*this == other && *(this->y) == FieldElement(0, this->y->prime)) {
     // It means p1 == p2 and tangent is a vertical line.
     return FieldElementPoint(nullptr, nullptr, this->a, this->b);
   }
@@ -98,27 +102,31 @@ FieldElementPoint FieldElementPoint::operator+(const FieldElementPoint& other)
     // general case
     slope = (*(other.y) - *(this->y)) / (*(other.x) - *(this->x));
   }
-  FieldElement x3 = slope * slope - *(this->x) - *(other.x);
-  FieldElement y3 = slope * (*(this->x) - x3) - *(this->y);
+  FieldElement x3 = FieldElement(slope * slope - *(this->x) - *(other.x));
+  FieldElement y3 = FieldElement(slope * (*(this->x) - x3) - *(this->y));
   return FieldElementPoint(&x3, &y3, this->a, this->b);
   
 }
 
 FieldElementPoint FieldElementPoint::operator*(const int other)
 {
-  FieldElementPoint fp =  FieldElementPoint(this->x, this->y, this->a, this->b);
-  FieldElementPoint fp1 =  FieldElementPoint(this->x, this->y, this->a, this->b);
-  //FieldElementPoint* fp = this;
-  for (int i = 0; i < other; i++) {
-    cout << "here!" << endl;
-    fp = fp + fp1;
-    cout << "here!" << endl;
+  FieldElementPoint* fp = new FieldElementPoint(this->x, this->y, this->a, this->b);
+  for (int i = 0; i < other - 1; i++) {
+    FieldElementPoint* tmp = fp;
+    fp = new FieldElementPoint(*this + *fp);
+    delete tmp;
+    // https://stackoverflow.com/questions/8763398/why-is-it-illegal-to-take-the-address-of-an-rvalue-temporary
   }
-  return fp;
+  FieldElementPoint result = FieldElementPoint(fp->x, fp->y, fp->a, fp->b);
+  delete fp; // Note that we don't return *fp, but instead we create a reference result and return the reference.
+  // This appears to me that by doing this we avoid memory leakage. What if we simply declare fp as a reference
+  // instead of a pointer? No, that doesn't seem to work, compiler complains "free(): double free detected in tcache 2"
+  return result;
+  // You should never return "this" here--no matter what a user does, the result
+  // should not change operand's own value.
 }
 
 string FieldElementPoint::toString() {
-  cout << "hello" << endl;
   string xNum = this->x != nullptr ? to_string(this->x->num) : "Infinity";
   string yNum = this->y != nullptr ? to_string(this->y->num) : "Infinity";
   return "FieldElementPoint(" + xNum + ", " + yNum + ")_"

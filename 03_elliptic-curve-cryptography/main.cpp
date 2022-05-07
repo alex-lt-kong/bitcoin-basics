@@ -120,7 +120,7 @@ void testFieldElementPointScalarMultiplication() {
   x1 = new FieldElement(192, prime);
   y1 = new FieldElement(105, prime);
   FieldElementPoint* p1 = new FieldElementPoint(x1, y1, a, b);
-  cout << (*p1 + *p1).toString() << endl;
+  cout << "(" << x1->toString() << ", " << y1->toString() << "): " << (*p1 + *p1).toString() << " == " << (*p1 * 2).toString() << endl;
   delete x1;
   delete y1;
   delete p1;
@@ -128,7 +128,7 @@ void testFieldElementPointScalarMultiplication() {
   x1 = new FieldElement(143, prime);
   y1 = new FieldElement(98, prime);
   p1 = new FieldElementPoint(x1, y1, a, b);
-  cout << (*p1 + *p1).toString() << endl;
+  cout << "(" << x1->toString() << ", " << y1->toString() << "): " << (*p1 + *p1).toString() << " == " << (*p1 * 2).toString() << endl;
   delete x1;
   delete y1;
   delete p1;
@@ -136,9 +136,10 @@ void testFieldElementPointScalarMultiplication() {
   x1 = new FieldElement(47, prime);
   y1 = new FieldElement(71, prime);
   p1 = new FieldElementPoint(x1, y1, a, b);
-  cout << (*p1 + *p1).toString() << endl;
-  cout << (*p1 + *p1 + *p1 + *p1).toString() << endl;
-  cout << (*p1 + *p1 + *p1 + *p1 + *p1 + *p1 + *p1 + *p1).toString() << endl;
+  cout << "(" << x1->toString() << ", " << y1->toString() << "): " << (*p1+*p1).toString() << " == " << (*p1 * 2).toString() << endl;
+  cout << "(" << x1->toString() << ", " << y1->toString() << "): " << (*p1+*p1+*p1+*p1).toString() << " == " << (*p1 * 4).toString() << endl;
+  cout << "(" << x1->toString() << ", " << y1->toString() << "): " << (*p1+*p1+*p1+*p1+*p1+*p1+*p1+*p1).toString() << " == " << (*p1 * 8).toString() << endl;
+  cout << "(" << x1->toString() << ", " << y1->toString() << "): " << (*p1+*p1+*p1+*p1+*p1+*p1+*p1+*p1+*p1+*p1+*p1+*p1+*p1+*p1+*p1+*p1+*p1+*p1+*p1+*p1+*p1).toString() << " == " << (*p1 * 21).toString() << endl;
   delete x1;
   delete y1;
   delete p1;
@@ -146,6 +147,7 @@ void testFieldElementPointScalarMultiplication() {
   x1 = new FieldElement(15, prime);
   y1 = new FieldElement(86, prime);
   p1 = new FieldElementPoint(x1, y1, a, b);
+  cout << (*p1 * 7).toString() << endl;
   cout << (*p1 + *p1 + *p1 + *p1 + *p1 + *p1 + *p1).toString() << endl;
   delete x1;
   delete y1;
