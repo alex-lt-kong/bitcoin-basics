@@ -106,6 +106,47 @@ void testFieldElementPointAddition() {
   delete b;
 }
 
+void testFieldElementPointScalarMultiplication() {
+  cout << "testFieldElementPointScalarMultiplication()" << endl;
+  int prime = 223;
+  FieldElement* a = new FieldElement(0, prime);
+  FieldElement* b = new FieldElement(7, prime);
+
+  FieldElement* x1 = nullptr;
+  FieldElement* y1 = nullptr;
+  FieldElement* x2 = nullptr;
+  FieldElement* y2 = nullptr;
+
+  x1 = new FieldElement(192, prime);
+  y1 = new FieldElement(105, prime);
+  FieldElementPoint* p1 = new FieldElementPoint(x1, y1, a, b);
+  cout << (*p1 + *p1).toString() << endl;
+  delete x1;
+  delete y1;
+  delete p1;
+
+  x1 = new FieldElement(143, prime);
+  y1 = new FieldElement(98, prime);
+  p1 = new FieldElementPoint(x1, y1, a, b);
+  cout << (*p1 + *p1).toString() << endl;
+  delete x1;
+  delete y1;
+  delete p1;
+
+  x1 = new FieldElement(47, prime);
+  y1 = new FieldElement(71, prime);
+  p1 = new FieldElementPoint(x1, y1, a, b);
+  cout << (*p1 + *p1).toString() << endl;
+  cout << (*p1 + *p1 + *p1 + *p1).toString() << endl;
+  cout << (*p1 + *p1 + *p1 + *p1 + *p1 + *p1 + *p1 + *p1).toString() << endl;
+  delete x1;
+  delete y1;
+  delete p1;
+
+  delete a;
+  delete b;
+}
+
 int main() {
   FieldElementPoint* p0;
   defineFieldElementPoint(&p0);  
@@ -113,5 +154,7 @@ int main() {
   testIfPointsOnCurve();
   cout << endl;
   testFieldElementPointAddition();
+  cout << endl;
+  testFieldElementPointScalarMultiplication();
   return 0;
 }

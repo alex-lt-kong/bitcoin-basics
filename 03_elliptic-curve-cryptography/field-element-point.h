@@ -24,6 +24,7 @@ class FieldElementPoint {
     ~FieldElementPoint();
     bool operator==(const FieldElementPoint& other) const;
     FieldElementPoint operator+(const FieldElementPoint& other);
+    FieldElementPoint operator*(const int coef);
     string toString();
 };
 
@@ -36,8 +37,8 @@ FieldElementPoint::FieldElementPoint(FieldElement* x, FieldElement* y, FieldElem
   this->a = new FieldElement(*a);
   this->b = new FieldElement(*b);
   if (this->x == nullptr && this->y == nullptr) { return; }
-  if (this->y->power(2) != this->x->power(3) + (*(this->a) * *(this->x)) + *(this->b)) {
-    throw std::invalid_argument(
+  if (this->y->power(2) != this->x->power(3) + (*(this->a) * *(this->x)) + *(this->b)) {    
+    throw std::invalid_argument(      
       "Point (" + this->x->toString() + ", " + this->y->toString() +") not on the curve"
     );
   }
@@ -62,16 +63,19 @@ bool FieldElementPoint::operator==(const FieldElementPoint& other) const
 
 FieldElementPoint FieldElementPoint::operator+(const FieldElementPoint& other)
 {
+  
   // ICYW: This is overloading, not overriding lol
+  /* Unclear if this is still needed.
   if (*this == other || this->y == 0) {
+    cout << "hello" << endl;
     return FieldElementPoint(nullptr, nullptr, this->a, this->b);
   }
+  */
 
   if (*(this->a) != *(other.a) || *(this->b) != *(other.b)) {
     throw std::invalid_argument("Two FieldElementPoints are not on the same curve");
   }
 
-  // FLT_MAX represents infinity
   if (this->x == nullptr) { return other; }
   if (other.x == nullptr) { return *this; }
   if (this->x == other.x && this->y != other.y) {
@@ -79,9 +83,9 @@ FieldElementPoint FieldElementPoint::operator+(const FieldElementPoint& other)
   }
   
   FieldElement slope = FieldElement(0, this->x->prime);
-  if (this->x == other.x && this->y == other.y) {
+  if (*(this->x) == *(other.x) && *(this->y) == *(other.y)) {
     // P1 == P2, need some calculus to derive formula: slope = 3x^2 + a / 2y
-    slope = (FieldElement(3, this->x->prime) * *(this->x) * *(this->x) + *(this->a)) / (*(this->y) * FieldElement(2, this->x->prime));
+    slope = ((this->x)->power(2) * 3 + *(this->a)) / (*(this->y) * 2);
   } else {
     // general case
     slope = (*(other.y) - *(this->y)) / (*(other.x) - *(this->x));
@@ -90,6 +94,19 @@ FieldElementPoint FieldElementPoint::operator+(const FieldElementPoint& other)
   FieldElement y3 = slope * (*(this->x) - x3) - *(this->y);
   return FieldElementPoint(&x3, &y3, this->a, this->b);
   
+}
+
+FieldElementPoint FieldElementPoint::operator*(const int other)
+{
+  FieldElementPoint fp =  FieldElementPoint(this->x, this->y, this->a, this->b);
+  FieldElementPoint fp1 =  FieldElementPoint(this->x, this->y, this->a, this->b);
+  //FieldElementPoint* fp = this;
+  for (int i = 0; i < other; i++) {
+    cout << "here!" << endl;
+    fp = fp + fp1;
+    cout << "here!" << endl;
+  }
+  return fp;
 }
 
 string FieldElementPoint::toString() {
