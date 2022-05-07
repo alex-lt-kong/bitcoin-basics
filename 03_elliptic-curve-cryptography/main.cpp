@@ -143,6 +143,14 @@ void testFieldElementPointScalarMultiplication() {
   delete y1;
   delete p1;
 
+  x1 = new FieldElement(15, prime);
+  y1 = new FieldElement(86, prime);
+  p1 = new FieldElementPoint(x1, y1, a, b);
+  cout << (*p1 + *p1 + *p1 + *p1 + *p1 + *p1 + *p1).toString() << endl;
+  delete x1;
+  delete y1;
+  delete p1;
+
   delete a;
   delete b;
 }
@@ -156,5 +164,6 @@ int main() {
   testFieldElementPointAddition();
   cout << endl;
   testFieldElementPointScalarMultiplication();
+  cout << endl;
   return 0;
 }

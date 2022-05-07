@@ -32,11 +32,16 @@ FieldElementPoint::FieldElementPoint(FieldElement* x, FieldElement* y, FieldElem
   // seems here we need to point the internal pointers to new objects--if we point to the same objects 
   // as x, y, a, b, if these objects get deleted by some other function, the this->x, this->y, this->a, this->b,
   // will point to nothing. 
-  this->x = new FieldElement(*x);
-  this->y = new FieldElement(*y);
+  this->x = x == nullptr ? nullptr: new FieldElement(*x);
+  this->y = y == nullptr ? nullptr: new FieldElement(*y);
   this->a = new FieldElement(*a);
   this->b = new FieldElement(*b);
-  if (this->x == nullptr && this->y == nullptr) { return; }
+  if (x == nullptr && y == nullptr) {
+    // we only check if (x, y) is at the curve if the point is not at infinity
+    // x == nullptr or y == nullptr means the point is at infinity.
+    return;
+  }
+  
   if (this->y->power(2) != this->x->power(3) + (*(this->a) * *(this->x)) + *(this->b)) {    
     throw std::invalid_argument(      
       "Point (" + this->x->toString() + ", " + this->y->toString() +") not on the curve"
@@ -55,36 +60,39 @@ FieldElementPoint::~FieldElementPoint() {
 bool FieldElementPoint::operator==(const FieldElementPoint& other) const
 {
   // ICYW: This is overloading, not overriding
-  return (
-    this->a == other.a && this->b == other.b && 
-    this->x == other.x && this->y == other.y
-  );
+  return this->a == other.a && this->b == other.b && this->x == other.x && this->y == other.y;
 }
 
 FieldElementPoint FieldElementPoint::operator+(const FieldElementPoint& other)
-{
-  
+{  
   // ICYW: This is overloading, not overriding lol
-  /* Unclear if this is still needed.
-  if (*this == other || this->y == 0) {
-    cout << "hello" << endl;
-    return FieldElementPoint(nullptr, nullptr, this->a, this->b);
-  }
-  */
-
   if (*(this->a) != *(other.a) || *(this->b) != *(other.b)) {
     throw std::invalid_argument("Two FieldElementPoints are not on the same curve");
   }
+  if (this->x == nullptr) {
+    // this->x == nullptr means this point is at infinity
+    return other; 
+  }
+  if (other.x == nullptr) {
+    // other.x == nullptr means the other point is at infinity
+    return *this; 
+  }
 
-  if (this->x == nullptr) { return other; }
-  if (other.x == nullptr) { return *this; }
-  if (this->x == other.x && this->y != other.y) {
-    return FieldElementPoint(nullptr, nullptr, this->a, this->b);//FieldElementPoint at infinity
+  if (*this == other && *(this->y) == 0) {
+    // It means p1 == p2 and tangent is a vertical line.
+    return FieldElementPoint(nullptr, nullptr, this->a, this->b);
+  }
+
+  
+  if (*(this->x) == *(other.x) && *(this->y) != *(other.y)) {
+    // FieldElementPoint at infinity
+    return FieldElementPoint(nullptr, nullptr, this->a, this->b);
   }
   
   FieldElement slope = FieldElement(0, this->x->prime);
   if (*(this->x) == *(other.x) && *(this->y) == *(other.y)) {
     // P1 == P2, need some calculus to derive formula: slope = 3x^2 + a / 2y
+    // Essentially this is the tangent line at P1
     slope = ((this->x)->power(2) * 3 + *(this->a)) / (*(this->y) * 2);
   } else {
     // general case
@@ -110,9 +118,12 @@ FieldElementPoint FieldElementPoint::operator*(const int other)
 }
 
 string FieldElementPoint::toString() {
-  return "FieldElementPoint(" + to_string(this->x->num) + ", " + to_string(this->y->num) + ")_"
+  cout << "hello" << endl;
+  string xNum = this->x != nullptr ? to_string(this->x->num) : "Infinity";
+  string yNum = this->y != nullptr ? to_string(this->y->num) : "Infinity";
+  return "FieldElementPoint(" + xNum + ", " + yNum + ")_"
                               + to_string(this->a->num) +  "_" + to_string(this->b->num)
-                              + " FieldElement(" + to_string(this->x->prime) + ")";
+                              + " FieldElement(" + to_string(this->a->prime) + ")";
 
 }
 
