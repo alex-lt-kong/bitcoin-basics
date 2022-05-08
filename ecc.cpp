@@ -261,8 +261,7 @@ bool FieldElementPoint::infinity() {
 
 const int512_t S256Element::s256Prime = (int512_t)"0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f";
 
-S256Element::S256Element(int512_t num): FieldElement(num, S256Element::s256Prime ) {
-}
+S256Element::S256Element(int512_t num): FieldElement(num, S256Element::s256Prime) {}
 
 string S256Element::toString() {
   return FieldElement::toString(true);
