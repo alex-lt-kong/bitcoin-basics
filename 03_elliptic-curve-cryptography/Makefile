@@ -10,6 +10,8 @@ field-element-point.o: field-element-point.cpp field-element-point.h field-eleme
 field-element.o: ../01_finite-field/field-element.cpp ../01_finite-field/field-element.h
 	g++ -c ../01_finite-field/field-element.cpp
 
+clean:
+	rm *.o main.out
 # General syntax:
 # target: dependencies
 #	  action

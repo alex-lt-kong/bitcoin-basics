@@ -83,11 +83,23 @@ FieldElement FieldElement::operator*(const FieldElement& other)
 
 FieldElement FieldElement::operator*(const int other)
 {
-  FieldElement fe = FieldElement(*this);
+  /*FieldElement fe = FieldElement(*this);
   for (int i = 0; i < other - 1; i ++) {
     fe = fe + *this;
   }
-  return fe;
+  return fe;*/
+  // This implementation is inspired by FieldElementPoint FieldElementPoint::operator*(const int other)
+  int coef = other;
+  FieldElement result = FieldElement(0, this->prime());
+  FieldElement curr = FieldElement(*this);
+  while (coef > 0) {
+    if (coef & 1) {
+      result = result + curr;
+    }
+    curr = curr + curr;
+    coef >>= 1;
+  }
+  return result;
 }
 
 FieldElement FieldElement::operator/(const FieldElement& other)

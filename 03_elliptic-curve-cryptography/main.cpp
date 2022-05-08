@@ -119,7 +119,6 @@ void testFieldElementPointScalarMultiplication() {
 }
 
 int main() {
-  cout << "hello world!" << endl;
   testIfPointsOnCurve();
   cout << endl;
   testFieldElementPointAddition();

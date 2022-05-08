@@ -84,11 +84,31 @@ FieldElementPoint FieldElementPoint::operator+(const FieldElementPoint& other)
 
 FieldElementPoint FieldElementPoint::operator*(const int other)
 {
-  FieldElementPoint fp = FieldElementPoint(this->a, this->b);
-  for (int i = 0; i < other; i++) {
-    fp = FieldElementPoint(*this + fp);
+  // The current implementation is called "binary expansion". It reduces the time complexity from O(n) to Olog(n).
+  // Essentially, we scan coef bit by bit and add the number to result if a bit is 1.
+  int coef = other;
+  FieldElementPoint result = FieldElementPoint(this->a, this->b);
+  FieldElementPoint curr = FieldElementPoint(*this);
+  /*
+    for (int i = 0; i < other; i++) {
+      result = FieldElementPoint(*this + result);
+    }
+  */
+  while (coef > 0) {
+    if (coef & 1) { // &: bitwise AND, check if the rightmost bit of coef == 1
+      result = result + curr;
+    }
+    curr = curr + curr;
+    // Can we use curr = curr * 2? NO! Since this is exactly where multiplication is defined! It causes a stack overflow
+    // if we use * in FieldElementPoint::operator*()
+    coef >>= 1; 
+    // >>: right shift the bits of the first operand by the second operand number of places.
+    // 14:       0000 1110
+    // 14 >> 1:  0000 0111 = 7
+    // 14 >> 2:  0000 0011 = 3
   }
-  return fp;
+    
+  return result;
 }
 
 string FieldElementPoint::toString() {
