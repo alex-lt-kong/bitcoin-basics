@@ -65,7 +65,7 @@ class FieldElementPoint {
     bool infinity();
 };
 
-// BaseballPlayer publicly inheriting Person
+
 class S256Element : public FieldElement
 {
   private:
