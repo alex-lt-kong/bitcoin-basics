@@ -13,7 +13,7 @@ class FieldElement {
   // Note that FieldElement is a number in a given field, infinity is not a valid
   // number in that field so we don't need to have a design which handles infinity
   // here. Infinity happens only at FieldElementPoint level.
-  private:
+  protected:
     // We make the initial value valid so that we can have an empty default constructor.
     // Note that in Python we prepend underscores, in C++ it is recommended to append underscores as variables
     // start with an underscore or double underscore are reserved for the C++ implementers
@@ -31,7 +31,7 @@ class FieldElement {
     FieldElement operator/(const FieldElement& other);
     FieldElement power(int512_t exponent);
     int512_t modulusPower(int512_t exponent, int512_t modulus);
-    string toString();
+    string toString(bool inHex=false);
     int512_t num();
     int512_t prime();
 };
@@ -43,7 +43,7 @@ class FieldElement {
 // ** a, b: as defined in elliptic curve's canonical form y^2 = x^3 + ax + b
 class FieldElementPoint {
 
-  private:
+  protected:
     // The canonical form of an elliptic curve is y^2 = x^3 + ax + b, thus the following a, b, x, y for a point
     // In the book's implementation, a and b are also FieldElements--this seems necessary--if b is not in the same finite
     // field, the addition between two numbers in different fields seems undefined.
@@ -63,5 +63,15 @@ class FieldElementPoint {
     FieldElementPoint operator*(const int512_t coef);
     string toString(bool inHex=false);
     bool infinity();
+};
+
+// BaseballPlayer publicly inheriting Person
+class S256Element : public FieldElement
+{
+  private:
+    static const int512_t s256Prime;
+  public:
+    S256Element(int512_t num);
+    string toString();
 };
 #endif

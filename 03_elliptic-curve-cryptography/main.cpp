@@ -138,6 +138,7 @@ void testFieldElementPointScalarMultiplication() {
 }
 
 void testSecp256k1() {
+  cout << "testSecp256k1()" << endl;
   int512_t gx{"0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798"}; // string-based constructor
   int512_t gy{"0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8"};  
   // gx and gy are the coordinates of point g, which is the generator point, i.e., we add g to itself over and over again.
@@ -152,6 +153,18 @@ void testSecp256k1() {
   cout << (g * order + g).toString(true) << endl;
 }
 
+void testS256SubClass() {
+  cout << "testS256SubClass()" << endl;
+  S256Element x = S256Element((int512_t)"0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798");
+  S256Element y = S256Element((int512_t)"0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8");
+  S256Element a = S256Element((int512_t)0);
+  S256Element b = S256Element((int512_t)7);
+  int512_t order{"0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141"};
+  FieldElementPoint g = FieldElementPoint(x, y, a, b);
+  cout << (g * order).toString(true) << endl;
+  cout << (g * order + g).toString(true) << endl;
+}
+
 int main() {
   testIfPointsOnCurve();
   cout << endl;
@@ -162,5 +175,7 @@ int main() {
   testFieldElementPointScalarMultiplication();
   cout << endl;
   testSecp256k1();
+  cout << endl;
+  testS256SubClass();
   return 0;
 }

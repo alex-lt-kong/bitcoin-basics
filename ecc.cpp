@@ -127,8 +127,11 @@ FieldElement FieldElement::power(int512_t exponent)
   return FieldElement(powm(this->num_, exponent, this->prime_), this->prime_);
 }
 
-string FieldElement::toString() {
-  return this->num_.str() + " (" + this->prime_.str()  + ")";
+string FieldElement::toString(bool inHex) {
+  stringstream ss;
+  if (inHex) { ss << std::hex; }
+  ss << this->num_ << " (" << this->prime_ << ")";
+  return ss.str();
 }
 
 FieldElementPoint::FieldElementPoint(FieldElement x, FieldElement y, FieldElement a, FieldElement b) {  
@@ -254,4 +257,13 @@ string FieldElementPoint::toString(bool inHex) {
 
 bool FieldElementPoint::infinity() {
   return this->infinity_;
+}
+
+const int512_t S256Element::s256Prime = (int512_t)"0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f";
+
+S256Element::S256Element(int512_t num): FieldElement(num, S256Element::s256Prime ) {
+}
+
+string S256Element::toString() {
+  return FieldElement::toString(true);
 }
