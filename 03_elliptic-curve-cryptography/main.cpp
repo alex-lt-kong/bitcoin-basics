@@ -1,9 +1,11 @@
 #include <iostream>
 #include <stdexcept>
+#include <boost/multiprecision/cpp_int.hpp>
 
 #include "field-element-point.h"
 
 using namespace std;
+using namespace boost::multiprecision;
 
 void testIfPointsOnCurve() {
   try {

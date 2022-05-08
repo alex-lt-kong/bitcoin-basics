@@ -113,13 +113,12 @@ FieldElementPoint FieldElementPoint::operator*(const int other)
 
 string FieldElementPoint::toString() {
   if (this->infinity) {
-    return "FieldElementPoint(Infinity)_" + 
-            to_string(this->a.num()) +  "_" + to_string(this->b.num()) +
-            " FieldElement(" + to_string(this->a.prime()) + ")";
+    return "FieldElementPoint(Infinity)_" + this->a.num().str() +  "_" + this->b.num().str() +
+            " FieldElement(" + this->a.prime().str() + ")";
   } else {
-  return "FieldElementPoint(" + to_string(this->x.num()) + ", " + to_string(this->y.num()) + ")_"
-                              + to_string(this->a.num()) +  "_" + to_string(this->b.num())
-                              + " FieldElement(" + to_string(this->a.prime()) + ")";
+  return "FieldElementPoint(" + this->x.num().str() + ", " + this->y.num().str() + ")_"
+                              + this->a.num().str() +  "_" + this->b.num().str()
+                              + " FieldElement(" + this->a.prime().str() + ")";
   }
 
 }
