@@ -26,7 +26,6 @@ class FieldElementPoint {
   public:
     FieldElementPoint(FieldElement x, FieldElement y, FieldElement a, FieldElement b);
     FieldElementPoint(bool infinity, FieldElement a, FieldElement b);
-    FieldElementPoint(const FieldElementPoint& point);
     ~FieldElementPoint();
     bool operator==(const FieldElementPoint& other) const;
     FieldElementPoint operator+(const FieldElementPoint& other);
@@ -38,10 +37,10 @@ FieldElementPoint::FieldElementPoint(FieldElement x, FieldElement y, FieldElemen
   // seems here we need to point the internal pointers to new objects--if we point to the same objects 
   // as x, y, a, b, if these objects get deleted by some other function, the this->x, this->y, this->a, this->b,
   // will point to nothing. 
-  this->x = FieldElement(x.num, x.prime);
-  this->y = FieldElement(y.num, y.prime);
-  this->a = FieldElement(a.num, a.prime);
-  this->b = FieldElement(b.num, b.prime);
+  this->x = FieldElement(x.num(), x.prime());
+  this->y = FieldElement(y.num(), y.prime());
+  this->a = FieldElement(a.num(), a.prime());
+  this->b = FieldElement(b.num(), b.prime());
   
   if (this->y.power(2) != this->x.power(3) + (this->a * this->x) + this->b) {    
     throw invalid_argument("Point (" + this->x.toString() + ", " + this->y.toString() +") not on the curve");
@@ -50,23 +49,11 @@ FieldElementPoint::FieldElementPoint(FieldElement x, FieldElement y, FieldElemen
 
 FieldElementPoint::FieldElementPoint(bool infinity, FieldElement a, FieldElement b) {
   this->infinity = true;
-  this->a = FieldElement(a.num, a.prime);
-  this->b = FieldElement(b.num, b.prime);  
+  this->a = FieldElement(a.num(), a.prime());
+  this->b = FieldElement(b.num(), b.prime());  
 }
 
-FieldElementPoint::FieldElementPoint(const FieldElementPoint& point) {
-  this->infinity = point.infinity;
-  if (this->infinity == false) {
-    this->x = FieldElement(point.x.num, point.x.prime);
-    this->y = FieldElement(point.y.num, point.y.prime);
-  }
-  this->a = FieldElement(point.a.num, point.a.prime);
-  this->b = FieldElement(point.b.num, point.b.prime);  
-}
-
-FieldElementPoint::~FieldElementPoint() {
-}
-
+FieldElementPoint::~FieldElementPoint() {}
 
 bool FieldElementPoint::operator==(const FieldElementPoint& other) const
 {
@@ -96,7 +83,7 @@ FieldElementPoint FieldElementPoint::operator+(const FieldElementPoint& other)
     return *this; 
   }
 
-  if (*this == other && this->y == FieldElement(0, this->y.prime)) {
+  if (*this == other && this->y == FieldElement(0, this->y.prime())) {
     // It means p1 == p2 and tangent is a vertical line.
     return FieldElementPoint(true, this->a, this->b);
   }
@@ -107,7 +94,7 @@ FieldElementPoint FieldElementPoint::operator+(const FieldElementPoint& other)
     return FieldElementPoint(true, this->a, this->b);
   }
   
-  FieldElement slope = FieldElement(0, this->x.prime);
+  FieldElement slope = FieldElement(0, this->x.prime());
   if (this->x == other.x && this->y == other.y) {
     // P1 == P2, need some calculus to derive formula: slope = 3x^2 + a / 2y
     // Essentially this is the tangent line at P1
@@ -134,12 +121,12 @@ FieldElementPoint FieldElementPoint::operator*(const int other)
 string FieldElementPoint::toString() {
   if (this->infinity) {
     return "FieldElementPoint(Infinity)_" + 
-            to_string(this->a.num) +  "_" + to_string(this->b.num) +
-            " FieldElement(" + to_string(this->a.prime) + ")";
+            to_string(this->a.num()) +  "_" + to_string(this->b.num()) +
+            " FieldElement(" + to_string(this->a.prime()) + ")";
   } else {
-  return "FieldElementPoint(" + to_string(this->x.num) + ", " + to_string(this->y.num) + ")_"
-                              + to_string(this->a.num) +  "_" + to_string(this->b.num)
-                              + " FieldElement(" + to_string(this->a.prime) + ")";
+  return "FieldElementPoint(" + to_string(this->x.num()) + ", " + to_string(this->y.num()) + ")_"
+                              + to_string(this->a.num()) +  "_" + to_string(this->b.num())
+                              + " FieldElement(" + to_string(this->a.prime()) + ")";
   }
 
 }
