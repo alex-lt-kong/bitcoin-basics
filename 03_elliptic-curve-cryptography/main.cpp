@@ -1,8 +1,5 @@
-#include <float.h>
 #include <iostream>
 #include <stdexcept>
-#include <limits.h>
-#include <math.h>
 
 #include "field-element-point.h"
 
@@ -122,6 +119,7 @@ void testFieldElementPointScalarMultiplication() {
 }
 
 int main() {
+  cout << "hello world!" << endl;
   testIfPointsOnCurve();
   cout << endl;
   testFieldElementPointAddition();
