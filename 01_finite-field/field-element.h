@@ -6,9 +6,13 @@
 using namespace std;
 
 class FieldElement {
+  // Note that FieldElement is a number in a given field, infinity is not a valid
+  // number in that field so we don't need to have a design which handles infinity
+  // here. Infinity happens only at FieldElementPoint level.
   public:
     int num, prime;
     FieldElement(int, int);
+    FieldElement();
     bool operator==(const FieldElement& other) const;
     bool operator!=(const FieldElement& other) const;
     FieldElement operator+(const FieldElement& other);
@@ -29,6 +33,12 @@ FieldElement::FieldElement(int num, int prime) {
   }
   this->num = num;
   this->prime = prime;
+}
+
+FieldElement::FieldElement() {
+  // This is needed if we want to declare an object without defining it
+  // It will be defined with this default constructor automatically.
+  FieldElement(0, 1);
 }
 
 bool FieldElement::operator==(const FieldElement& other) const
