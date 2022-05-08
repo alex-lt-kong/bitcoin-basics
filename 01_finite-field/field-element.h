@@ -10,7 +10,7 @@ class FieldElement {
   // number in that field so we don't need to have a design which handles infinity
   // here. Infinity happens only at FieldElementPoint level.
   public:
-    int num, prime;
+    int num=0, prime=1; // We make the initial value valid so that we can have an empty default constructor.
     FieldElement(int, int);
     FieldElement();
     bool operator==(const FieldElement& other) const;
@@ -38,7 +38,8 @@ FieldElement::FieldElement(int num, int prime) {
 FieldElement::FieldElement() {
   // This is needed if we want to declare an object without defining it
   // It will be defined with this default constructor automatically.
-  FieldElement(0, 1);
+  
+  // FieldElement(0, 1); seems in C++ we can't call another constructor in a constructor...  
 }
 
 bool FieldElement::operator==(const FieldElement& other) const

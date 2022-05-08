@@ -89,12 +89,10 @@ FieldElementPoint FieldElementPoint::operator+(const FieldElementPoint& other)
   }
   if (this->infinity) {
     // this->x == nullptr means this point is at infinity
-    cout << "this is inf" << endl;
     return other; 
   }
   if (other.infinity) {
     // other.x == nullptr means the other point is at infinity
-    cout << "other is inf" << endl;
     return *this; 
   }
 
@@ -126,33 +124,23 @@ FieldElementPoint FieldElementPoint::operator+(const FieldElementPoint& other)
 
 FieldElementPoint FieldElementPoint::operator*(const int other)
 {
-  FieldElementPoint* fp = nullptr;
-  if (this->infinity == false) {
-    fp = new FieldElementPoint(this->x, this->y, this->a, this->b);
-  } else {
-    fp = new FieldElementPoint(true, this->a, this->b);
+  FieldElementPoint fp = FieldElementPoint(true, this->a, this->b);
+  for (int i = 0; i < other; i++) {
+    fp = FieldElementPoint(*this + fp);
   }
-  for (int i = 0; i < other - 1; i++) {
-    FieldElementPoint* tmp = fp;
-    fp = new FieldElementPoint(*this + *fp);
-    delete tmp;
-    // https://stackoverflow.com/questions/8763398/why-is-it-illegal-to-take-the-address-of-an-rvalue-temporary
-  }
-  FieldElementPoint result = FieldElementPoint(*fp);
-  delete fp; // Note that we don't return *fp, but instead we create a reference result and return the reference.
-  // This appears to me that by doing this we avoid memory leakage. What if we simply declare fp as a reference
-  // instead of a pointer? No, that doesn't seem to work, compiler complains "free(): double free detected in tcache 2"
-  return result;
-  // You should never return "this" here--no matter what a user does, the result
-  // should not change operand's own value.
+  return fp;
 }
 
 string FieldElementPoint::toString() {
-  string xNum = !this->infinity ? to_string(this->x.num) : "Infinity";
-  string yNum = !this->infinity ? to_string(this->y.num) : "Infinity";
-  return "FieldElementPoint(" + xNum + ", " + yNum + ")_"
+  if (this->infinity) {
+    return "FieldElementPoint(Infinity)_" + 
+            to_string(this->a.num) +  "_" + to_string(this->b.num) +
+            " FieldElement(" + to_string(this->a.prime) + ")";
+  } else {
+  return "FieldElementPoint(" + to_string(this->x.num) + ", " + to_string(this->y.num) + ")_"
                               + to_string(this->a.num) +  "_" + to_string(this->b.num)
                               + " FieldElement(" + to_string(this->a.prime) + ")";
+  }
 
 }
 

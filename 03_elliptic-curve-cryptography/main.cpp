@@ -117,6 +117,8 @@ void testFieldElementPointScalarMultiplication() {
   p1 = FieldElementPoint(x1, y1, a, b);
   cout << (p1 * 7).toString() << endl;
   cout << (p1 + p1 + p1 + p1 + p1 + p1 + p1).toString() << endl;
+  cout << (p1 * 8).toString() << endl;
+  cout << (p1 + p1 + p1 + p1 + p1 + p1 + p1 + p1).toString() << endl;
 }
 
 int main() {
