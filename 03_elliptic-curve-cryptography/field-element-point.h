@@ -11,12 +11,16 @@
 
 using namespace std;
 
+// Represent a point consists of two finite field elements, given the context of its application, it is defined by:
+// ** x, y: two FieldElements representing the coordinates of the point. Not passing x and y to constructor means the point
+// is at infinity
+// ** a, b: as defined in elliptic curve's canonical form y^2 = x^3 + ax + b
 class FieldElementPoint {
 
   private:
     // The canonical form of an elliptic curve is y^2 = x^3 + ax + b, thus the following a, b, x, y for a point
-    // In the book's implementation, a and b are also FieldElements. However, it seems to me that b does not
-    // have to be a FieldElement though.
+    // In the book's implementation, a and b are also FieldElements--this seems necessary--if b is not in the same finite
+    // field, the addition between two numbers in different fields seems undefined.
     FieldElement a;
     FieldElement b;
     FieldElement x;
@@ -25,7 +29,7 @@ class FieldElementPoint {
     bool infinity = false;
   public:
     FieldElementPoint(FieldElement x, FieldElement y, FieldElement a, FieldElement b);
-    FieldElementPoint(bool infinity, FieldElement a, FieldElement b);
+    FieldElementPoint(FieldElement a, FieldElement b);
     ~FieldElementPoint();
     bool operator==(const FieldElementPoint& other) const;
     FieldElementPoint operator+(const FieldElementPoint& other);
@@ -47,7 +51,9 @@ FieldElementPoint::FieldElementPoint(FieldElement x, FieldElement y, FieldElemen
   }
 }
 
-FieldElementPoint::FieldElementPoint(bool infinity, FieldElement a, FieldElement b) {
+
+// Omitting x and y and passing only a and b in y^2 = x^3 + ax + b means this FieldElementPoint is point at infinity
+FieldElementPoint::FieldElementPoint(FieldElement a, FieldElement b) {
   this->infinity = true;
   this->a = FieldElement(a.num(), a.prime());
   this->b = FieldElement(b.num(), b.prime());  
@@ -74,30 +80,24 @@ FieldElementPoint FieldElementPoint::operator+(const FieldElementPoint& other)
   if (this->a != other.a || this->b != other.b) {
     throw std::invalid_argument("Two FieldElementPoints are not on the same curve");
   }
-  if (this->infinity) {
-    // this->x == nullptr means this point is at infinity
-    return other; 
-  }
-  if (other.infinity) {
-    // other.x == nullptr means the other point is at infinity
-    return *this; 
+
+  // Point at infinity is defined as I where point A + I = A. Visualization: ./00_assets/fig_02-15.png
+  if (this->infinity) { return other; }
+  if (other.infinity) { return *this; }
+  // meaning that A + (-A) = I. Visualization: ./00_assets/fig_02-15.png
+  if (this->x == other.x &&  this->y != other.y) {    
+    return FieldElementPoint(this->a, this->b);
   }
 
   if (*this == other && this->y == FieldElement(0, this->y.prime())) {
-    // It means p1 == p2 and tangent is a vertical line.
-    return FieldElementPoint(true, this->a, this->b);
-  }
-
+    // It means p1 == p2 and tangent is a vertical line. Visualization: ./00_assets/fig_02-19.png
+    return FieldElementPoint(this->a, this->b);
+  }  
   
-  if (this->x == other.x &&  this->y != other.y) {
-    // FieldElementPoint at infinity
-    return FieldElementPoint(true, this->a, this->b);
-  }
-  
-  FieldElement slope = FieldElement(0, this->x.prime());
+  FieldElement slope;
   if (this->x == other.x && this->y == other.y) {
-    // P1 == P2, need some calculus to derive formula: slope = 3x^2 + a / 2y
-    // Essentially this is the tangent line at P1
+    // p1 == p2, need some calculus to derive formula: (slope = 3x^2 + a) / 2y
+    // Essentially this is the tangent line at P1. Visualization: ./00_assets/fig_02-18.png
     slope = (this->x.power(2) * 3 + this->a) / (this->y * 2);
   } else {
     // general case
@@ -111,7 +111,7 @@ FieldElementPoint FieldElementPoint::operator+(const FieldElementPoint& other)
 
 FieldElementPoint FieldElementPoint::operator*(const int other)
 {
-  FieldElementPoint fp = FieldElementPoint(true, this->a, this->b);
+  FieldElementPoint fp = FieldElementPoint(this->a, this->b);
   for (int i = 0; i < other; i++) {
     fp = FieldElementPoint(*this + fp);
   }
