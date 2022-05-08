@@ -17,23 +17,23 @@ class FieldElement {
     // We make the initial value valid so that we can have an empty default constructor.
     // Note that in Python we prepend underscores, in C++ it is recommended to append underscores as variables
     // start with an underscore or double underscore are reserved for the C++ implementers
-    int256_t num_ = 0, prime_ = 2;
-    bool isPrimeNumber(int256_t);
+    int512_t num_ = 0, prime_ = 2;
+    bool isPrimeNumber(int512_t);
   public:    
-    FieldElement(int256_t, int256_t);
+    FieldElement(int512_t num, int512_t prime);
     FieldElement();    
     bool operator==(const FieldElement& other) const;
     bool operator!=(const FieldElement& other) const;
     FieldElement operator+(const FieldElement& other);
     FieldElement operator-(const FieldElement& other);
     FieldElement operator*(const FieldElement& other);
-    FieldElement operator*(const int256_t other);
+    FieldElement operator*(const int512_t other);
     FieldElement operator/(const FieldElement& other);
-    FieldElement power(int256_t exponent);
-    int256_t modulusPower(int256_t exponent, int256_t modulus);
+    FieldElement power(int512_t exponent);
+    int512_t modulusPower(int512_t exponent, int512_t modulus);
     string toString();
-    int256_t num();
-    int256_t prime();
+    int512_t num();
+    int512_t prime();
 };
 
 #endif

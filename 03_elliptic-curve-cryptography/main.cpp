@@ -5,7 +5,7 @@
 #include "field-element-point.h"
 
 using namespace std;
-using namespace boost::multiprecision;
+//namespace mp = boost::multiprecision;
 
 void testIfPointsOnCurve() {
   try {
@@ -120,6 +120,16 @@ void testFieldElementPointScalarMultiplication() {
   cout << (p1 + p1 + p1 + p1 + p1 + p1 + p1 + p1).toString() << endl;
 }
 
+void testSecp256k1() {
+  int512_t gx{"0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798"}; // string-based constructor
+  int512_t gy{"0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8"};
+  
+  int512_t p = pow((int512_t)2, 256) - pow((int512_t)2,32) - 977;
+  FieldElementPoint point = FieldElementPoint(
+    FieldElement(gx, p), FieldElement(gy, p), FieldElement(0, p), FieldElement(7, p)
+  );
+}
+
 int main() {
   testIfPointsOnCurve();
   cout << endl;
@@ -127,5 +137,6 @@ int main() {
   cout << endl;
   testFieldElementPointScalarMultiplication();
   cout << endl;
+  testSecp256k1();
   return 0;
 }

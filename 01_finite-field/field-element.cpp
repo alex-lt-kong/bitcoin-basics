@@ -4,18 +4,21 @@
 using namespace std;
 using namespace boost::multiprecision;
 
-bool FieldElement::isPrimeNumber(int256_t input) {
+bool FieldElement::isPrimeNumber(int512_t input) {
 
     if (input < 2) { return false; }
     if (input == 2) { return true; }
+    int512_t secp256k1Prime{"115792089237316195423570985008687907853269984665640564039457584007908834671663"};
+    // secp256k1Prime = 2^256 - 2^32 - 977
+    if (input == secp256k1Prime) { return true; }
     if (input % 2 == 0) { return false; }
-    for (int256_t i = 3; (i*i)<=input; i+=2) {
+    for (int512_t i = 3; (i*i)<=input; i+=2) {
         if(input % i == 0 ) { return false; }
     }
     return true;
 }
 
-FieldElement::FieldElement(int256_t num, int256_t prime) {
+FieldElement::FieldElement(int512_t num, int512_t prime) {
   if (num >= prime) {
     throw invalid_argument("invalid num [" + num.str() + "]: negative or greater than prime");
   }
@@ -33,11 +36,11 @@ FieldElement::FieldElement() {
   // FieldElement(0, 1); seems in C++ we can't call another constructor in a constructor...  
 }
 
-int256_t FieldElement::num() {
+int512_t FieldElement::num() {
   return this->num_;
 }
 
-int256_t FieldElement::prime() {
+int512_t FieldElement::prime() {
   return this->prime_;
 }
 
@@ -69,9 +72,9 @@ FieldElement FieldElement::operator-(const FieldElement& other)
   if (this->prime_ != other.prime_) {
     throw std::invalid_argument("prime numbers are different");
   }
-  int256_t result = (this->num_ - other.num_) % this->prime_;
+  int512_t result = (this->num_ - other.num_) % this->prime_;
   if (result < 0) { result += this->prime_; }
-  return FieldElement((int256_t)result, this->prime_);
+  return FieldElement((int512_t)result, this->prime_);
 }
 
 FieldElement FieldElement::operator*(const FieldElement& other)
@@ -82,10 +85,10 @@ FieldElement FieldElement::operator*(const FieldElement& other)
   return FieldElement((this->num_ * other.num_) % this->prime_, this->prime_);
 }
 
-FieldElement FieldElement::operator*(const int256_t other)
+FieldElement FieldElement::operator*(const int512_t other)
 {
   // This implementation is inspired by FieldElementPoint FieldElementPoint::operator*(const int other)
-  int256_t coef = other;
+  int512_t coef = other;
   FieldElement result = FieldElement(0, this->prime());
   FieldElement curr = FieldElement(*this);
   while (coef > 0) {
@@ -103,27 +106,27 @@ FieldElement FieldElement::operator/(const FieldElement& other)
   if (this->prime_ != other.prime_) {
     throw std::invalid_argument("prime numbers are different");
   }
-  int256_t tmp = FieldElement(other.num_, other.prime_).power(other.prime_-2).num_;
+  int512_t tmp = FieldElement(other.num_, other.prime_).power(other.prime_-2).num_;
   return FieldElement(
     (this->num_ * tmp) % this->prime_,
     this->prime_
   );
 }
 
-int256_t FieldElement::modulusPower(int256_t exponent, int256_t modulus)
+int512_t FieldElement::modulusPower(int512_t exponent, int512_t modulus)
 {
-  int256_t n = exponent;
-  int256_t result = 1;
+  int512_t n = exponent;
+  int512_t result = 1;
   while (n < 0) { n += modulus - 1; };
   // C++ -7 % 3 = -1; python: -7 % 3 = 2;
-  for (int256_t i = 0; i < n; i++) {
+  for (int512_t i = 0; i < n; i++) {
     result *= this->num_;
     result = result % modulus;
   }
   return result;
 }
 
-FieldElement FieldElement::power(int256_t exponent)
+FieldElement FieldElement::power(int512_t exponent)
 {
   return FieldElement(this->modulusPower(exponent, this->prime_), this->prime_);
 }

@@ -12,6 +12,7 @@ field-element.o: ../01_finite-field/field-element.cpp ../01_finite-field/field-e
 
 clean:
 	rm *.o main.out
+
 # General syntax:
 # target: dependencies
 #	  action
