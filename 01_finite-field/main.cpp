@@ -1,7 +1,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <math.h>
-#include "field-element.h"
+#include "../ecc.h"
 
 using namespace std;
 
