@@ -266,3 +266,9 @@ S256Element::S256Element(int512_t num): FieldElement(num, S256Element::s256Prime
 string S256Element::toString() {
   return FieldElement::toString(true);
 }
+
+const S256Element S256Point::a = S256Element(0);
+const S256Element S256Point::b = S256Element(7);
+
+S256Point::S256Point(S256Element x, S256Element y): FieldElementPoint(x, y, S256Point::a, S256Point::b) {}
+S256Point::S256Point(): FieldElementPoint(S256Point::a, S256Point::b) {}

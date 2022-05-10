@@ -163,6 +163,11 @@ void testS256SubClass() {
   FieldElementPoint g = FieldElementPoint(x, y, a, b);
   cout << (g * order).toString(true) << endl;
   cout << (g * order + g).toString(true) << endl;
+
+  S256Point p1 = S256Point(x, y);
+  S256Point p2 = S256Point();
+  cout << p1.toString() << endl;
+  cout << p2.toString() << endl;
 }
 
 int main() {
