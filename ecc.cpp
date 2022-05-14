@@ -310,16 +310,8 @@ bool S256Point::verify(int512_t msgHash, Signature sig) {
   int512_t sigInv = boost::integer::mod_inverse(sig.s(), this->order());
   int512_t u = msgHash * sigInv % this->order();
   int512_t v = sig.r() * sigInv % this->order();
+
   S256Point total = g * u + *this * v;
-  cout << "sig.s(): " << sig.s() << endl;
-  cout << "this->order(): " << this->order() << endl;
-  cout << "msgHash: " << msgHash << endl;
-  cout << "sigInv: " << sigInv << endl;
-  cout << "g: " << (g).toString() << endl;
-  cout << "u: " << u << endl;
-  cout << "g * u: " << (g * u).toString() << endl;
-  cout << "total.x().num(): " << total.x().num() << endl;
-  cout << "sig.r(): " << sig.r() << endl;
   return total.x().num() == sig.r();
 }
 
@@ -349,7 +341,7 @@ string S256Point::toString() {
   if (this->infinity_) {
     ss << "S256Point(Infinity)_" << this->a().num() <<  "_" << this->b().num();
   } else {
- //   ss << "S256Point(" << this->x_.num() << ", " << this->y_.num() << ")_" << this>a().num() <<  "_" << this->b().num();
+    ss << "S256Point(" << this->x_.num() << ", " << this->y_.num() << ")_" << this->a().num() <<  "_" << this->b().num();
   }
   return ss.str();
 }
