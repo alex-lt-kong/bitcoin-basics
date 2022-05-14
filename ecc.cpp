@@ -1,14 +1,17 @@
+#include <assert.h>
+#include <boost/integer/mod_inverse.hpp>
+#include <float.h>
+#include <limits.h>
 #include <math.h>
 #include <iostream>
 #include <stdexcept>
 #include <sstream>
-#include <float.h>
-#include <limits.h>
-#include <sstream>
+
 #include "ecc.h"
 
 using namespace std;
 using namespace boost::multiprecision;
+
 
 bool FieldElement::isPrimeNumber(int512_t input) {
 
@@ -134,26 +137,30 @@ string FieldElement::toString(bool inHex) {
   return ss.str();
 }
 
-FieldElementPoint::FieldElementPoint(FieldElement x, FieldElement y, FieldElement a, FieldElement b) {  
-  // seems here we need to point the internal pointers to new objects--if we point to the same objects 
-  // as x, y, a, b, if these objects get deleted by some other function, the this->x, this->y, this->a, this->b,
-  // will point to nothing. 
-  this->x = FieldElement(x.num(), x.prime());
-  this->y = FieldElement(y.num(), y.prime());
-  this->a = FieldElement(a.num(), a.prime());
-  this->b = FieldElement(b.num(), b.prime());
-  
-  if (this->y.power(2) != this->x.power(3) + (this->a * this->x) + this->b) {    
-    throw invalid_argument("Point (" + this->x.toString() + ", " + this->y.toString() +") not on the curve");
+
+
+FieldElementPoint::FieldElementPoint(FieldElement x, FieldElement y, FieldElement a, FieldElement b) {
+  //if (x.prime() == y.prime() == a.prime() == b.prime()) { /*good*/ }
+  //else { throw invalid_argument("prime numbers are different"); }
+
+  this->x_ = FieldElement(x.num(), x.prime());
+  this->y_ = FieldElement(y.num(), y.prime());
+  this->a_ = FieldElement(a.num(), a.prime());
+  this->b_ = FieldElement(b.num(), b.prime());
+
+  if (this->y_.power(2) != this->x_.power(3) + (this->a_ * this->x_) + this->b_) {    
+    throw invalid_argument("Point (" + this->x_.toString() + ", " + this->y_.toString() +") not on the curve");
   }
 }
 
-
 // Omitting x and y and passing only a and b in y^2 = x^3 + ax + b means this FieldElementPoint is point at infinity
 FieldElementPoint::FieldElementPoint(FieldElement a, FieldElement b) {
+  if (a.prime() == b.prime()) { /*good*/ }
+  else { throw invalid_argument("prime numbers are different"); }
+
   this->infinity_ = true;
-  this->a = FieldElement(a.num(), a.prime());
-  this->b = FieldElement(b.num(), b.prime());  
+  this->a_ = FieldElement(a.num(), a.prime());
+  this->b_ = FieldElement(b.num(), b.prime());  
 }
 
 FieldElementPoint::~FieldElementPoint() {}
@@ -165,16 +172,16 @@ bool FieldElementPoint::operator==(const FieldElementPoint& other) const
   bool xyEqual = false;
   if (this->infinity_ == true && other.infinity_ == true) { xyEqual = true; }
   else if (this->infinity_ != other.infinity_) { xyEqual = false; }
-  else if (this->infinity_ == false && other.infinity_ == false) { xyEqual = (this->x == other.x && this->y == other.y); }
+  else if (this->infinity_ == false && other.infinity_ == false) { xyEqual = (this->x_ == other.x_ && this->y_ == other.y_); }
   else { throw invalid_argument("This should be impossible"); }
-  return this->a == other.a && this->b == other.b && xyEqual;
+  return this->a_ == other.a_ && this->b_ == other.b_ && xyEqual;
 }
 
 FieldElementPoint FieldElementPoint::operator+(const FieldElementPoint& other)
 {  
   // ICYW: This is overloading, not overriding lol. An interesting point to note is that a,b,x,y are private members
   // of other, but still we can access them.
-  if (this->a != other.a || this->b != other.b) {
+  if (this->a_ != other.a_ || this->b_ != other.b_) {
     throw std::invalid_argument("Two FieldElementPoints are not on the same curve");
   }
 
@@ -182,29 +189,29 @@ FieldElementPoint FieldElementPoint::operator+(const FieldElementPoint& other)
   if (this->infinity_) { return other; }
   if (other.infinity_) { return *this; }
   // meaning that A + (-A) = I. Visualization: ./00_assets/fig_02-15.png
-  if (this->x == other.x &&  this->y != other.y) {    
-    return FieldElementPoint(this->a, this->b);
+  if (this->x_ == other.x_ &&  this->y_ != other.y_) {    
+    return FieldElementPoint(this->a_, this->b_);
   }
 
-  if (*this == other && this->y == FieldElement(0, this->y.prime())) {
+  if (*this == other && this->y_ == FieldElement(0, this->y_.prime())) {
     // It means p1 == p2 and tangent is a vertical line. Visualization: ./00_assets/fig_02-19.png
-    return FieldElementPoint(this->a, this->b);
+    return FieldElementPoint(this->a_, this->b_);
   }  
   
   FieldElement slope;
   // What is the value of slope at the moment?
   //It is NOT left undefined--it will be defined by the default constructor!
-  if (this->x == other.x && this->y == other.y) {
+  if (this->x_ == other.x_ && this->y_ == other.y_) {
     // p1 == p2, need some calculus to derive formula: (slope = 3x^2 + a) / 2y
     // Essentially this is the tangent line at P1. Visualization: ./00_assets/fig_02-18.png
-    slope = (this->x.power(2) * 3 + this->a) / (this->y * 2);
+    slope = (this->x_.power(2) * 3 + this->a_) / (this->y_ * 2);
   } else {
     // general case. Visualization: ./00_assets/fig_02-11.png
-    slope = (this->y - other.y) / (this->x - other.x);
+    slope = (this->y_ - other.y_) / (this->x_ - other.x_);
   }
-  FieldElement x3 = FieldElement(slope * slope - this->x - other.x);
-  FieldElement y3 = FieldElement(slope * (this->x - x3) - this->y);
-  return FieldElementPoint(x3, y3, this->a, this->b);
+  FieldElement x3 = FieldElement(slope * slope - this->x_ - other.x_);
+  FieldElement y3 = FieldElement(slope * (this->x_ - x3) - this->y_);
+  return FieldElementPoint(x3, y3, this->a_, this->b_);
   
 }
 
@@ -219,7 +226,7 @@ FieldElementPoint FieldElementPoint::operator*(const int512_t other)
   // The current implementation is called "binary expansion". It reduces the time complexity from O(n) to Olog(n).
   // Essentially, we scan coef bit by bit and add the number to result if a bit is 1.
   int512_t coef = other;
-  FieldElementPoint result = FieldElementPoint(this->a, this->b);
+  FieldElementPoint result = FieldElementPoint(this->a_, this->b_);
   FieldElementPoint curr = FieldElementPoint(*this);
   /*
     for (int i = 0; i < other; i++) {
@@ -247,10 +254,10 @@ string FieldElementPoint::toString(bool inHex) {
   stringstream ss;
   if (inHex) { ss << std::hex; }
   if (this->infinity_) {
-    ss << "FieldElementPoint(Infinity)_" << this->a.num() <<  "_" << this->b.num() << " FieldElement(" << this->a.prime() << ")";
+    ss << "FieldElementPoint(Infinity)_" << this->a_.num() <<  "_" << this->b_.num() << " FieldElement(" << this->a_.prime() << ")";
   } else {
-    ss << "FieldElementPoint(" << this->x.num() << ", " << this->y.num() << ")_"
-       << this->a.num() <<  "_" << this->b.num() << " FieldElement(" << this->a.prime() << ")";    
+    ss << "FieldElementPoint(" << this->x_.num() << ", " << this->y_.num() << ")_"
+       << this->a_.num() <<  "_" << this->b_.num() << " FieldElement(" << this->a_.prime() << ")";    
   }
   return ss.str();
 }
@@ -259,16 +266,121 @@ bool FieldElementPoint::infinity() {
   return this->infinity_;
 }
 
-const int512_t S256Element::s256Prime = (int512_t)"0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f";
+FieldElement FieldElementPoint::x() {
+  return this->x_;
+}
 
-S256Element::S256Element(int512_t num): FieldElement(num, S256Element::s256Prime) {}
+FieldElement FieldElementPoint::y() {
+  return this->y_;
+}
+
+
+
+const int512_t S256Element::s256Prime_ = (int512_t)"0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f";
+
+S256Element::S256Element(int512_t num): FieldElement(num, S256Element::s256Prime_) {}
 
 string S256Element::toString() {
   return FieldElement::toString(true);
 }
 
-const S256Element S256Point::a = S256Element(0);
-const S256Element S256Point::b = S256Element(7);
+int512_t S256Element::s256Prime() {
+  return this->s256Prime_;
+}
 
-S256Point::S256Point(S256Element x, S256Element y): FieldElementPoint(x, y, S256Point::a, S256Point::b) {}
-S256Point::S256Point(): FieldElementPoint(S256Point::a, S256Point::b) {}
+const S256Element S256Point::a_ = S256Element(0);
+const S256Element S256Point::b_ = S256Element(7);
+const int512_t S256Point::order_ = (int512_t)"0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141";
+
+S256Point::S256Point(S256Element x, S256Element y): FieldElementPoint(x, y, S256Point::a_, S256Point::b_) {}
+S256Point::S256Point(): FieldElementPoint(S256Point::a_, S256Point::b_) {}
+
+int512_t S256Point::s256Prime() {
+  assert (this->x_.prime() == this->y_.prime());
+  return this->x_.prime();
+}
+
+bool S256Point::verify(int512_t msgHash, Signature sig) {
+
+  int512_t gx = (int512_t)"0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798";
+  int512_t gy = (int512_t)"0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8";  
+  // gx and gy are the coordinates of point g, which is the generator point, i.e., we add g to itself over and over again.
+  S256Point g = S256Point(S256Element(gx), S256Element(gy));
+
+  int512_t sigInv = boost::integer::mod_inverse(sig.s(), this->order());
+  int512_t u = msgHash * sigInv % this->order();
+  int512_t v = sig.r() * sigInv % this->order();
+  S256Point total = g * u + *this * v;
+  cout << "sig.s(): " << sig.s() << endl;
+  cout << "this->order(): " << this->order() << endl;
+  cout << "msgHash: " << msgHash << endl;
+  cout << "sigInv: " << sigInv << endl;
+  cout << "g: " << (g).toString() << endl;
+  cout << "u: " << u << endl;
+  cout << "g * u: " << (g * u).toString() << endl;
+  cout << "total.x().num(): " << total.x().num() << endl;
+  cout << "sig.r(): " << sig.r() << endl;
+  return total.x().num() == sig.r();
+}
+
+S256Point S256Point::operator*(const int512_t other) {
+  FieldElementPoint temp = FieldElementPoint::operator*(other);
+  if (temp.infinity()) {
+    return S256Point();
+  }
+  else {
+    return S256Point(S256Element(temp.x().num()), S256Element(temp.y().num()));
+  }
+} 
+
+S256Point S256Point::operator+(const S256Point other) {
+  FieldElementPoint temp = (FieldElementPoint)(*this) + (FieldElementPoint)(other);
+  if (temp.infinity()) {
+    return S256Point();
+  }
+  else {
+    return S256Point(S256Element(temp.x().num()), S256Element(temp.y().num()));
+  }
+}
+
+string S256Point::toString() {
+  stringstream ss;
+  ss << std::hex;
+  if (this->infinity_) {
+    ss << "S256Point(Infinity)_" << this->a().num() <<  "_" << this->b().num();
+  } else {
+ //   ss << "S256Point(" << this->x_.num() << ", " << this->y_.num() << ")_" << this>a().num() <<  "_" << this->b().num();
+  }
+  return ss.str();
+}
+
+int512_t S256Point::order() {
+  return S256Point::order_;
+}
+
+S256Element S256Point::a() {
+  return S256Point::a_;
+}
+
+S256Element S256Point::b() {
+  return S256Point::b_;
+}
+
+Signature::Signature(int512_t r, int512_t s) {
+  this->r_ = r;
+  this->s_ = s;
+}
+
+string Signature::toString() {
+  stringstream ss;
+  ss << "Signature(" << this->r_ << ", " << this->s_ << ")";
+  return ss.str();
+}
+
+int512_t Signature::r() {
+  return this->r_;
+}
+
+int512_t Signature::s() {
+  return this->s_;
+}

@@ -1,7 +1,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <boost/multiprecision/cpp_int.hpp>
-
+#include <boost/integer/mod_inverse.hpp>
 #include "../ecc.h"
 
 using namespace std;
@@ -167,7 +167,22 @@ void testS256SubClass() {
   S256Point p1 = S256Point(x, y);
   S256Point p2 = S256Point();
   cout << p1.toString() << endl;
+  cout << (p1 * order).toString() << endl;
+  cout << (p1 * order + p1).toString() << endl;
   cout << p2.toString() << endl;
+}
+
+void testS256Verification() {
+  cout << "testS256Verification()" << endl;
+  S256Point p1 = S256Point(
+    (int512_t)"0x04519fac3d910ca7e7138f7013706f619fa8f033e6ec6e09370ea38cee6a7574",
+    (int512_t)"0x82b51eab8c27c66e26c858a079bcdf4f1ada34cec420cafc7eac1a42216fb6c4"
+  );
+  Signature sig = Signature(
+    (int512_t)"0x37206a0610995c58074999cb9767b87af4c4978db68c06e8e6e81d282047a7c6",
+    (int512_t)"0x8ca63759c1157ebeaec0d03cecca119fc9a75bf8e6d0fa65c841c8e2738cdaec"
+  );
+  cout << p1.verify((int512_t)"0xbc62d4b80d9e36da29c16c5d4d9f11731f36052c72401a76c23c0fb5a9b74423",sig) << endl;
 }
 
 int main() {
@@ -182,5 +197,8 @@ int main() {
   testSecp256k1();
   cout << endl;
   testS256SubClass();
+  cout << endl;
+  testS256Verification();
+  cout << boost::integer::mod_inverse((int512_t)"13333333333333333333333334120", (int512_t)"996476327865929380254603340757") << endl;
   return 0;
 }
