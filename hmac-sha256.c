@@ -18,22 +18,19 @@ static void* H(const void* x,
                const size_t xlen,
                const void* y,
                const size_t ylen,
-               void* out,
-               const size_t outlen);
+               void* out);
 
 // Declared in hmac_sha256.h
-size_t hmac_sha256(const void* key,
+void hmac_sha256(const void* key,
                    const size_t keylen,
                    const void* data,
                    const size_t datalen,
-                   void* out,
-                   const size_t outlen) {
+                   void* out) {
   uint8_t k[SHA256_BLOCK_SIZE];
   uint8_t k_ipad[SHA256_BLOCK_SIZE];
   uint8_t k_opad[SHA256_BLOCK_SIZE];
   uint8_t ihash[SIZE_OF_SHA_256_HASH];
   uint8_t ohash[SIZE_OF_SHA_256_HASH];
-  size_t sz;
   int i;
 
   memset(k, 0, sizeof(k));
@@ -55,20 +52,18 @@ size_t hmac_sha256(const void* key,
 
   // Perform HMAC algorithm: ( https://tools.ietf.org/html/rfc2104 )
   //      `H(K XOR opad, H(K XOR ipad, data))`
-  H(k_ipad, sizeof(k_ipad), data, datalen, ihash, sizeof(ihash));
-  H(k_opad, sizeof(k_opad), ihash, sizeof(ihash), ohash, sizeof(ohash));
+  H(k_ipad, sizeof(k_ipad), data, datalen, ihash);
+  H(k_opad, sizeof(k_opad), ihash, sizeof(ihash), ohash);
 
-  sz = (outlen > SIZE_OF_SHA_256_HASH) ? SIZE_OF_SHA_256_HASH : outlen;
-  memcpy(out, ohash, sz);
-  return sz;
+
+  memcpy(out, ohash, SIZE_OF_SHA_256_HASH);
 }
 
 static void* H(const void* x,
                const size_t xlen,
                const void* y,
                const size_t ylen,
-               void* out,
-               const size_t outlen) {
+               void* out) {
   size_t buflen = (xlen + ylen);
   uint8_t* buf = (uint8_t*)malloc(buflen);
 

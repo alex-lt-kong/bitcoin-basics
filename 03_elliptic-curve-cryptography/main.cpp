@@ -248,8 +248,10 @@ void testSignatureCreation() {
   cout << "r: " << hex << r << endl;
   cout << "sig: " << sig << endl;
 
-  ECDSAPrivateKey pk = ECDSAPrivateKey(secret);
-  cout << "ECDSAPrivateKey.sign(): " << pk.sign(msgHash).toString() << endl;;
+  unsigned char secretBytes1[] = {0x38, 0x97, 0x23, 0x79, 0x58, 0x34, 0x79, 0xa7, 0xb2};
+  unsigned char msgHashBytes1[] = {0x31, 0x41, 0x59, 0x26,0x31, 0x41, 0x59, 0x26,0x31, 0x41, 0x59, 0x26,0x31, 0x41, 0x59, 0x26,0x31, 0x41, 0x59, 0x26,0x31, 0x41, 0x59, 0x26,0x31, 0x41, 0x59, 0x26,0x31, 0x41, 0x59, 0x27};
+  ECDSAPrivateKey pk = ECDSAPrivateKey(secretBytes1, sizeof(secretBytes1));
+  cout << "ECDSAPrivateKey.sign(): " << pk.sign(msgHashBytes1, sizeof(msgHashBytes1)).toString() << endl;;
 }
 
 void testHMACSHA256() {
@@ -257,7 +259,7 @@ void testHMACSHA256() {
   unsigned char key[] = { 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x20, 0x77, 0x6f, 0x72, 0x6c, 0x64, 0x21 }; // Hello world!
   unsigned char data[] = { 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x20, 0x77, 0x6f, 0x72, 0x6c, 0x64 }; // Hello world
   unsigned char output[SIZE_OF_SHA_256_HASH];
-  hmac_sha256(key, sizeof(key), data, sizeof(data), output, SIZE_OF_SHA_256_HASH);
+  hmac_sha256(key, sizeof(key), data, sizeof(data), output);
   cout << encodeBytesToHex(output, sizeof(output)) << endl;
 }
 

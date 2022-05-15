@@ -2,10 +2,7 @@
 #define ECC_H
 
 #include <boost/multiprecision/cpp_int.hpp>
-#include <boost/multiprecision/gmp.hpp>
-#include <boost/random/uniform_int.hpp>
-#include <boost/random/mersenne_twister.hpp>
-
+#include "sha256.h"
 using namespace std;
 using namespace boost::multiprecision;
 
@@ -119,15 +116,16 @@ extern S256Point G;
 
 class ECDSAPrivateKey {
 protected:
+  unsigned char* secretBytes_ = nullptr;
+  unsigned short int secretLen_ = SIZE_OF_SHA_256_HASH;
   int512_t secret_ = -1;
   S256Point p_;
-  uint256_t getRandomInteger();
-  boost::mt19937 rng;
-  boost::uniform_int<uint256_t> gen;
+  int512_t getDeterministicK(unsigned char* msgHashBytes, unsigned short int msgHashLen);
 public:
-  ECDSAPrivateKey(int512_t secret);
+  ECDSAPrivateKey(unsigned char* secretBytes, unsigned short int secretLen);
+  ~ECDSAPrivateKey();
   string toString();
-  Signature sign(int512_t msgHash);
+  Signature sign(unsigned char* msgHashBytes, unsigned short int msgHashLen);
   
 };
 
