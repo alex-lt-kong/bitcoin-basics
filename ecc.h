@@ -110,5 +110,18 @@ public:
   string toString();
 };
 
+// The generator point of secp256k1
+extern S256Point G;
+
+
+class ECDSAPrivateKey {
+protected:
+  int512_t secret_ = -1;
+  S256Point p_;
+public:
+  ECDSAPrivateKey(int512_t secret);
+  string toString();
+  Signature sign(int512_t msgHash);
+};
 
 #endif

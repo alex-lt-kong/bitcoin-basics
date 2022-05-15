@@ -216,6 +216,35 @@ void testBytesToInt512() {
   cout << getInt512FromBytes(input, sizeof(input), true) << endl;
 }
 
+void testSignatureCreation() {
+  cout << "testSignatureCreation()" << endl;
+
+  unsigned char secretChars[] = {'m', 'y', ' ', 's', 'e', 'c', 'r', 'e', 't' };
+  unsigned char secretBytes[CryptoPP::SHA256::DIGESTSIZE];
+  SHA256().CalculateDigest(secretBytes, secretChars, sizeof(secretChars));
+  SHA256().CalculateDigest(secretBytes, secretBytes, CryptoPP::SHA256::DIGESTSIZE);
+  int512_t secret = getInt512FromBytes(secretBytes, CryptoPP::SHA256::DIGESTSIZE);
+
+  unsigned char msgChars[] = {'m', 'y', ' ', 'm', 'e', 's', 's', 'a', 'g', 'e' };
+  unsigned char msgHashBytes[CryptoPP::SHA256::DIGESTSIZE];
+  SHA256().CalculateDigest(msgHashBytes, msgChars, sizeof(msgChars));
+  SHA256().CalculateDigest(msgHashBytes, msgHashBytes, CryptoPP::SHA256::DIGESTSIZE);
+  int512_t msgHash = getInt512FromBytes(msgHashBytes, CryptoPP::SHA256::DIGESTSIZE);
+
+  S256Point p = G * secret;
+  int512_t k = 1234567890;
+  int512_t r = (G * k).x().num();
+  int512_t kInv = boost::integer::mod_inverse(k, G.order());
+  int512_t sig = (int512_t)((int1024_t)(msgHash + secret * r) * kInv % G.order());
+  cout << kInv<< endl;
+  cout << secret << endl;
+  cout << "pre-mod "<< (msgHash + secret * r) * kInv<< endl;
+  cout << p.toString() << hex << "\nmsgHash(z): " << msgHash << "\nr: " << r << "\nsig(s): " << sig << endl;
+
+  ECDSAPrivateKey pk = ECDSAPrivateKey(secret);
+  cout << "ECDSAPrivateKey.sign(): " << pk.sign(msgHash).toString() << endl;;
+}
+
 int main() {
   testIfPointsOnCurve();
   cout << endl;
@@ -234,5 +263,7 @@ int main() {
   testSHA256();
   cout << endl;
   testBytesToInt512();
+  cout << endl;
+  testSignatureCreation();
   return 0;
 }

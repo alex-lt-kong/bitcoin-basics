@@ -32,7 +32,7 @@ bool FieldElement::isPrimeNumber(int512_t input) {
 
 FieldElement::FieldElement(int512_t num, int512_t prime) {
   if (num >= prime) {
-    throw invalid_argument("invalid num [" + num.str() + "] is negative or greater than prime");
+    throw invalid_argument("invalid num [" + num.str() + "] is negative or greater than prime [" + prime.str() + "]");
   }
   if (num > (int512_t)"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff") { // avoid risk of overflow
     throw invalid_argument("num [" + num.str() + "] is longer than 256 bits, which is not supported");
@@ -371,7 +371,7 @@ Signature::Signature(int512_t r, int512_t s) {
 
 string Signature::toString() {
   stringstream ss;
-  ss << "Signature(" << this->r_ << ", " << this->s_ << ")";
+  ss << hex << "Signature(" << this->r_ << ", " << this->s_ << ")";
   return ss.str();
 }
 
@@ -381,4 +381,30 @@ int512_t Signature::r() {
 
 int512_t Signature::s() {
   return this->s_;
+}
+
+S256Point G = S256Point(
+    S256Element((int512_t)"0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798"),
+    S256Element((int512_t)"0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8")
+);
+
+ECDSAPrivateKey::ECDSAPrivateKey(int512_t secret) {
+  this->secret_ = secret;
+  this->p_ = G * secret_;
+}
+
+string ECDSAPrivateKey::toString() {
+  stringstream ss;
+  ss << hex << this->secret_ << endl;
+  return ss.str();
+}
+
+Signature ECDSAPrivateKey::sign(int512_t msgHash) {
+  int512_t k = 1234567890;
+  int512_t r = (G * k).x().num();
+  int1024_t kInv = boost::integer::mod_inverse(k, G.order());
+  int512_t sig = (int512_t)((msgHash + this->secret_ * r) * kInv % G.order());
+  // (msgHash + this->secret_ * r) * kInv may exceed the size of int512_t!
+
+  return Signature(r, sig);
 }

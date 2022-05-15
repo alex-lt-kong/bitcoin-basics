@@ -4,7 +4,7 @@ main.out: main.o ecc.o utils.o
 main.o: main.cpp
 	g++ -c main.cpp
 
-ecc.o: ../ecc.cpp
+ecc.o: ../ecc.cpp ../ecc.h
 	g++ -c ../ecc.cpp
 
 utils.o: ../utils.cpp
