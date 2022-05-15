@@ -3,6 +3,7 @@
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/integer/mod_inverse.hpp>
 #include "../ecc.h"
+#include "../utils.h"
 
 using namespace std;
 //namespace mp = boost::multiprecision;
@@ -200,6 +201,15 @@ void testS256Verification() {
   cout << p2.verify((int512_t)"0x7c076ff316692a3d7eb3c3bb0f8b1488cf72e1afcd929e29307032997a838a3d",sig3) << endl;
 }
 
+void testSHA256() {
+  cout << "testSHA256()" << endl;
+  unsigned char input[] = { 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x20, 0x77, 0x6f, 0x72, 0x6c, 0x64, 0x21 }; // Hello world!
+  cout << input << endl;
+  unsigned char output[CryptoPP::SHA256::DIGESTSIZE];
+  SHA256().CalculateDigest(output, input, sizeof(input));
+  cout << encodeBytesToHex(output, sizeof(output)) << endl;
+}
+
 int main() {
   testIfPointsOnCurve();
   cout << endl;
@@ -214,5 +224,7 @@ int main() {
   testS256SubClass();
   cout << endl;
   testS256Verification();
+  cout << endl;
+  testSHA256();
   return 0;
 }

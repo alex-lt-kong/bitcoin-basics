@@ -17,7 +17,7 @@ bool FieldElement::isPrimeNumber(int512_t input) {
 
     if (input < 2) { return false; }
     if (input == 2) { return true; }
-    int512_t secp256k1Prime{"0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f"};
+    int512_t secp256k1Prime = (int512_t)"0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f";
     // secp256k1Prime = 2^256 - 2^32 - 977
     if (input == secp256k1Prime) { return true; }
     if (input % 2 == 0) { return false; }
@@ -32,10 +32,16 @@ bool FieldElement::isPrimeNumber(int512_t input) {
 
 FieldElement::FieldElement(int512_t num, int512_t prime) {
   if (num >= prime) {
-    throw invalid_argument("invalid num [" + num.str() + "]: negative or greater than prime");
+    throw invalid_argument("invalid num [" + num.str() + "] is negative or greater than prime");
+  }
+  if (num > (int512_t)"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff") { // avoid risk of overflow
+    throw invalid_argument("num [" + num.str() + "] is longer than 256 bits, which is not supported");
+  }
+  if (prime > (int512_t)"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff") {  // avoid risk of overflow
+    throw invalid_argument("prime [" + num.str() + "] is longer than 256 bits, which is not supported");
   }
   if (!isPrimeNumber(prime)) {
-    throw invalid_argument("invalid prime [" + prime.str() + "]: not a prime number");
+    throw invalid_argument("prime [" + prime.str() + "] is not a prime number");
   }
   this->num_ = num;
   this->prime_ = prime;
