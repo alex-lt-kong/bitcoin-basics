@@ -210,6 +210,12 @@ void testSHA256() {
   cout << encodeBytesToHex(output, sizeof(output)) << endl;
 }
 
+void testBytesToInt512() {
+  cout << "testBytesToInt512()" << endl;
+  unsigned char input[] = { 0xff, 0x00 };
+  cout << getInt512FromBytes(input, sizeof(input), true) << endl;
+}
+
 int main() {
   testIfPointsOnCurve();
   cout << endl;
@@ -226,5 +232,7 @@ int main() {
   testS256Verification();
   cout << endl;
   testSHA256();
+  cout << endl;
+  testBytesToInt512();
   return 0;
 }
