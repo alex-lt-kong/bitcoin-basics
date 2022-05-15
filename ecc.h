@@ -2,6 +2,9 @@
 #define ECC_H
 
 #include <boost/multiprecision/cpp_int.hpp>
+#include <boost/multiprecision/gmp.hpp>
+#include <boost/random/uniform_int.hpp>
+#include <boost/random/mersenne_twister.hpp>
 
 using namespace std;
 using namespace boost::multiprecision;
@@ -118,10 +121,14 @@ class ECDSAPrivateKey {
 protected:
   int512_t secret_ = -1;
   S256Point p_;
+  uint256_t getRandomInteger();
+  boost::mt19937 rng;
+  boost::uniform_int<uint256_t> gen;
 public:
   ECDSAPrivateKey(int512_t secret);
   string toString();
   Signature sign(int512_t msgHash);
+  
 };
 
 #endif

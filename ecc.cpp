@@ -1,5 +1,8 @@
 #include <assert.h>
 #include <boost/integer/mod_inverse.hpp>
+#include <boost/multiprecision/gmp.hpp>
+#include <boost/random/uniform_int.hpp>
+#include <boost/random/mersenne_twister.hpp>
 #include <float.h>
 #include <limits.h>
 #include <math.h>
@@ -347,7 +350,10 @@ string S256Point::toString() {
   if (this->infinity_) {
     ss << "S256Point(Infinity)_" << this->a().num() <<  "_" << this->b().num();
   } else {
-    ss << "S256Point(" << this->x_.num() << ", " << this->y_.num() << ")_" << this->a().num() <<  "_" << this->b().num();
+    ss << "S256Point("
+       << setw(64) << setfill('0') << this->x_.num() << ", " 
+       << setw(64) << setfill('0') << this->y_.num() << ")_"
+       << this->a().num() <<  "_" << this->b().num();
   }
   return ss.str();
 }
@@ -391,6 +397,12 @@ S256Point G = S256Point(
 ECDSAPrivateKey::ECDSAPrivateKey(int512_t secret) {
   this->secret_ = secret;
   this->p_ = G * secret_;
+  time_t now = time(0);  
+  namespace mp = boost::multiprecision;
+  using Int = mp::mpz_int;
+
+  this->rng = boost::mt19937(now);
+  this->gen = boost::uniform_int<uint256_t>((uint256_t)0, (uint256_t)G.order());
 }
 
 string ECDSAPrivateKey::toString() {
@@ -400,11 +412,18 @@ string ECDSAPrivateKey::toString() {
 }
 
 Signature ECDSAPrivateKey::sign(int512_t msgHash) {
-  int512_t k = 1234567890;
+  int512_t k = this->getRandomInteger();
   int512_t r = (G * k).x().num();
-  int1024_t kInv = boost::integer::mod_inverse(k, G.order());
-  int512_t sig = (int512_t)((msgHash + this->secret_ * r) * kInv % G.order());
+  int512_t kInv = boost::integer::mod_inverse(k, G.order());
+  int512_t sig = (int512_t)((int1024_t)(msgHash + this->secret_ * r) * kInv % G.order());
   // (msgHash + this->secret_ * r) * kInv may exceed the size of int512_t!
-
+  if (sig > G.order() / 2) {
+    sig = G.order() - sig;
+  }
   return Signature(r, sig);
+}
+
+uint256_t ECDSAPrivateKey::getRandomInteger() {
+  boost::uniform_int<uint256_t> gen((uint256_t)0, (uint256_t)G.order());
+  return this->gen(this->rng);
 }

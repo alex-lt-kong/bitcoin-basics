@@ -4,7 +4,6 @@
 #include "utils.h"
 
 using namespace boost;
-using namespace CryptoPP;
 using namespace std;
 
 multiprecision::int512_t getInt512FromBytes(const unsigned char* inputBytes, short int inputLen, bool bytesInBigEndian) {
@@ -28,16 +27,11 @@ multiprecision::int512_t getInt512FromBytes(const unsigned char* inputBytes, sho
 
 string encodeBytesToHex(unsigned char* inputBytes, int inputLen) {
 
-  string encoded;
+  std::stringstream ss;
+  ss << std::hex;
 
-  HexEncoder encoder;
-  encoder.Put(inputBytes, inputLen);
-  encoder.MessageEnd();
+  for( int i(0) ; i < inputLen; ++i )
+      ss << std::setw(2) << std::setfill('0') << (int)inputBytes[i];
 
-  word64 size = encoder.MaxRetrievable();
-  if (size) {
-      encoded.resize(size);		
-      encoder.Get((unsigned char*)&encoded[0], encoded.size());
-  }
-  return encoded;
+  return ss.str();
 }

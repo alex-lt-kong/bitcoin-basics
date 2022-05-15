@@ -2,12 +2,10 @@
 #define UTILS_H
 
 #include <boost/multiprecision/cpp_int.hpp>
-#include <crypto++/sha.h>
-#include <crypto++/hex.h>
 
 using namespace boost;
 using namespace std;
-using namespace CryptoPP;
+
 
 // The most confusing parameter is the 3rd one, bytesInBigEndian.
 // If set to true, inputBytes stores the most significant byte of a word at the smallest memory address.

@@ -96,6 +96,7 @@
     "locale": "cpp",
     "queue": "cpp",
     "stack": "cpp",
-    "version": "cpp"
+    "version": "cpp",
+    "sha256.c": "cpp"
   }
 }

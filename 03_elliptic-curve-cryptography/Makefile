@@ -1,5 +1,5 @@
-main.out: main.o ecc.o utils.o
-	g++ main.o ecc.o utils.o -lcryptopp -o main.out
+main.out: main.o ecc.o utils.o sha256.o hmac-sha256.o
+	g++ main.o ecc.o utils.o sha256.o hmac-sha256.o -o main.out
 
 main.o: main.cpp
 	g++ -c main.cpp
@@ -7,8 +7,14 @@ main.o: main.cpp
 ecc.o: ../ecc.cpp ../ecc.h
 	g++ -c ../ecc.cpp
 
-utils.o: ../utils.cpp
-	g++ -c ../utils.cpp -lcryptopp
+sha256.o: ../sha256.c ../sha256.h
+	gcc -c ../sha256.c
+
+hmac-sha256.o: ../hmac-sha256.c ../hmac-sha256.h
+	gcc -c ../hmac-sha256.c
+
+utils.o: ../utils.cpp ../utils.h
+	g++ -c ../utils.cpp
 
 clean:
 	rm *.o main.out

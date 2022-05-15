@@ -4,6 +4,8 @@
 #include <boost/integer/mod_inverse.hpp>
 #include "../ecc.h"
 #include "../utils.h"
+#include "../sha256.h"
+#include "../hmac-sha256.h"
 
 using namespace std;
 //namespace mp = boost::multiprecision;
@@ -204,9 +206,14 @@ void testS256Verification() {
 void testSHA256() {
   cout << "testSHA256()" << endl;
   unsigned char input[] = { 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x20, 0x77, 0x6f, 0x72, 0x6c, 0x64, 0x21 }; // Hello world!
-  cout << input << endl;
-  unsigned char output[CryptoPP::SHA256::DIGESTSIZE];
-  SHA256().CalculateDigest(output, input, sizeof(input));
+  for (int i = 0; i < sizeof(input); i++){
+    cout << input[i];
+  }
+  cout << endl;
+
+  unsigned char output[SIZE_OF_SHA_256_HASH];
+
+  calc_sha_256(output, input, sizeof(input));
   cout << encodeBytesToHex(output, sizeof(output)) << endl;
 }
 
@@ -220,29 +227,38 @@ void testSignatureCreation() {
   cout << "testSignatureCreation()" << endl;
 
   unsigned char secretChars[] = {'m', 'y', ' ', 's', 'e', 'c', 'r', 'e', 't' };
-  unsigned char secretBytes[CryptoPP::SHA256::DIGESTSIZE];
-  SHA256().CalculateDigest(secretBytes, secretChars, sizeof(secretChars));
-  SHA256().CalculateDigest(secretBytes, secretBytes, CryptoPP::SHA256::DIGESTSIZE);
-  int512_t secret = getInt512FromBytes(secretBytes, CryptoPP::SHA256::DIGESTSIZE);
+  unsigned char secretBytes[SIZE_OF_SHA_256_HASH];
+  calc_sha_256(secretBytes, secretChars, sizeof(secretChars));
+  calc_sha_256(secretBytes, secretBytes, SIZE_OF_SHA_256_HASH);
+  int512_t secret = getInt512FromBytes(secretBytes, SIZE_OF_SHA_256_HASH);
 
   unsigned char msgChars[] = {'m', 'y', ' ', 'm', 'e', 's', 's', 'a', 'g', 'e' };
-  unsigned char msgHashBytes[CryptoPP::SHA256::DIGESTSIZE];
-  SHA256().CalculateDigest(msgHashBytes, msgChars, sizeof(msgChars));
-  SHA256().CalculateDigest(msgHashBytes, msgHashBytes, CryptoPP::SHA256::DIGESTSIZE);
-  int512_t msgHash = getInt512FromBytes(msgHashBytes, CryptoPP::SHA256::DIGESTSIZE);
+  unsigned char msgHashBytes[SIZE_OF_SHA_256_HASH];
+  calc_sha_256(msgHashBytes, msgChars, sizeof(msgChars));
+  calc_sha_256(msgHashBytes, msgHashBytes, SIZE_OF_SHA_256_HASH);
+  int512_t msgHash = getInt512FromBytes(msgHashBytes, SIZE_OF_SHA_256_HASH);
 
   S256Point p = G * secret;
   int512_t k = 1234567890;
   int512_t r = (G * k).x().num();
   int512_t kInv = boost::integer::mod_inverse(k, G.order());
   int512_t sig = (int512_t)((int1024_t)(msgHash + secret * r) * kInv % G.order());
-  cout << kInv<< endl;
-  cout << secret << endl;
-  cout << "pre-mod "<< (msgHash + secret * r) * kInv<< endl;
-  cout << p.toString() << hex << "\nmsgHash(z): " << msgHash << "\nr: " << r << "\nsig(s): " << sig << endl;
+  cout << "p: " << p.toString() << endl;
+  cout << "msgHash: " << hex << msgHash << endl;
+  cout << "r: " << hex << r << endl;
+  cout << "sig: " << sig << endl;
 
   ECDSAPrivateKey pk = ECDSAPrivateKey(secret);
   cout << "ECDSAPrivateKey.sign(): " << pk.sign(msgHash).toString() << endl;;
+}
+
+void testHMACSHA256() {
+  cout << "testHMACSHA256()" << endl;
+  unsigned char key[] = { 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x20, 0x77, 0x6f, 0x72, 0x6c, 0x64, 0x21 }; // Hello world!
+  unsigned char data[] = { 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x20, 0x77, 0x6f, 0x72, 0x6c, 0x64 }; // Hello world
+  unsigned char output[SIZE_OF_SHA_256_HASH];
+  hmac_sha256(key, sizeof(key), data, sizeof(data), output, SIZE_OF_SHA_256_HASH);
+  cout << encodeBytesToHex(output, sizeof(output)) << endl;
 }
 
 int main() {
@@ -265,5 +281,7 @@ int main() {
   testBytesToInt512();
   cout << endl;
   testSignatureCreation();
+  cout << endl;
+  testHMACSHA256();
   return 0;
 }
