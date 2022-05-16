@@ -11,6 +11,10 @@ extern "C" {
 #endif  // __cplusplus
 
 #include <stddef.h>
+#include <assert.h>
+#include <limits.h>
+
+static_assert (CHAR_BIT == 8);
 
 /*
  * @brief The simple HMAC-SHA256 calculation function.
