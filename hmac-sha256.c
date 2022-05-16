@@ -9,28 +9,17 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define SHA256_BLOCK_SIZE 64
-
-/* LOCAL FUNCTIONS */
 
 // Concatenate X & Y, return hash.
-static void* H(const void* x,
-               const size_t xlen,
-               const void* y,
-               const size_t ylen,
-               void* out);
+static void* H(const void* x, const size_t xlen, const void* y, const size_t ylen, void* out);
 
-// Declared in hmac_sha256.h
-void hmac_sha256(const void* key,
-                   const size_t keylen,
-                   const void* data,
-                   const size_t datalen,
-                   void* out) {
+
+void hmac_sha256(const void* key, const size_t keylen, const void* data, const size_t datalen, void* out) {
   uint8_t k[SHA256_BLOCK_SIZE];
   uint8_t k_ipad[SHA256_BLOCK_SIZE];
   uint8_t k_opad[SHA256_BLOCK_SIZE];
-  uint8_t ihash[SIZE_OF_SHA_256_HASH];
-  uint8_t ohash[SIZE_OF_SHA_256_HASH];
+  uint8_t ihash[SHA256_HASH_SIZE];
+  uint8_t ohash[SHA256_HASH_SIZE];
   int i;
 
   memset(k, 0, sizeof(k));
@@ -55,8 +44,7 @@ void hmac_sha256(const void* key,
   H(k_ipad, sizeof(k_ipad), data, datalen, ihash);
   H(k_opad, sizeof(k_opad), ihash, sizeof(ihash), ohash);
 
-
-  memcpy(out, ohash, SIZE_OF_SHA_256_HASH);
+  memcpy(out, ohash, SHA256_HASH_SIZE);
 }
 
 static void* H(const void* x,

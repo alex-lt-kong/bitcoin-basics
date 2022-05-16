@@ -112,11 +112,11 @@ static inline void consume_chunk(uint32_t *h, const uint8_t *p)
  * Public functions. See header file for documentation.
  */
 
-void sha_256_init(struct Sha_256 *sha_256, uint8_t hash[SIZE_OF_SHA_256_HASH])
+void sha_256_init(struct Sha_256 *sha_256, uint8_t hash[SHA256_HASH_SIZE])
 {
 	sha_256->hash = hash;
 	sha_256->chunk_pos = sha_256->chunk;
-	sha_256->space_left = SIZE_OF_SHA_256_CHUNK;
+	sha_256->space_left = SHA256_CHUNK_SIZE;
 	sha_256->total_len = 0;
 	/*
 	 * Initialize hash values (first 32 bits of the fractional parts of the square roots of the first 8 primes
@@ -143,10 +143,10 @@ void sha_256_write(struct Sha_256 *sha_256, const void *data, size_t len)
 		 * If the input chunks have sizes that are multiples of the calculation chunk size, no copies are
 		 * necessary. We operate directly on the input data instead.
 		 */
-		if (sha_256->space_left == SIZE_OF_SHA_256_CHUNK && len >= SIZE_OF_SHA_256_CHUNK) {
+		if (sha_256->space_left == SHA256_CHUNK_SIZE && len >= SHA256_CHUNK_SIZE) {
 			consume_chunk(sha_256->h, p);
-			len -= SIZE_OF_SHA_256_CHUNK;
-			p += SIZE_OF_SHA_256_CHUNK;
+			len -= SHA256_CHUNK_SIZE;
+			p += SHA256_CHUNK_SIZE;
 			continue;
 		}
 		/* General case, no particular optimization. */
@@ -158,7 +158,7 @@ void sha_256_write(struct Sha_256 *sha_256, const void *data, size_t len)
 		if (sha_256->space_left == 0) {
 			consume_chunk(sha_256->h, sha_256->chunk);
 			sha_256->chunk_pos = sha_256->chunk;
-			sha_256->space_left = SIZE_OF_SHA_256_CHUNK;
+			sha_256->space_left = SHA256_CHUNK_SIZE;
 		} else {
 			sha_256->chunk_pos += consumed_len;
 		}
@@ -187,7 +187,7 @@ uint8_t *sha_256_close(struct Sha_256 *sha_256)
 		memset(pos, 0x00, space_left);
 		consume_chunk(h, sha_256->chunk);
 		pos = sha_256->chunk;
-		space_left = SIZE_OF_SHA_256_CHUNK;
+		space_left = SHA256_CHUNK_SIZE;
 	}
 	const size_t left = space_left - TOTAL_LEN_LEN;
 	memset(pos, 0x00, left);
@@ -213,7 +213,7 @@ uint8_t *sha_256_close(struct Sha_256 *sha_256)
 	return sha_256->hash;
 }
 
-void calc_sha_256(uint8_t hash[SIZE_OF_SHA_256_HASH], const void *input, size_t len)
+void calc_sha_256(uint8_t hash[SHA256_HASH_SIZE], const void *input, size_t len)
 {
 	struct Sha_256 sha_256;
 	sha_256_init(&sha_256, hash);

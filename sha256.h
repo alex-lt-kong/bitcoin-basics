@@ -11,15 +11,15 @@ extern "C" {
 /*
  * @brief Size of the SHA-256 sum. This times eight is 256 bits.
  */
-#define SIZE_OF_SHA_256_HASH 32
-
+#define SHA256_HASH_SIZE 32
+#define SHA256_BLOCK_SIZE 64
 /*
  * @brief Size of the chunks used for the calculations.
  *
  * @note This should mostly be ignored by the user, although when using the streaming API, it has an impact for
  * performance. Add chunks whose size is a multiple of this, and you will avoid a lot of superfluous copying in RAM!
  */
-#define SIZE_OF_SHA_256_CHUNK 64
+#define SHA256_CHUNK_SIZE SHA256_BLOCK_SIZE * 1
 
 /*
  * @brief The opaque SHA-256 type, that should be instantiated when using the streaming API.
@@ -29,7 +29,7 @@ extern "C" {
  */
 struct Sha_256 {
 	uint8_t *hash;
-	uint8_t chunk[SIZE_OF_SHA_256_CHUNK];
+	uint8_t chunk[SHA256_CHUNK_SIZE];
 	uint8_t *chunk_pos;
 	size_t space_left;
 	size_t total_len;
@@ -47,7 +47,7 @@ struct Sha_256 {
  *
  * @note If either of the passed pointers is NULL, the results are unpredictable.
  */
-void calc_sha_256(uint8_t hash[SIZE_OF_SHA_256_HASH], const void *input, size_t len);
+void calc_sha_256(uint8_t hash[SHA256_HASH_SIZE], const void *input, size_t len);
 
 /*
  * @brief Initialize a SHA-256 streaming calculation.
@@ -61,7 +61,7 @@ void calc_sha_256(uint8_t hash[SIZE_OF_SHA_256_HASH], const void *input, size_t 
  *
  * @note If either of the passed pointers is NULL, the results are unpredictable.
  */
-void sha_256_init(struct Sha_256 *sha_256, uint8_t hash[SIZE_OF_SHA_256_HASH]);
+void sha_256_init(struct Sha_256 *sha_256, uint8_t hash[SHA256_HASH_SIZE]);
 
 /*
  * @brief Stream more input data for an on-going SHA-256 calculation.

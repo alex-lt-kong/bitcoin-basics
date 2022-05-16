@@ -12,18 +12,17 @@ extern "C" {
 
 #include <stddef.h>
 
+/*
+ * @brief The simple HMAC-SHA256 calculation function.
+ * @param key key used to generate HMAC-SHA256 checksum
+ * @param keylen the length of the key. Should be at least 32 bytes long for optimal security.
+ * @param data The data to hash alongside the key.
+ * @param datalen Length of the input data, in byte.
+ * @param out Hash array, where the result is delivered.
+ */
 void hmac_sha256(
-    // [in]: The key and its length.
-    //      Should be at least 32 bytes long for optimal security.
-    const void* key,
-    const size_t keylen,
-
-    // [in]: The data to hash alongside the key.
-    const void* data,
-    const size_t datalen,
-
-    // [out]: The output hash. Should be 32 bytes long.
-    void* out);
+    const void* key, const size_t keylen, const void* data, const size_t datalen, void* out
+);
 
 #ifdef __cplusplus
 }

@@ -117,7 +117,7 @@ extern S256Point G;
 class ECDSAPrivateKey {
 protected:
   unsigned char* secretBytes_ = nullptr;
-  unsigned short int secretLen_ = SIZE_OF_SHA_256_HASH;
+  unsigned short int secretLen_ = SHA256_HASH_SIZE;
   int512_t secret_ = -1;
   S256Point p_;
   int512_t getDeterministicK(unsigned char* msgHashBytes, unsigned short int msgHashLen);

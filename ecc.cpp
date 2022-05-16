@@ -395,10 +395,10 @@ S256Point G = S256Point(
 );
 
 ECDSAPrivateKey::ECDSAPrivateKey(unsigned char* secretBytes, unsigned short int secretLen) {
-  assert (secretLen <= SIZE_OF_SHA_256_HASH);
-  this->secretBytes_ = (unsigned char*)calloc(SIZE_OF_SHA_256_HASH, sizeof(unsigned char));
-  memcpy(this->secretBytes_ + (SIZE_OF_SHA_256_HASH - secretLen), secretBytes, secretLen);
-  this->secret_ = getInt512FromBytes(this->secretBytes_,  SIZE_OF_SHA_256_HASH);
+  assert (secretLen <= SHA256_HASH_SIZE);
+  this->secretBytes_ = (unsigned char*)calloc(SHA256_HASH_SIZE, sizeof(unsigned char));
+  memcpy(this->secretBytes_ + (SHA256_HASH_SIZE - secretLen), secretBytes, secretLen);
+  this->secret_ = getInt512FromBytes(this->secretBytes_,  SHA256_HASH_SIZE);
   this->p_ = G * secret_;
 }
 
@@ -429,8 +429,8 @@ Signature ECDSAPrivateKey::sign(unsigned char* msgHashBytes, unsigned short int 
 
 int512_t ECDSAPrivateKey::getDeterministicK(unsigned char* msgHashBytes, unsigned short int msgHashLen) {
   // This big ugly thing is an implmentation of RFC 6979...
-  assert (msgHashLen == SIZE_OF_SHA_256_HASH);
-  assert (this->secretLen_ == SIZE_OF_SHA_256_HASH);
+  assert (msgHashLen == SHA256_HASH_SIZE);
+  assert (this->secretLen_ == SHA256_HASH_SIZE);
   unsigned char kBytes[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
@@ -439,41 +439,41 @@ int512_t ECDSAPrivateKey::getDeterministicK(unsigned char* msgHashBytes, unsigne
     0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 
     0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01
   };
-  assert (sizeof(vBytes) == SIZE_OF_SHA_256_HASH && sizeof(kBytes) == SIZE_OF_SHA_256_HASH);
-  int512_t msgHashInt = getInt512FromBytes(msgHashBytes, SIZE_OF_SHA_256_HASH);
+  assert (sizeof(vBytes) == SHA256_HASH_SIZE && sizeof(kBytes) == SHA256_HASH_SIZE);
+  int512_t msgHashInt = getInt512FromBytes(msgHashBytes, SHA256_HASH_SIZE);
   if (msgHashInt > G.order()) {
     msgHashInt -= G.order();
   }
 
-  unsigned short int dataLen = (SIZE_OF_SHA_256_HASH + 1 + this->secretLen_ + SIZE_OF_SHA_256_HASH) * sizeof(unsigned char);
+  unsigned short int dataLen = (SHA256_HASH_SIZE + 1 + this->secretLen_ + SHA256_HASH_SIZE) * sizeof(unsigned char);
   unsigned char* data = (unsigned char*)malloc(dataLen * sizeof(unsigned char));
-  memcpy(data, vBytes, SIZE_OF_SHA_256_HASH);
-  data[SIZE_OF_SHA_256_HASH] = 0x00;
-  memcpy(data + SIZE_OF_SHA_256_HASH + 1, this->secretBytes_, this->secretLen_);
-  memcpy(data + SIZE_OF_SHA_256_HASH + 1 + this->secretLen_, msgHashBytes, SIZE_OF_SHA_256_HASH);
-  unsigned char out[SIZE_OF_SHA_256_HASH];
-  hmac_sha256(kBytes, SIZE_OF_SHA_256_HASH, data, dataLen, kBytes);
-  hmac_sha256(kBytes, SIZE_OF_SHA_256_HASH, vBytes, SIZE_OF_SHA_256_HASH, vBytes);
+  memcpy(data, vBytes, SHA256_HASH_SIZE);
+  data[SHA256_HASH_SIZE] = 0x00;
+  memcpy(data + SHA256_HASH_SIZE + 1, this->secretBytes_, this->secretLen_);
+  memcpy(data + SHA256_HASH_SIZE + 1 + this->secretLen_, msgHashBytes, SHA256_HASH_SIZE);
+  unsigned char out[SHA256_HASH_SIZE];
+  hmac_sha256(kBytes, SHA256_HASH_SIZE, data, dataLen, kBytes);
+  hmac_sha256(kBytes, SHA256_HASH_SIZE, vBytes, SHA256_HASH_SIZE, vBytes);
 
-  memcpy(data, vBytes, SIZE_OF_SHA_256_HASH);
-  data[SIZE_OF_SHA_256_HASH] = 0x01;
-  memcpy(data + SIZE_OF_SHA_256_HASH + 1, this->secretBytes_, this->secretLen_);
-  memcpy(data + SIZE_OF_SHA_256_HASH + 1 + this->secretLen_, msgHashBytes, SIZE_OF_SHA_256_HASH);
+  memcpy(data, vBytes, SHA256_HASH_SIZE);
+  data[SHA256_HASH_SIZE] = 0x01;
+  memcpy(data + SHA256_HASH_SIZE + 1, this->secretBytes_, this->secretLen_);
+  memcpy(data + SHA256_HASH_SIZE + 1 + this->secretLen_, msgHashBytes, SHA256_HASH_SIZE);
   
-  hmac_sha256(kBytes, SIZE_OF_SHA_256_HASH, data, dataLen, kBytes);  
-  hmac_sha256(kBytes, SIZE_OF_SHA_256_HASH, vBytes, SIZE_OF_SHA_256_HASH, vBytes);
+  hmac_sha256(kBytes, SHA256_HASH_SIZE, data, dataLen, kBytes);  
+  hmac_sha256(kBytes, SHA256_HASH_SIZE, vBytes, SHA256_HASH_SIZE, vBytes);
   while (true) {
-    hmac_sha256(kBytes, SIZE_OF_SHA_256_HASH, vBytes, SIZE_OF_SHA_256_HASH, vBytes);
-    int512_t candidate = getInt512FromBytes(vBytes, SIZE_OF_SHA_256_HASH);
+    hmac_sha256(kBytes, SHA256_HASH_SIZE, vBytes, SHA256_HASH_SIZE, vBytes);
+    int512_t candidate = getInt512FromBytes(vBytes, SHA256_HASH_SIZE);
     if (candidate >= 1 && candidate < G.order()) {
       delete[] data;
       return candidate;
     }
     cout << "WARNING: This is a route that seldom tested, result may well be wrong!!" << endl;
-    memcpy(data, vBytes, SIZE_OF_SHA_256_HASH);
-    data[SIZE_OF_SHA_256_HASH] = 0x00;
-    hmac_sha256(kBytes, SIZE_OF_SHA_256_HASH, data, SIZE_OF_SHA_256_HASH + 1, kBytes);
+    memcpy(data, vBytes, SHA256_HASH_SIZE);
+    data[SHA256_HASH_SIZE] = 0x00;
+    hmac_sha256(kBytes, SHA256_HASH_SIZE, data, SHA256_HASH_SIZE + 1, kBytes);
     // Here we only pass a part of data to the function!
-    hmac_sha256(kBytes, SIZE_OF_SHA_256_HASH, vBytes, SIZE_OF_SHA_256_HASH, vBytes);
+    hmac_sha256(kBytes, SHA256_HASH_SIZE, vBytes, SHA256_HASH_SIZE, vBytes);
   }
 }
