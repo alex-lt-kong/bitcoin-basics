@@ -14,6 +14,5 @@ using namespace std;
 // What if inputBytes is still { 0xff, 0x00 } but we set bytesInBigEndian = false? The int512_t should be 255.
 multiprecision::int512_t getInt512FromBytes(const unsigned char* inputBytes, short int inputLen, bool bytesInBigEndian=true);
 
-string encodeBytesToHex(unsigned char* inputBytes, int inputLen);
 
 #endif

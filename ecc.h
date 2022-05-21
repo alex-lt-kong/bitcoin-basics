@@ -3,6 +3,7 @@
 
 #include <boost/multiprecision/cpp_int.hpp>
 #include "sha256.h"
+
 using namespace std;
 using namespace boost::multiprecision;
 

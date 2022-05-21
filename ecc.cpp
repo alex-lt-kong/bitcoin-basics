@@ -9,8 +9,7 @@
 
 #include "ecc.h"
 #include "utils.h"
-#include "hmac-sha256.h"
-#include "sha256.h"
+#include "hmac.h"
 
 using namespace std;
 using namespace boost::multiprecision;

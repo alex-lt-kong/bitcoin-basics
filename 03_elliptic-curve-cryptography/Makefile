@@ -1,20 +1,24 @@
-main.out: main.o ecc.o utils.o sha256.o hmac-sha256.o
-	g++ main.o ecc.o utils.o sha256.o hmac-sha256.o -o main.out
+main.out: main.cpp ecc.o utils.o sha256.o sha1.o hmac.o misc.o
+	g++ main.cpp ecc.o utils.o sha256.o sha1.o hmac.o misc.o -o main.out -I../cryptographic-algorithms -I../
 
-main.o: main.cpp
-	g++ -c main.cpp
+ecc.o: ../ecc.cpp ../ecc.h sha256.o
+	g++ -c ../ecc.cpp sha256.o -I../cryptographic-algorithms
 
-ecc.o: ../ecc.cpp ../ecc.h
-	g++ -c ../ecc.cpp
+hmac.o: ../cryptographic-algorithms/hmac.c ../cryptographic-algorithms/hmac.h sha256.o sha1.o
+	gcc -c ../cryptographic-algorithms/hmac.c sha256.o sha1.o
 
-sha256.o: ../sha256.c ../sha256.h
-	gcc -c ../sha256.c
+sha256.o: ../cryptographic-algorithms/sha256.c ../cryptographic-algorithms/sha256.h
+	gcc -c ../cryptographic-algorithms/sha256.c
 
-hmac-sha256.o: ../hmac-sha256.c ../hmac-sha256.h
-	gcc -c ../hmac-sha256.c
+sha1.o: ../cryptographic-algorithms/sha1.c ../cryptographic-algorithms/sha1.h
+	gcc -c ../cryptographic-algorithms/sha1.c
+
+misc.o: ../cryptographic-algorithms/misc.cpp ../cryptographic-algorithms/misc.h
+	g++ -c ../cryptographic-algorithms/misc.cpp
 
 utils.o: ../utils.cpp ../utils.h
 	g++ -c ../utils.cpp
+
 
 clean:
 	rm *.o main.out
