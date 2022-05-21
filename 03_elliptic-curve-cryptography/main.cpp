@@ -249,10 +249,11 @@ void testSignatureCreation() {
   cout << "r: " << hex << r << endl;
   cout << "sig: " << sig << endl;
 
-  unsigned char secretBytes1[] = {0x38, 0x97, 0x23, 0x79, 0x58, 0x34, 0x79, 0xa7, 0xb2};
-  unsigned char msgHashBytes1[] = {0x31, 0x41, 0x59, 0x26,0x31, 0x41, 0x59, 0x26,0x31, 0x41, 0x59, 0x26,0x31, 0x41, 0x59, 0x26,0x31, 0x41, 0x59, 0x26,0x31, 0x41, 0x59, 0x26,0x31, 0x41, 0x59, 0x26,0x31, 0x41, 0x59, 0x27};
-  ECDSAPrivateKey pk = ECDSAPrivateKey(secretBytes1, sizeof(secretBytes1));
-  cout << "ECDSAPrivateKey.sign(): " << pk.sign(msgHashBytes1, sizeof(msgHashBytes1)).toString() << endl;;
+
+  ECDSAPrivateKey pk = ECDSAPrivateKey(secretBytes, sizeof(secretBytes));
+  cout << "ECDSAPrivateKey.get_deterministic_k(): " << hex
+       << pk.get_deterministic_k(msgHashBytes, sizeof(msgHashBytes)) << endl;;
+  cout << "ECDSAPrivateKey.sign(): " << pk.sign(msgHashBytes, sizeof(msgHashBytes)).toString() << endl;;
 }
 
 void testHMACSHA256() {

@@ -308,18 +308,25 @@ int512_t S256Point::s256Prime() {
   return this->x_.prime();
 }
 
-bool S256Point::verify(int512_t msgHash, Signature sig) {
+int512_t S256Point::order() {
+  return S256Point::order_;
+}
 
-  int512_t gx = (int512_t)"0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798";
-  int512_t gy = (int512_t)"0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8";  
-  // gx and gy are the coordinates of point g, which is the generator point, i.e., we add g to itself over and over again.
-  S256Point g = S256Point(S256Element(gx), S256Element(gy));
+S256Element S256Point::a() {
+  return S256Point::a_;
+}
+
+S256Element S256Point::b() {
+  return S256Point::b_;
+}
+
+bool S256Point::verify(int512_t msg_hash, Signature sig) {
 
   int512_t sigInv = boost::integer::mod_inverse(sig.s(), this->order());
-  int512_t u = msgHash * sigInv % this->order();
+  int512_t u = msg_hash * sigInv % this->order();
   int512_t v = sig.r() * sigInv % this->order();
 
-  S256Point total = g * u + *this * v;
+  S256Point total = G * u + *this * v;
   return total.x().num() == sig.r();
 }
 
@@ -357,18 +364,6 @@ string S256Point::toString() {
   return ss.str();
 }
 
-int512_t S256Point::order() {
-  return S256Point::order_;
-}
-
-S256Element S256Point::a() {
-  return S256Point::a_;
-}
-
-S256Element S256Point::b() {
-  return S256Point::b_;
-}
-
 Signature::Signature(int512_t r, int512_t s) {
   this->r_ = r;
   this->s_ = s;
@@ -393,17 +388,17 @@ S256Point G = S256Point(
     S256Element((int512_t)"0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8")
 );
 
-ECDSAPrivateKey::ECDSAPrivateKey(unsigned char* secretBytes, unsigned short int secretLen) {
+ECDSAPrivateKey::ECDSAPrivateKey(unsigned char* secretBytes, size_t secretLen) {
   assert (secretLen <= SHA256_HASH_SIZE);
-  this->secretBytes_ = (unsigned char*)calloc(SHA256_HASH_SIZE, sizeof(unsigned char));
-  memcpy(this->secretBytes_ + (SHA256_HASH_SIZE - secretLen), secretBytes, secretLen);
-  this->secret_ = getInt512FromBytes(this->secretBytes_,  SHA256_HASH_SIZE);
-  this->p_ = G * secret_;
+  this->secret_key_ = (unsigned char*)calloc(SHA256_HASH_SIZE, sizeof(unsigned char));
+  memcpy(this->secret_key_ + (SHA256_HASH_SIZE - secretLen), secretBytes, secretLen);
+  this->secret_ = getInt512FromBytes(this->secret_key_,  SHA256_HASH_SIZE);
+  this->public_key_ = G * secret_;
 }
 
 ECDSAPrivateKey::~ECDSAPrivateKey() {
-  if (secretBytes_ != nullptr) {
-    delete[] this->secretBytes_;
+  if (secret_key_ != nullptr) {
+    delete[] this->secret_key_;
   }
 }
 
@@ -413,23 +408,22 @@ string ECDSAPrivateKey::toString() {
   return ss.str();
 }
 
-Signature ECDSAPrivateKey::sign(unsigned char* msgHashBytes, unsigned short int msgHashLen) {
-  int512_t k = this->getDeterministicK(msgHashBytes, msgHashLen);
+Signature ECDSAPrivateKey::sign(unsigned char* msgHashBytes, size_t msgHashLen) {
+  int512_t k = this->get_deterministic_k(msgHashBytes, msgHashLen);
   cout << "k is " << k << endl;
   int512_t r = (G * k).x().num();
   int512_t kInv = boost::integer::mod_inverse(k, G.order());
   int512_t sig = (int512_t)((int1024_t)(getInt512FromBytes(msgHashBytes, msgHashLen) + this->secret_ * r) * kInv % G.order());
-  // (msgHash + this->secret_ * r) * kInv may exceed the size of int512_t!
+  // (msg_hash + this->secret_ * r) * kInv may exceed the size of int512_t!
   if (sig > G.order() / 2) {
     sig = G.order() - sig;
   }
   return Signature(r, sig);
 }
 
-int512_t ECDSAPrivateKey::getDeterministicK(unsigned char* msgHashBytes, unsigned short int msgHashLen) {
-  // This big ugly thing is an implmentation of RFC 6979...
+int512_t ECDSAPrivateKey::get_deterministic_k(unsigned char* msgHashBytes, unsigned short int msgHashLen) {
   assert (msgHashLen == SHA256_HASH_SIZE);
-  assert (this->secretLen_ == SHA256_HASH_SIZE);
+  assert (this->secret_key_len_ == SHA256_HASH_SIZE);
   unsigned char kBytes[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
@@ -444,20 +438,20 @@ int512_t ECDSAPrivateKey::getDeterministicK(unsigned char* msgHashBytes, unsigne
     msgHashInt -= G.order();
   }
 
-  unsigned short int dataLen = (SHA256_HASH_SIZE + 1 + this->secretLen_ + SHA256_HASH_SIZE) * sizeof(unsigned char);
+  unsigned short int dataLen = (SHA256_HASH_SIZE + 1 + this->secret_key_len_ + SHA256_HASH_SIZE) * sizeof(unsigned char);
   unsigned char* data = (unsigned char*)malloc(dataLen * sizeof(unsigned char));
   memcpy(data, vBytes, SHA256_HASH_SIZE);
   data[SHA256_HASH_SIZE] = 0x00;
-  memcpy(data + SHA256_HASH_SIZE + 1, this->secretBytes_, this->secretLen_);
-  memcpy(data + SHA256_HASH_SIZE + 1 + this->secretLen_, msgHashBytes, SHA256_HASH_SIZE);
+  memcpy(data + SHA256_HASH_SIZE + 1, this->secret_key_, this->secret_key_len_);
+  memcpy(data + SHA256_HASH_SIZE + 1 + this->secret_key_len_, msgHashBytes, SHA256_HASH_SIZE);
   unsigned char out[SHA256_HASH_SIZE];
   hmac_sha256(kBytes, SHA256_HASH_SIZE, data, dataLen, kBytes);
   hmac_sha256(kBytes, SHA256_HASH_SIZE, vBytes, SHA256_HASH_SIZE, vBytes);
 
   memcpy(data, vBytes, SHA256_HASH_SIZE);
   data[SHA256_HASH_SIZE] = 0x01;
-  memcpy(data + SHA256_HASH_SIZE + 1, this->secretBytes_, this->secretLen_);
-  memcpy(data + SHA256_HASH_SIZE + 1 + this->secretLen_, msgHashBytes, SHA256_HASH_SIZE);
+  memcpy(data + SHA256_HASH_SIZE + 1, this->secret_key_, this->secret_key_len_);
+  memcpy(data + SHA256_HASH_SIZE + 1 + this->secret_key_len_, msgHashBytes, SHA256_HASH_SIZE);
   
   hmac_sha256(kBytes, SHA256_HASH_SIZE, data, dataLen, kBytes);  
   hmac_sha256(kBytes, SHA256_HASH_SIZE, vBytes, SHA256_HASH_SIZE, vBytes);
@@ -468,7 +462,7 @@ int512_t ECDSAPrivateKey::getDeterministicK(unsigned char* msgHashBytes, unsigne
       delete[] data;
       return candidate;
     }
-    cout << "WARNING: This is a route that seldom tested, result may well be wrong!!" << endl;
+    cout << "\n\n\n=====WARNING=====\nThis is a route that seldom tested, result may well be wrong!!\n\n\n" << endl;
     memcpy(data, vBytes, SHA256_HASH_SIZE);
     data[SHA256_HASH_SIZE] = 0x00;
     hmac_sha256(kBytes, SHA256_HASH_SIZE, data, SHA256_HASH_SIZE + 1, kBytes);
