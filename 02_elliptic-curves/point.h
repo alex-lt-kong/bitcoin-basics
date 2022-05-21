@@ -18,7 +18,7 @@ class Point {
     Point(float x, float y, float a, float b);
     bool operator==(const Point& other) const;
     Point operator+(const Point& other);
-    string toString();
+    string to_string();
 };
 
 Point::Point(float x, float y, float a, float b) {
@@ -76,7 +76,7 @@ Point Point::operator+(const Point& other)
   return Point(x3, y3, this->a, this->b);
 }
 
-string Point::toString() {
+string Point::to_string() {
   return "Point(" + (this->x == FLT_MAX ? "Inf" : to_string(this->x)) + ", "
                   + (this->y == FLT_MAX ? "Inf" : to_string(this->y)) + ")_"
                   + to_string(this->a) + "_" + to_string(this->b);

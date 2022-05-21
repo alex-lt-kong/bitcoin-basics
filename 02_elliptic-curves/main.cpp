@@ -9,28 +9,28 @@ void testPointAdditionInfinity() {
   Point p2 = Point(-1, 1, 5, 7);
   Point pInf = Point(FLT_MAX, FLT_MAX, 5, 7);
   cout << "testPointAdditionInfinity:\n"
-       << (p1 + pInf).toString() << "\n"
-       << (p2 + pInf).toString() << "\n"
-       << (p1 + p2).toString() << endl;
+       << (p1 + pInf).to_string() << "\n"
+       << (p2 + pInf).to_string() << "\n"
+       << (p1 + p2).to_string() << endl;
   
 }
 
 void testPointAddinitionDifferentXs() {
   cout << "testPointAdditionInfinity:\n"
-       << (Point(2, 5, 5, 7) + Point(-1, -1, 5, 7)).toString()
+       << (Point(2, 5, 5, 7) + Point(-1, -1, 5, 7)).to_string()
        << endl;
 }
 
 
 void testPointAddinitionSamePoint() {
   cout << "testPointAddinitionSamePoint:\n"
-       << (Point(-1, -1, 5, 7) + Point(-1, -1, 5, 7)).toString()
+       << (Point(-1, -1, 5, 7) + Point(-1, -1, 5, 7)).to_string()
        << endl;
 }
 
 int main() {
   Point p1 = Point(-1, -1, 5, 7);
-  cout << "p1: "<< p1.toString() << endl;
+  cout << "p1: "<< p1.to_string() << endl;
   try{
     Point p2 = Point(-1, -2, 5, 7); }
   catch (const invalid_argument& ia) {

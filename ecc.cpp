@@ -1,6 +1,7 @@
 #include <arpa/inet.h>
 #include <assert.h>
 #include <boost/integer/mod_inverse.hpp>
+#include <boost/multiprecision/cpp_int.hpp>
 #include <float.h>
 #include <limits.h>
 #include <math.h>
@@ -139,7 +140,7 @@ FieldElement FieldElement::power(int512_t exponent)
   return FieldElement(powm(this->num_, exponent, this->prime_), this->prime_);
 }
 
-string FieldElement::toString(bool inHex) {
+string FieldElement::to_string(bool inHex) {
   stringstream ss;
   if (inHex) { ss << std::hex; }
   ss << this->num_ << " (" << this->prime_ << ")";
@@ -158,7 +159,7 @@ FieldElementPoint::FieldElementPoint(FieldElement x, FieldElement y, FieldElemen
   this->b_ = FieldElement(b.num(), b.prime());
 
   if (this->y_.power(2) != this->x_.power(3) + (this->a_ * this->x_) + this->b_) {    
-    throw invalid_argument("Point (" + this->x_.toString() + ", " + this->y_.toString() +") not on the curve");
+    throw invalid_argument("Point (" + this->x_.to_string() + ", " + this->y_.to_string() +") not on the curve");
   }
 }
 
@@ -259,7 +260,7 @@ FieldElementPoint FieldElementPoint::operator*(const int512_t other)
   return result;
 }
 
-string FieldElementPoint::toString(bool inHex) {
+string FieldElementPoint::to_string(bool inHex) {
   stringstream ss;
   if (inHex) { ss << std::hex; }
   if (this->infinity_) {
@@ -285,17 +286,29 @@ FieldElement FieldElementPoint::y() {
 
 
 
-const int512_t S256Element::s256Prime_ = (int512_t)"0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f";
+const int512_t S256Element::s256_prime_ = (int512_t)"0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f";
 
-S256Element::S256Element(int512_t num): FieldElement(num, S256Element::s256Prime_) {}
+S256Element::S256Element(int512_t num): FieldElement(num, S256Element::s256_prime_) {}
 
-string S256Element::toString() {
-  return FieldElement::toString(true);
+string S256Element::to_string() {
+  return FieldElement::to_string(true);
 }
 
-int512_t S256Element::s256Prime() {
-  return this->s256Prime_;
+int512_t S256Element::s256_prime() {
+  return this->s256_prime_;
 }
+
+S256Element S256Element::power(const int512_t exponent) {
+  return S256Element(powm(this->num_, exponent, this->prime_));
+  
+}
+
+S256Element S256Element::sqrt() {
+  return this->power((this->prime() + 1) / 4);  
+}
+
+
+
 
 const S256Element S256Point::a_ = S256Element(0);
 const S256Element S256Point::b_ = S256Element(7);
@@ -304,7 +317,7 @@ const int512_t S256Point::order_ = (int512_t)"0xfffffffffffffffffffffffffffffffe
 S256Point::S256Point(S256Element x, S256Element y): FieldElementPoint(x, y, S256Point::a_, S256Point::b_) {}
 S256Point::S256Point(): FieldElementPoint(S256Point::a_, S256Point::b_) {}
 
-int512_t S256Point::s256Prime() {
+int512_t S256Point::s256_prime() {
   assert (this->x_.prime() == this->y_.prime());
   return this->x_.prime();
 }
@@ -351,7 +364,7 @@ S256Point S256Point::operator+(const S256Point other) {
   }
 }
 
-string S256Point::toString() {
+string S256Point::to_string() {
   stringstream ss;
   ss << std::hex;
   if (this->infinity_) {
@@ -365,22 +378,34 @@ string S256Point::toString() {
   return ss.str();
 }
 
-unsigned char* S256Point::get_sec_format() {
+unsigned char* S256Point::get_sec_format(const bool compressed = true) {
   // we can't use sizeof(int256_t) instead of KEY_SIZE = 32--sizeof(int256_t) is 48, not 32
   const int KEY_SIZE = 32;
-  unsigned char* sec_bytes = (unsigned char*)calloc(1 + KEY_SIZE * 2, 1);
-  sec_bytes[0] = 0x04;
-  
+  unsigned char* sec_bytes;
+
   assert (this->x().num() <= (int512_t)"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
   assert (this->y().num() <= (int512_t)"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
   int256_t x_ = (int256_t)this->x().num();
   int256_t y_ = (int256_t)this->y().num();
 
-  memcpy(sec_bytes + 1, &x_, KEY_SIZE);
-  memcpy(sec_bytes + 1 + KEY_SIZE, &y_, KEY_SIZE);
-  if (htonl(47) != 47) { // Little endian, we want the result to be in big-endian
-    reverse(sec_bytes + 1, sec_bytes + 1 + KEY_SIZE);
-    reverse(sec_bytes + 1 + KEY_SIZE, sec_bytes + 1 + 2 * KEY_SIZE);
+  if (compressed == false) {
+    sec_bytes = (unsigned char*)calloc(1 + KEY_SIZE * 2, 1);
+    sec_bytes[0] = 0x04;
+
+    memcpy(sec_bytes + 1, &x_, KEY_SIZE);
+    memcpy(sec_bytes + 1 + KEY_SIZE, &y_, KEY_SIZE);
+    if (htonl(47) != 47) { // Little endian, we want the result to be in big-endian
+      reverse(sec_bytes + 1, sec_bytes + 1 + KEY_SIZE);
+      reverse(sec_bytes + 1 + KEY_SIZE, sec_bytes + 1 + 2 * KEY_SIZE);
+    }
+  } else {
+    sec_bytes = (unsigned char*)calloc(1 + KEY_SIZE, 1);
+    sec_bytes[0] = y_ % 2 == 0 ? 0x02 : 0x03;
+    
+    memcpy(sec_bytes + 1, &x_, KEY_SIZE);
+    if (htonl(47) != 47) { // Little endian, we want the result to be in big-endian
+      reverse(sec_bytes + 1, sec_bytes + 1 + KEY_SIZE);      
+    }
   }
   return sec_bytes;
 }
@@ -390,7 +415,7 @@ Signature::Signature(int512_t r, int512_t s) {
   this->s_ = s;
 }
 
-string Signature::toString() {
+string Signature::to_string() {
   stringstream ss;
   ss << hex << "Signature(" << this->r_ << ", " << this->s_ << ")";
   return ss.str();
@@ -423,7 +448,7 @@ ECDSAPrivateKey::~ECDSAPrivateKey() {
   }
 }
 
-string ECDSAPrivateKey::toString() {
+string ECDSAPrivateKey::to_string() {
   stringstream ss;
   ss << hex << this->secret_ << endl;
   return ss.str();

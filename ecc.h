@@ -31,7 +31,7 @@ public:
   FieldElement operator*(const int512_t other);
   FieldElement operator/(const FieldElement& other);
   FieldElement power(int512_t exponent);
-  string toString(bool inHex=false);
+  string to_string(bool inHex=false);
   int512_t num();
   int512_t prime();
 };
@@ -61,7 +61,7 @@ public:
   FieldElementPoint operator+(const FieldElementPoint& other);
   FieldElementPoint operator+=(const FieldElementPoint& other);
   FieldElementPoint operator*(const int512_t coef);
-  string toString(bool inHex=false);
+  string to_string(bool inHex=false);
   bool infinity();
   FieldElement x();
   FieldElement y();
@@ -71,11 +71,13 @@ public:
 class S256Element : public FieldElement
 {
 private:
-  static const int512_t s256Prime_; // the value is defined in ecc.cpp
+  static const int512_t s256_prime_; // the value is defined in ecc.cpp
 public:
   S256Element(int512_t num);
-  string toString();
-  int512_t s256Prime();
+  string to_string();
+  int512_t s256_prime();
+  S256Element power(const int512_t exponent);
+  S256Element sqrt();
 };
 
 class Signature {
@@ -92,7 +94,7 @@ public:
    *  by revealing only this number (i.e., s) to other people, keeping private key, well, private.
    */
   Signature(int512_t r, int512_t s);
-  string toString();
+  string to_string();
   // r the x-coordinate of a random point R from k * G where G is the generator point and k is a random integer
   int512_t r();
   /*
@@ -134,7 +136,7 @@ public:
    *        ECDSAPrivateKey object's sign() method.
    */
   bool verify(int512_t msg_hash, Signature sig);
-  int512_t s256Prime();
+  int512_t s256_prime();
   S256Point operator+(const S256Point other);
   S256Point operator*(const int512_t coef);
   // Get a as defined in y^2 = x^3 + ax + b. It is a FieldElement constant whose value is 0
@@ -144,8 +146,8 @@ public:
   // Get the number of elements (i.e. size) of the finite field used by this S256Point.
   // It is a constant whose value is 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141;
   int512_t order();
-  string toString();
-  unsigned char* get_sec_format();
+  string to_string();
+  unsigned char* get_sec_format(const bool compressed);
 };
 
 // The constant generator point of secp256k1.
@@ -171,7 +173,7 @@ public:
    */
   ECDSAPrivateKey(unsigned char* secret_key, size_t secret_key_len);
   ~ECDSAPrivateKey();
-  string toString();
+  string to_string();
   /*
    * @brief Generate an ECDSA signature with the private key as defined in this instance
    * @param msg_hash a pointer pointing to an array of bytes as the value from hashing
