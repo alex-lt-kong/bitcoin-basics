@@ -221,7 +221,7 @@ void testSHA256() {
 void testBytesToInt512() {
   cout << "testBytesToInt512()" << endl;
   unsigned char input[] = { 0xff, 0x00 };
-  cout << getInt512FromBytes(input, sizeof(input), true) << endl;
+  cout << get_int512_from_bytes(input, sizeof(input), true) << endl;
 }
 
 void testSignatureCreation() {
@@ -231,13 +231,13 @@ void testSignatureCreation() {
   unsigned char secretBytes[SHA256_HASH_SIZE];
   cal_sha256_hash(secretBytes, secretChars, sizeof(secretChars));
   cal_sha256_hash(secretBytes, secretBytes, SHA256_HASH_SIZE);
-  int512_t secret = getInt512FromBytes(secretBytes, SHA256_HASH_SIZE);
+  int512_t secret = get_int512_from_bytes(secretBytes, SHA256_HASH_SIZE);
 
   unsigned char msgChars[] = {'m', 'y', ' ', 'm', 'e', 's', 's', 'a', 'g', 'e' };
   unsigned char msgHashBytes[SHA256_HASH_SIZE];
   cal_sha256_hash(msgHashBytes, msgChars, sizeof(msgChars));
   cal_sha256_hash(msgHashBytes, msgHashBytes, SHA256_HASH_SIZE);
-  int512_t msgHash = getInt512FromBytes(msgHashBytes, SHA256_HASH_SIZE);
+  int512_t msgHash = get_int512_from_bytes(msgHashBytes, SHA256_HASH_SIZE);
 
   S256Point p = G * secret;
   int512_t k = 1234567890;

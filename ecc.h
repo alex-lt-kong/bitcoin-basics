@@ -31,7 +31,6 @@ public:
   FieldElement operator*(const int512_t other);
   FieldElement operator/(const FieldElement& other);
   FieldElement power(int512_t exponent);
-  int512_t modulusPower(int512_t exponent, int512_t modulus);
   string toString(bool inHex=false);
   int512_t num();
   int512_t prime();
@@ -146,6 +145,7 @@ public:
   // It is a constant whose value is 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141;
   int512_t order();
   string toString();
+  unsigned char* get_sec_format();
 };
 
 // The constant generator point of secp256k1.
@@ -187,6 +187,7 @@ public:
    * @return the deterministic K
    */
   int512_t get_deterministic_k(unsigned char* msg_hash, unsigned short int msg_hash_len);
+  S256Point public_key();
   
 };
 

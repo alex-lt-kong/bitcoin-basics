@@ -1,3 +1,4 @@
+#include <arpa/inet.h>
 #include <assert.h>
 #include <boost/integer/mod_inverse.hpp>
 #include <float.h>
@@ -364,6 +365,26 @@ string S256Point::toString() {
   return ss.str();
 }
 
+unsigned char* S256Point::get_sec_format() {
+  // we can't use sizeof(int256_t) instead of KEY_SIZE = 32--sizeof(int256_t) is 48, not 32
+  const int KEY_SIZE = 32;
+  unsigned char* sec_bytes = (unsigned char*)calloc(1 + KEY_SIZE * 2, 1);
+  sec_bytes[0] = 0x04;
+  
+  assert (this->x().num() <= (int512_t)"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+  assert (this->y().num() <= (int512_t)"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+  int256_t x_ = (int256_t)this->x().num();
+  int256_t y_ = (int256_t)this->y().num();
+
+  memcpy(sec_bytes + 1, &x_, KEY_SIZE);
+  memcpy(sec_bytes + 1 + KEY_SIZE, &y_, KEY_SIZE);
+  if (htonl(47) != 47) { // Little endian, we want the result to be in big-endian
+    reverse(sec_bytes + 1, sec_bytes + 1 + KEY_SIZE);
+    reverse(sec_bytes + 1 + KEY_SIZE, sec_bytes + 1 + 2 * KEY_SIZE);
+  }
+  return sec_bytes;
+}
+
 Signature::Signature(int512_t r, int512_t s) {
   this->r_ = r;
   this->s_ = s;
@@ -392,7 +413,7 @@ ECDSAPrivateKey::ECDSAPrivateKey(unsigned char* secretBytes, size_t secretLen) {
   assert (secretLen <= SHA256_HASH_SIZE);
   this->secret_key_ = (unsigned char*)calloc(SHA256_HASH_SIZE, sizeof(unsigned char));
   memcpy(this->secret_key_ + (SHA256_HASH_SIZE - secretLen), secretBytes, secretLen);
-  this->secret_ = getInt512FromBytes(this->secret_key_,  SHA256_HASH_SIZE);
+  this->secret_ = get_int512_from_bytes(this->secret_key_,  SHA256_HASH_SIZE);
   this->public_key_ = G * secret_;
 }
 
@@ -413,7 +434,7 @@ Signature ECDSAPrivateKey::sign(unsigned char* msgHashBytes, size_t msgHashLen) 
   cout << "k is " << k << endl;
   int512_t r = (G * k).x().num();
   int512_t kInv = boost::integer::mod_inverse(k, G.order());
-  int512_t sig = (int512_t)((int1024_t)(getInt512FromBytes(msgHashBytes, msgHashLen) + this->secret_ * r) * kInv % G.order());
+  int512_t sig = (int512_t)((int1024_t)(get_int512_from_bytes(msgHashBytes, msgHashLen) + this->secret_ * r) * kInv % G.order());
   // (msg_hash + this->secret_ * r) * kInv may exceed the size of int512_t!
   if (sig > G.order() / 2) {
     sig = G.order() - sig;
@@ -433,7 +454,7 @@ int512_t ECDSAPrivateKey::get_deterministic_k(unsigned char* msgHashBytes, unsig
     0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01
   };
   assert (sizeof(vBytes) == SHA256_HASH_SIZE && sizeof(kBytes) == SHA256_HASH_SIZE);
-  int512_t msgHashInt = getInt512FromBytes(msgHashBytes, SHA256_HASH_SIZE);
+  int512_t msgHashInt = get_int512_from_bytes(msgHashBytes, SHA256_HASH_SIZE);
   if (msgHashInt > G.order()) {
     msgHashInt -= G.order();
   }
@@ -457,7 +478,7 @@ int512_t ECDSAPrivateKey::get_deterministic_k(unsigned char* msgHashBytes, unsig
   hmac_sha256(kBytes, SHA256_HASH_SIZE, vBytes, SHA256_HASH_SIZE, vBytes);
   while (true) {
     hmac_sha256(kBytes, SHA256_HASH_SIZE, vBytes, SHA256_HASH_SIZE, vBytes);
-    int512_t candidate = getInt512FromBytes(vBytes, SHA256_HASH_SIZE);
+    int512_t candidate = get_int512_from_bytes(vBytes, SHA256_HASH_SIZE);
     if (candidate >= 1 && candidate < G.order()) {
       delete[] data;
       return candidate;
@@ -469,4 +490,8 @@ int512_t ECDSAPrivateKey::get_deterministic_k(unsigned char* msgHashBytes, unsig
     // Here we only pass a part of data to the function!
     hmac_sha256(kBytes, SHA256_HASH_SIZE, vBytes, SHA256_HASH_SIZE, vBytes);
   }
+}
+
+S256Point ECDSAPrivateKey::public_key() {
+  return this->public_key_;
 }

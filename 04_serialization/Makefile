@@ -1,0 +1,28 @@
+main.out: main.cpp ecc.o utils.o sha256.o sha1.o hmac.o misc.o
+	g++ main.cpp ecc.o utils.o sha256.o sha1.o hmac.o misc.o -o main.out -I../cryptographic-algorithms -I../
+
+ecc.o: ../ecc.cpp ../ecc.h
+	g++ -c ../ecc.cpp -I../cryptographic-algorithms
+
+hmac.o: ../cryptographic-algorithms/hmac.c ../cryptographic-algorithms/hmac.h
+	gcc -c ../cryptographic-algorithms/hmac.c
+
+sha256.o: ../cryptographic-algorithms/sha256.c ../cryptographic-algorithms/sha256.h
+	gcc -c ../cryptographic-algorithms/sha256.c
+
+sha1.o: ../cryptographic-algorithms/sha1.c ../cryptographic-algorithms/sha1.h
+	gcc -c ../cryptographic-algorithms/sha1.c
+
+misc.o: ../cryptographic-algorithms/misc.cpp ../cryptographic-algorithms/misc.h
+	g++ -c ../cryptographic-algorithms/misc.cpp
+
+utils.o: ../utils.cpp ../utils.h
+	g++ -c ../utils.cpp
+
+
+clean:
+	rm *.o main.out
+
+# General syntax:
+# target: dependencies
+#	  action
