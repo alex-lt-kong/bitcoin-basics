@@ -19,7 +19,6 @@ protected:
   // Note that in Python we prepend underscores, in C++ it is recommended to append underscores as variables
   // start with an underscore or double underscore are reserved for the C++ implementers
   int512_t num_ = 0, prime_ = 2;
-  bool isPrimeNumber(int512_t);
 public:    
   FieldElement(int512_t num, int512_t prime);
   FieldElement();    
@@ -89,7 +88,7 @@ public:
    * @brief Initialize a Signature object
    * @param r the x-coordinate of a random point R from k * G where G is the generator point and k is a random integer
    * @param s the signature proof from a formula involving 
-   *  msg_hash, secret_key, r, k_inverse and the order of the generator point G.
+   *  msg_hash, private_key_bytes, r, k_inverse and the order of the generator point G.
    *  The purpose of having s is that we want to derive a number from the private key and prove we know the private key
    *  by revealing only this number (i.e., s) to other people, keeping private key, well, private.
    */
@@ -99,7 +98,7 @@ public:
   int512_t r();
   /*
    * the signature proof from a formula involving 
-   * msg_hash, secret_key, r, k_inverse and the order of the generator point G.
+   * msg_hash, private_key_bytes, r, k_inverse and the order of the generator point G.
    * The purpose of having s is that we want to derive a number from the private key and prove we know the private key
    * by revealing only this number (i.e., s) to other people, keeping private key, well, private.
    */
@@ -133,7 +132,7 @@ public:
    * @param msg_hash the hash value from double SHA256 hash as a representation of the original, potentially much
    *        longer, message.
    * @param sig the Signature object generated (or, signed, if you wish) from the private key by calling the
-   *        ECDSAPrivateKey object's sign() method.
+   *        ECDSAKey object's sign() method.
    */
   bool verify(int512_t msg_hash, Signature sig);
   int512_t s256_prime();
@@ -154,11 +153,10 @@ public:
 extern S256Point G;
 
 
-class ECDSAPrivateKey {
+class ECDSAKey {
 protected:
-  unsigned char* secret_key_ = nullptr;
-  unsigned short int secret_key_len_ = SHA256_HASH_SIZE;
-  int512_t secret_ = -1;
+  unsigned char privkey_bytes_[SHA256_HASH_SIZE];
+  int512_t privkey_int_ = -1;
   /*
    * The public key in a ECDSA key pair. It is generated from G * private_key.
    * As an S256Point object, it has a method verify() to verify if a Signature
@@ -168,11 +166,11 @@ protected:
 public:
   /*
    * @brief Initialize an ECDSA private key object by providing a secret key in bytes
-   * @param secret_key a pointer pointing to an array of bytes as the secret_key
-   * @param secret_key_len length of the secret_key in bytes.
+   * @param private_key_bytes a pointer pointing to an array of bytes as the private_key_bytes
+   * @param private_key_len length of the private_key_bytes in bytes. In the current design it can't be greater than 32.
    */
-  ECDSAPrivateKey(unsigned char* secret_key, size_t secret_key_len);
-  ~ECDSAPrivateKey();
+  ECDSAKey(const unsigned char* private_key_bytes, const size_t private_key_len);
+  ~ECDSAKey();
   string to_string();
   /*
    * @brief Generate an ECDSA signature with the private key as defined in this instance
@@ -188,7 +186,7 @@ public:
    * @param msg_hash_len length of the message
    * @return the deterministic K
    */
-  int512_t get_deterministic_k(unsigned char* msg_hash, unsigned short int msg_hash_len);
+  int512_t get_deterministic_k(unsigned char* msg_hash, size_t msg_hash_len);
   S256Point public_key();
   
 };

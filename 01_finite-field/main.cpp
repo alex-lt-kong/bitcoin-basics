@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <math.h>
 #include "../ecc.h"
+#include "../utils.h"
 
 using namespace std;
 
@@ -37,13 +38,38 @@ void testAddition() {
   delete a;
 }
 
+void exercise8() {
+  cout << "exercise8():" << endl;
+  cout << (FieldElement(3, 31)/FieldElement(24, 31)).to_string() << endl;
+  try {
+    cout << (FieldElement(17, 31).power(-3)).to_string() << endl;
+    cout << (FieldElement(4, 31).power(-4)*FieldElement(11, 31)).to_string() << endl;
+  } catch (const invalid_argument& ia) {
+    cerr << "Error: " << ia.what() << '\n';
+  } catch (runtime_error& re) {
+    cerr << "runtime_error: " << re.what() << '\n';
+  }
+}
+
+void test_fermat_primality_test() {
+  cout << "test_fermat_primality_test():" << endl;
+  for (int i = 1; i < 2147483648; i++) {
+    if (fermat_primality_test(i, 1024) == true) {
+      cout << i << ", ";
+    }
+  }  
+  cout << endl;
+}
+
 int main() {
   testAddition();
+  cout << endl;
   testPower();
+  cout << endl;
   testDivision();
-  cout << "Exercise 8" << endl;
-  cout << (FieldElement(3, 31)/FieldElement(24, 31)).to_string() << endl;
-  cout << (FieldElement(17, 31).power(-3)).to_string() << endl;
-  cout << (FieldElement(4, 31).power(-4)*FieldElement(11, 31)).to_string() << endl;
+  cout << endl;
+  exercise8();
+  cout << endl;
+  test_fermat_primality_test();
   return 0;
 }

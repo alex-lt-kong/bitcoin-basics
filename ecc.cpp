@@ -1,7 +1,6 @@
 #include <arpa/inet.h>
 #include <assert.h>
 #include <boost/integer/mod_inverse.hpp>
-#include <boost/multiprecision/cpp_int.hpp>
 #include <float.h>
 #include <limits.h>
 #include <math.h>
@@ -16,24 +15,6 @@
 using namespace std;
 using namespace boost::multiprecision;
 
-
-bool FieldElement::isPrimeNumber(int512_t input) {
-
-    if (input < 2) { return false; }
-    if (input == 2) { return true; }
-    int512_t secp256k1Prime = (int512_t)"0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f";
-    // secp256k1Prime = 2^256 - 2^32 - 977
-    if (input == secp256k1Prime) { return true; }
-    if (input % 2 == 0) { return false; }
-    if (input > 2147483647) {
-      cout << "Input " << input << " is VERY LARGE!!!" << endl;
-    }
-    for (int512_t i = 3; (i*i)<=input; i+=2) {
-        if(input % i == 0 ) { return false; }
-    }
-    return true;
-}
-
 FieldElement::FieldElement(int512_t num, int512_t prime) {
   if (num >= prime) {
     throw invalid_argument("invalid num [" + num.str() + "] is negative or greater than prime [" + prime.str() + "]");
@@ -44,7 +25,7 @@ FieldElement::FieldElement(int512_t num, int512_t prime) {
   if (prime > (int512_t)"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff") {  // avoid risk of overflow
     throw invalid_argument("prime [" + num.str() + "] is longer than 256 bits, which is not supported");
   }
-  if (!isPrimeNumber(prime)) {
+  if (!fermat_primality_test(prime, 2048)) {
     throw invalid_argument("prime [" + prime.str() + "] is not a prime number");
   }
   this->num_ = num;
@@ -434,42 +415,37 @@ S256Point G = S256Point(
     S256Element((int512_t)"0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8")
 );
 
-ECDSAPrivateKey::ECDSAPrivateKey(unsigned char* secretBytes, size_t secretLen) {
-  assert (secretLen <= SHA256_HASH_SIZE);
-  this->secret_key_ = (unsigned char*)calloc(SHA256_HASH_SIZE, sizeof(unsigned char));
-  memcpy(this->secret_key_ + (SHA256_HASH_SIZE - secretLen), secretBytes, secretLen);
-  this->secret_ = get_int512_from_bytes(this->secret_key_,  SHA256_HASH_SIZE);
-  this->public_key_ = G * secret_;
+ECDSAKey::ECDSAKey(const unsigned char* private_key_bytes, const size_t private_key_length) {
+  assert (private_key_length <= SHA256_HASH_SIZE);
+  memcpy(this->privkey_bytes_ + (SHA256_HASH_SIZE - private_key_length), private_key_bytes, private_key_length);
+  this->privkey_int_ = get_int512_from_bytes(this->privkey_bytes_, SHA256_HASH_SIZE);
+  this->public_key_ = G * privkey_int_;
 }
 
-ECDSAPrivateKey::~ECDSAPrivateKey() {
-  if (secret_key_ != nullptr) {
-    delete[] this->secret_key_;
-  }
+ECDSAKey::~ECDSAKey() {
 }
 
-string ECDSAPrivateKey::to_string() {
+string ECDSAKey::to_string() {
   stringstream ss;
-  ss << hex << this->secret_ << endl;
+  ss << hex << this->privkey_int_ << endl;
   return ss.str();
 }
 
-Signature ECDSAPrivateKey::sign(unsigned char* msgHashBytes, size_t msgHashLen) {
+Signature ECDSAKey::sign(unsigned char* msgHashBytes, size_t msgHashLen) {
   int512_t k = this->get_deterministic_k(msgHashBytes, msgHashLen);
   cout << "k is " << k << endl;
   int512_t r = (G * k).x().num();
   int512_t kInv = boost::integer::mod_inverse(k, G.order());
-  int512_t sig = (int512_t)((int1024_t)(get_int512_from_bytes(msgHashBytes, msgHashLen) + this->secret_ * r) * kInv % G.order());
-  // (msg_hash + this->secret_ * r) * kInv may exceed the size of int512_t!
+  int512_t sig = (int512_t)((int1024_t)(get_int512_from_bytes(msgHashBytes, msgHashLen) + this->privkey_int_ * r) * kInv % G.order());
+  // (msg_hash + this->privkey_int_ * r) * kInv may exceed the size of int512_t!
   if (sig > G.order() / 2) {
     sig = G.order() - sig;
   }
   return Signature(r, sig);
 }
 
-int512_t ECDSAPrivateKey::get_deterministic_k(unsigned char* msgHashBytes, unsigned short int msgHashLen) {
+int512_t ECDSAKey::get_deterministic_k(unsigned char* msgHashBytes, size_t msgHashLen) {
   assert (msgHashLen == SHA256_HASH_SIZE);
-  assert (this->secret_key_len_ == SHA256_HASH_SIZE);
   unsigned char kBytes[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
@@ -484,20 +460,20 @@ int512_t ECDSAPrivateKey::get_deterministic_k(unsigned char* msgHashBytes, unsig
     msgHashInt -= G.order();
   }
 
-  unsigned short int dataLen = (SHA256_HASH_SIZE + 1 + this->secret_key_len_ + SHA256_HASH_SIZE) * sizeof(unsigned char);
+  unsigned short int dataLen = (SHA256_HASH_SIZE + 1 + SHA256_HASH_SIZE + SHA256_HASH_SIZE) * sizeof(unsigned char);
   unsigned char* data = (unsigned char*)malloc(dataLen * sizeof(unsigned char));
   memcpy(data, vBytes, SHA256_HASH_SIZE);
   data[SHA256_HASH_SIZE] = 0x00;
-  memcpy(data + SHA256_HASH_SIZE + 1, this->secret_key_, this->secret_key_len_);
-  memcpy(data + SHA256_HASH_SIZE + 1 + this->secret_key_len_, msgHashBytes, SHA256_HASH_SIZE);
+  memcpy(data + SHA256_HASH_SIZE + 1, this->privkey_bytes_, SHA256_HASH_SIZE);
+  memcpy(data + SHA256_HASH_SIZE + 1 + SHA256_HASH_SIZE, msgHashBytes, SHA256_HASH_SIZE);
   unsigned char out[SHA256_HASH_SIZE];
   hmac_sha256(kBytes, SHA256_HASH_SIZE, data, dataLen, kBytes);
   hmac_sha256(kBytes, SHA256_HASH_SIZE, vBytes, SHA256_HASH_SIZE, vBytes);
 
   memcpy(data, vBytes, SHA256_HASH_SIZE);
   data[SHA256_HASH_SIZE] = 0x01;
-  memcpy(data + SHA256_HASH_SIZE + 1, this->secret_key_, this->secret_key_len_);
-  memcpy(data + SHA256_HASH_SIZE + 1 + this->secret_key_len_, msgHashBytes, SHA256_HASH_SIZE);
+  memcpy(data + SHA256_HASH_SIZE + 1, this->privkey_bytes_, SHA256_HASH_SIZE);
+  memcpy(data + SHA256_HASH_SIZE + 1 + SHA256_HASH_SIZE, msgHashBytes, SHA256_HASH_SIZE);
   
   hmac_sha256(kBytes, SHA256_HASH_SIZE, data, dataLen, kBytes);  
   hmac_sha256(kBytes, SHA256_HASH_SIZE, vBytes, SHA256_HASH_SIZE, vBytes);
@@ -517,6 +493,6 @@ int512_t ECDSAPrivateKey::get_deterministic_k(unsigned char* msgHashBytes, unsig
   }
 }
 
-S256Point ECDSAPrivateKey::public_key() {
+S256Point ECDSAKey::public_key() {
   return this->public_key_;
 }

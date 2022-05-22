@@ -23,5 +23,7 @@ int512_t get_int512_from_bytes(
   const unsigned char* input_bytes, const size_t input_len, const bool bytes_in_big_endian=true
 );
 
+bool fermat_primality_test(int512_t input, int iterations);
+
 
 #endif

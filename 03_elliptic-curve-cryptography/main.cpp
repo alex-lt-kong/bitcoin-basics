@@ -250,10 +250,10 @@ void testSignatureCreation() {
   cout << "sig: " << sig << endl;
 
 
-  ECDSAPrivateKey pk = ECDSAPrivateKey(secretBytes, sizeof(secretBytes));
-  cout << "ECDSAPrivateKey.get_deterministic_k(): " << hex
+  ECDSAKey pk = ECDSAKey(secretBytes, sizeof(secretBytes));
+  cout << "ECDSAKey.get_deterministic_k(): " << hex
        << pk.get_deterministic_k(msgHashBytes, sizeof(msgHashBytes)) << endl;;
-  cout << "ECDSAPrivateKey.sign(): " << pk.sign(msgHashBytes, sizeof(msgHashBytes)).to_string() << endl;;
+  cout << "ECDSAKey.sign(): " << pk.sign(msgHashBytes, sizeof(msgHashBytes)).to_string() << endl;;
 }
 
 void testHMACSHA256() {
