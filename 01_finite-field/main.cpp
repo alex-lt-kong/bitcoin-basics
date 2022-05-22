@@ -52,8 +52,7 @@ void exercise8() {
 }
 
 void test_fermat_primality_test() {
-  cout << "test_fermat_primality_test():" << endl;
-  for (int i = 1; i < 2147483648; i++) {
+  for (int i = 1; i < 1024; i++) {
     if (fermat_primality_test(i, 1024) == true) {
       cout << i << ", ";
     }

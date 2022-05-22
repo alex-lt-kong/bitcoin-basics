@@ -103,6 +103,7 @@ public:
    * by revealing only this number (i.e., s) to other people, keeping private key, well, private.
    */
   int512_t s();
+  unsigned char* get_der_format();
 };
 
 /*
@@ -155,7 +156,9 @@ extern S256Point G;
 
 class ECDSAKey {
 protected:
-  unsigned char privkey_bytes_[SHA256_HASH_SIZE];
+  unsigned char* privkey_bytes_ = nullptr;
+  //How about unsigned char* privkey_bytes_[SHA256_HASH_SIZE]? Seems it will not be as obvious as this...
+
   int512_t privkey_int_ = -1;
   /*
    * The public key in a ECDSA key pair. It is generated from G * private_key.

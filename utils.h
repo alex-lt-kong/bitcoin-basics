@@ -23,6 +23,16 @@ int512_t get_int512_from_bytes(
   const unsigned char* input_bytes, const size_t input_len, const bool bytes_in_big_endian=true
 );
 
+/*
+ * @brief Convert an int256_t integer to a byte array
+ * @param input_int The int256_t variable to be convereted to a byte array
+ * @param bytes_in_big_endian whether the output_bytes should in little or big endian order
+ * @param output_bytes a pre-allocated array used to store the result
+ */
+void get_bytes_from_int256(
+  const int256_t input_int, const bool bytes_in_big_endian, unsigned char* output_bytes
+);
+
 bool fermat_primality_test(int512_t input, int iterations);
 
 

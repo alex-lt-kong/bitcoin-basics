@@ -12,6 +12,7 @@ void test_uncompressed_sec_format() {
   for (int i = 0; i < (32 * 2 + 1); ++i)
     cout << hex << setfill('0') << setw(2) << (int)sec[i] << "";
   cout << endl;
+  delete sec;
 }
 
 void test_compressed_sec_format() {
@@ -22,11 +23,18 @@ void test_compressed_sec_format() {
   for (int i = 0; i < (32 + 1); ++i)
     cout << hex << setfill('0') << setw(2) << (int)sec[i] << "";
   cout << endl;
+  delete sec;
 }
 
 int main() {
   test_uncompressed_sec_format();
   cout << endl;
   test_compressed_sec_format();
+  cout << endl;
+  int256_t a = 12345;
+  unsigned char a_bytes[32];
+  get_bytes_from_int256(a, false, a_bytes);
+  for (int i = 0; i < (32); ++i)
+    cout << hex << setfill('0') << setw(2) << (int)a_bytes[i] << "";
   cout << endl;
 }

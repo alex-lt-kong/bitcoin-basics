@@ -25,8 +25,11 @@ FieldElement::FieldElement(int512_t num, int512_t prime) {
   if (prime > (int512_t)"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff") {  // avoid risk of overflow
     throw invalid_argument("prime [" + num.str() + "] is longer than 256 bits, which is not supported");
   }
-  if (!fermat_primality_test(prime, 2048)) {
-    throw invalid_argument("prime [" + prime.str() + "] is not a prime number");
+  
+  if (prime != (int512_t)"0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f") {
+    if (fermat_primality_test(prime, 128) == false) {
+      throw invalid_argument("prime [" + prime.str() + "] is not a prime number");
+    }
   }
   this->num_ = num;
   this->prime_ = prime;
@@ -363,30 +366,25 @@ unsigned char* S256Point::get_sec_format(const bool compressed = true) {
   // we can't use sizeof(int256_t) instead of KEY_SIZE = 32--sizeof(int256_t) is 48, not 32
   const int KEY_SIZE = 32;
   unsigned char* sec_bytes;
-
   assert (this->x().num() <= (int512_t)"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
   assert (this->y().num() <= (int512_t)"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-  int256_t x_ = (int256_t)this->x().num();
-  int256_t y_ = (int256_t)this->y().num();
+  
+  unsigned char x_[KEY_SIZE];
+  unsigned char y_[KEY_SIZE];
+
+  get_bytes_from_int256((int256_t)this->x().num(), true, x_);
+  get_bytes_from_int256((int256_t)this->y().num(), true, y_);
 
   if (compressed == false) {
     sec_bytes = (unsigned char*)calloc(1 + KEY_SIZE * 2, 1);
     sec_bytes[0] = 0x04;
 
-    memcpy(sec_bytes + 1, &x_, KEY_SIZE);
-    memcpy(sec_bytes + 1 + KEY_SIZE, &y_, KEY_SIZE);
-    if (htonl(47) != 47) { // Little endian, we want the result to be in big-endian
-      reverse(sec_bytes + 1, sec_bytes + 1 + KEY_SIZE);
-      reverse(sec_bytes + 1 + KEY_SIZE, sec_bytes + 1 + 2 * KEY_SIZE);
-    }
+    memcpy(sec_bytes + 1, x_, KEY_SIZE);
+    memcpy(sec_bytes + 1 + KEY_SIZE, y_, KEY_SIZE);
   } else {
     sec_bytes = (unsigned char*)calloc(1 + KEY_SIZE, 1);
-    sec_bytes[0] = y_ % 2 == 0 ? 0x02 : 0x03;
-    
-    memcpy(sec_bytes + 1, &x_, KEY_SIZE);
-    if (htonl(47) != 47) { // Little endian, we want the result to be in big-endian
-      reverse(sec_bytes + 1, sec_bytes + 1 + KEY_SIZE);      
-    }
+    sec_bytes[0] = this->y().num() % 2 == 0 ? 0x02 : 0x03;    
+    memcpy(sec_bytes + 1, x_, KEY_SIZE);
   }
   return sec_bytes;
 }
@@ -410,6 +408,12 @@ int512_t Signature::s() {
   return this->s_;
 }
 
+unsigned char* Signature::get_der_format() {
+  this->r();
+}
+
+
+
 S256Point G = S256Point(
     S256Element((int512_t)"0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798"),
     S256Element((int512_t)"0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8")
@@ -417,12 +421,16 @@ S256Point G = S256Point(
 
 ECDSAKey::ECDSAKey(const unsigned char* private_key_bytes, const size_t private_key_length) {
   assert (private_key_length <= SHA256_HASH_SIZE);
+  this->privkey_bytes_ = (unsigned char*)calloc(SHA256_HASH_SIZE, 1);
   memcpy(this->privkey_bytes_ + (SHA256_HASH_SIZE - private_key_length), private_key_bytes, private_key_length);
   this->privkey_int_ = get_int512_from_bytes(this->privkey_bytes_, SHA256_HASH_SIZE);
   this->public_key_ = G * privkey_int_;
 }
 
 ECDSAKey::~ECDSAKey() {
+  if (this->privkey_bytes_ != nullptr) {
+    delete this->privkey_bytes_;
+  }
 }
 
 string ECDSAKey::to_string() {

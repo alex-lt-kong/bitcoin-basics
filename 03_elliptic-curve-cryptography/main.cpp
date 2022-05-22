@@ -252,7 +252,8 @@ void testSignatureCreation() {
 
   ECDSAKey pk = ECDSAKey(secretBytes, sizeof(secretBytes));
   cout << "ECDSAKey.get_deterministic_k(): " << hex
-       << pk.get_deterministic_k(msgHashBytes, sizeof(msgHashBytes)) << endl;;
+       << pk.get_deterministic_k(msgHashBytes, sizeof(msgHashBytes)) << endl;
+  cout << "Note: the correct k should be fa4c6b87c29398c5022557788697f68dd3e2d39744355d18f47e4b91c69abad0" << endl;
   cout << "ECDSAKey.sign(): " << pk.sign(msgHashBytes, sizeof(msgHashBytes)).to_string() << endl;;
 }
 
