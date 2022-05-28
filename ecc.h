@@ -103,7 +103,12 @@ public:
    * by revealing only this number (i.e., s) to other people, keeping private key, well, private.
    */
   int512_t s();
-  unsigned char* get_der_format();
+  /*
+   * @brief Get the DER format serialization of a Signature
+   * @param output_len pointer to memory where the method writes the length of the output DER hex string.
+   * @returns a hex string representing the Signature in DER format
+   */
+  unsigned char* get_der_format(size_t* output_len);
 };
 
 /*

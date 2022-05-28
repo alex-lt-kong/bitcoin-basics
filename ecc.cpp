@@ -408,7 +408,7 @@ int512_t Signature::s() {
   return this->s_;
 }
 
-unsigned char* Signature::get_der_format() {
+unsigned char* Signature::get_der_format(size_t* output_len) {
   /*
    * DER format explained:
    * [30][45][02][20][37206a0610995c58074999cb9767b87af4c4978db68c06e8e6e81d282047a7c6][02][21][008ca63759c1157ebeaec0d03cecca119fc9a75bf8e6d0fa65c841c8e2738cdaec]
@@ -435,8 +435,8 @@ unsigned char* Signature::get_der_format() {
   while (r_bytes[r_pos] == 0x00) { r_pos ++; }
   while (s_bytes[s_pos] == 0x00) { s_pos ++; }
 
-  if (r_bytes[r_pos] >> 7 == 1) { r_pos--; r_bytes[r_pos] = 0x00; cout << "endeterd!" << endl;}
-  if (s_bytes[s_pos] >> 7 == 1) { s_pos--; s_bytes[s_pos] = 0x00; cout << "endeterd!" << endl;}
+  if (r_bytes[r_pos] >> 7 == 1) { r_bytes[--r_pos] = 0x00; }
+  if (s_bytes[s_pos] >> 7 == 1) { s_bytes[--s_pos] = 0x00; }
   size_t r_bytes_stripped_len = INT256_SIZE + 1 - r_pos;
   size_t s_bytes_stripped_len = INT256_SIZE + 1 - s_pos;
   
@@ -464,10 +464,8 @@ unsigned char* Signature::get_der_format() {
   free(r_bytes_stripped);
   free(s_bytes);
   free(s_bytes_stripped);
+  *output_len = results_len;
   
-  for (int i = 0; i < results_len; ++i)
-    cout << hex << setfill('0') << setw(2) << (int)results[i] << "";
-  cout << endl;
   return results;  
 }
 

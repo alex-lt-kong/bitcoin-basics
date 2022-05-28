@@ -33,11 +33,18 @@ void test_der_sig_format() {
     (int512_t)"0x37206a0610995c58074999cb9767b87af4c4978db68c06e8e6e81d282047a7c6",
     (int512_t)"0x8ca63759c1157ebeaec0d03cecca119fc9a75bf8e6d0fa65c841c8e2738cdaec"
   );
-  sig.get_der_format();
+  unsigned char* der;
+  size_t* output_len;
+  der = sig.get_der_format(output_len);
+  for (int i = 0; i < *output_len; ++i)
+    cout << hex << setfill('0') << setw(2) << (int)der[i] << "";
+  cout << endl;
   cout << "Corrent answer should be:\n"
        << "3045022037206a0610995c58074999cb9767b87af4c4978db68c06e8e6e81d282047a7c6022100"
        << "8ca63759c1157ebeaec0d03cecca119fc9a75bf8e6d0fa65c841c8e2738cdaec" << endl;
+  free(der);
 }
+
 
 int main() {
   test_uncompressed_sec_format();
