@@ -42,8 +42,8 @@ void get_bytes_from_int256(const int256_t input_int, const bool bytes_in_big_end
   }
 }
 
-bool fermat_primality_test(int512_t input, int iterations) {  
-  if (input == 1) {
+bool fermat_primality_test(const int512_t input, const int iterations) {  
+  if (input <= 1) {
     return false;
   }
 

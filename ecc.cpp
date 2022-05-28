@@ -409,7 +409,66 @@ int512_t Signature::s() {
 }
 
 unsigned char* Signature::get_der_format() {
-  this->r();
+  /*
+   * DER format explained:
+   * [30][45][02][20][37206a0610995c58074999cb9767b87af4c4978db68c06e8e6e81d282047a7c6][02][21][008ca63759c1157ebeaec0d03cecca119fc9a75bf8e6d0fa65c841c8e2738cdaec]
+   * [30]       - Marker
+   * [45]       - Length of the entire signature (i.e., length of the hex string - 4)
+   * [02]       - Marker for r value
+   * [20]       - r value length
+   * [37... c6] - r value
+   * [02]       - Marker for s value
+   * [21]       - s value length
+   * [00....ec] - s value
+   */
+  const size_t INT256_SIZE = 32;
+
+  size_t r_pos = 1;
+  size_t s_pos = 1;
+  unsigned char* r_bytes = (unsigned char*)calloc(INT256_SIZE + 1, sizeof(unsigned char));
+  unsigned char* s_bytes = (unsigned char*)calloc(INT256_SIZE + 1, sizeof(unsigned char));
+  // the extra 1 byte is reserved for the possible prepending of 0x00
+
+  get_bytes_from_int256((int256_t)this->r(), true, r_bytes + 1);
+  get_bytes_from_int256((int256_t)this->s(), true, s_bytes + 1);
+  // r_bytes[0]/s_bytes[0] is for the possible 0x00 prepending
+  while (r_bytes[r_pos] == 0x00) { r_pos ++; }
+  while (s_bytes[s_pos] == 0x00) { s_pos ++; }
+
+  if (r_bytes[r_pos] >> 7 == 1) { r_pos--; r_bytes[r_pos] = 0x00; cout << "endeterd!" << endl;}
+  if (s_bytes[s_pos] >> 7 == 1) { s_pos--; s_bytes[s_pos] = 0x00; cout << "endeterd!" << endl;}
+  size_t r_bytes_stripped_len = INT256_SIZE + 1 - r_pos;
+  size_t s_bytes_stripped_len = INT256_SIZE + 1 - s_pos;
+  
+  unsigned char* r_bytes_stripped = (unsigned char*)calloc(r_bytes_stripped_len, sizeof(unsigned char));
+  unsigned char* s_bytes_stripped = (unsigned char*)calloc(s_bytes_stripped_len, sizeof(unsigned char));
+  memcpy(r_bytes_stripped, r_bytes + r_pos, r_bytes_stripped_len);
+  memcpy(s_bytes_stripped, s_bytes + s_pos, s_bytes_stripped_len);
+
+  size_t results_len = 2 + 2 + r_bytes_stripped_len + 2 + s_bytes_stripped_len;
+  unsigned char* results = (unsigned char*)calloc(results_len, sizeof(unsigned char));
+
+  results[0] = 0x30;
+  results[1] = results_len - 2; // results[0] and results[1] are not considered a part of the "results"..
+
+  results[2] = 0x02;
+  results[3] = r_bytes_stripped_len;
+  // Here we don't - 2 as results[1], because r_bytes_stripped_len is defined as the length of the r_bytes only
+  memcpy(results + 4, r_bytes_stripped, r_bytes_stripped_len);
+  
+  results[4 + r_bytes_stripped_len] = 0x02;
+  results[5 + r_bytes_stripped_len] = s_bytes_stripped_len;
+  memcpy(results + 2 + 2 + r_bytes_stripped_len + 2, s_bytes_stripped, s_bytes_stripped_len);
+  
+  free(r_bytes);
+  free(r_bytes_stripped);
+  free(s_bytes);
+  free(s_bytes_stripped);
+  
+  for (int i = 0; i < results_len; ++i)
+    cout << hex << setfill('0') << setw(2) << (int)results[i] << "";
+  cout << endl;
+  return results;  
 }
 
 

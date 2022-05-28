@@ -27,13 +27,18 @@ int512_t get_int512_from_bytes(
  * @brief Convert an int256_t integer to a byte array
  * @param input_int The int256_t variable to be convereted to a byte array
  * @param bytes_in_big_endian whether the output_bytes should in little or big endian order
- * @param output_bytes a pre-allocated array used to store the result
+ * @param output_bytes a pre-allocated, 32-byte long array used to store the result
  */
 void get_bytes_from_int256(
   const int256_t input_int, const bool bytes_in_big_endian, unsigned char* output_bytes
 );
 
-bool fermat_primality_test(int512_t input, int iterations);
+/*
+ *  @brief Test if the input is probably a prime number by applying Fermat's little theorem
+ *  @param input the number to be checked
+ *  @param iterations the number of times the test should be done.
+ */
+bool fermat_primality_test(const int512_t input, const int iterations);
 
 
 #endif
