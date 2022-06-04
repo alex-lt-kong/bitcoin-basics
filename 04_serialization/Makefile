@@ -1,11 +1,11 @@
 main.out: main.o ecc.o utils.o sha256.o sha1.o hmac.o misc.o
-	g++ main.o ecc.o utils.o sha256.o sha1.o hmac.o misc.o -o main.out -lboost_random
+	g++ main.o ecc.o utils.o sha256.o sha1.o hmac.o misc.o -o main.out -lboost_random  -g
 
 main.o: main.cpp
-	g++ -c main.cpp -I../ -I../cryptographic-algorithms
+	g++ -c main.cpp -I../ -I../cryptographic-algorithms  -g
 
 ecc.o: ../ecc.cpp ../ecc.h
-	g++ -c ../ecc.cpp -I../cryptographic-algorithms
+	g++ -c ../ecc.cpp -I../cryptographic-algorithms -g
 
 hmac.o: ../cryptographic-algorithms/hmac.c ../cryptographic-algorithms/hmac.h
 	gcc -c ../cryptographic-algorithms/hmac.c

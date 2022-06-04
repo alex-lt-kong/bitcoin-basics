@@ -97,7 +97,6 @@ char* encode_base58_checksum(const unsigned char* input_bytes, const size_t inpu
   // return encode_base58(b + hash256(b)[:4])
   unsigned char hash[SHA256_HASH_SIZE];
   cal_sha256_hash(input_bytes, input_len, hash);
-  //cout << bytes_to_hex_string1() << endl;
   cal_sha256_hash(hash, SHA256_HASH_SIZE, hash);  
   unsigned char base58_input[input_len + 4];
 
