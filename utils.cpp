@@ -59,3 +59,35 @@ bool fermat_primality_test(const int512_t input, const int iterations) {
   }
   return true;
 }
+
+char* encode_bytes_to_base58_string(
+  const unsigned char* input_bytes, const size_t input_len, const bool bytes_in_big_endian, size_t* output_len
+) {
+  *output_len = ceil(input_len * 1.36565823);
+  int zero_count = 0;
+  while (zero_count < input_len && input_bytes[zero_count] == 0)
+		++zero_count; // This is not strictly needed in the current implementation, but let's keep it anyway...
+	/*
+	 * How do we get the size in advance? We can consider it this way--In base58 encoding, we use 58 characters to encode
+	 * bytes (or bits), how many bits can be represented by one character? It is log(2)58 ≈ 5.8579 bits.
+	 * Is it possible for base58 character to present 6 bits? No, 2^6 = 64, that is to say, characters will be exhausted
+	 * before 0b11 1111 can be encoded.
+	 * Since 1 byte = 8 bits, there are (input_len * 8) bits to be represented. Therefore, we need:
+	 * (input_len * 8) / log(2)58 = (input_len * log(2)256) / log(2)58 = input_len * log(58)256 ≈ input_len * 1.36565823
+	 * Then we round it up.
+	 */
+  int512_t num = get_int512_from_bytes(input_bytes, input_len, bytes_in_big_endian);
+	char* buf = (char*)calloc(*output_len, 1);
+  int idx = *output_len - 1;
+  static const char b58_table[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+  while (num > 0) {
+    buf[idx--] = b58_table[(char)(num % 58)];
+    num /= 58;    
+  }
+
+  if (zero_count > 0) { assert (zero_count == idx); }
+  while (idx > 0) {
+    buf[idx--] = b58_table[0];
+  }
+  return buf;
+}

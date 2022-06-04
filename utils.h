@@ -6,7 +6,7 @@
 using namespace boost::multiprecision;
 using namespace std;
 
-/*
+/**
  * @brief Convert a byte array to an int512_t integer
  * @param input_bytes The byte array to be converted to int512_t
  * @param input_len length of input_bytes
@@ -23,7 +23,7 @@ int512_t get_int512_from_bytes(
   const unsigned char* input_bytes, const size_t input_len, const bool bytes_in_big_endian=true
 );
 
-/*
+/**
  * @brief Convert an int256_t integer to a byte array
  * @param input_int The int256_t variable to be convereted to a byte array
  * @param bytes_in_big_endian whether the output_bytes should in little or big endian order
@@ -33,12 +33,24 @@ void get_bytes_from_int256(
   const int256_t input_int, const bool bytes_in_big_endian, unsigned char* output_bytes
 );
 
-/*
+/**
  *  @brief Test if the input is probably a prime number by applying Fermat's little theorem
  *  @param input the number to be checked
  *  @param iterations the number of times the test should be done.
  */
 bool fermat_primality_test(const int512_t input, const int iterations);
 
+/**
+ *  @brief Encode a byte array into a base58 string
+ *  @param input_bytes pointer to data in byte array to be encoded
+ *  @param input_len Length of the data to be encoded
+ *  @param bytes_in_big_endian whether input_bytes is in little or big endian order
+ *  @param output_len pointer to an integer storing the length of output base58 string
+ *  @returns A char pointer to the base58 representation of the input byte array. Users need to free()
+ * the pointer after use.
+ */
+char* encode_bytes_to_base58_string(
+  const unsigned char* input_bytes, const size_t input_len, const bool bytes_in_big_endian, size_t* output_len
+);
 
 #endif
