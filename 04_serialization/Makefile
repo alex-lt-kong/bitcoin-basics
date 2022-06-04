@@ -20,7 +20,7 @@ misc.o: ../cryptographic-algorithms/misc.cpp ../cryptographic-algorithms/misc.h
 	g++ -c ../cryptographic-algorithms/misc.cpp
 
 utils.o: ../utils.cpp ../utils.h
-	g++ -c ../utils.cpp
+	g++ -c ../utils.cpp  -I../cryptographic-algorithms
 
 clean:
 	rm *.o main.out

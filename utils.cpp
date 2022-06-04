@@ -3,8 +3,9 @@
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/random/random_device.hpp>
 #include <boost/random.hpp>
-
+#include <sstream>
 #include "utils.h"
+#include "misc.h"
 
 using namespace boost::multiprecision;
 using namespace std;
@@ -90,4 +91,18 @@ char* encode_bytes_to_base58_string(
     buf[idx--] = b58_table[0];
   }
   return buf;
+}
+
+char* encode_base58_checksum(const unsigned char* input_bytes, const size_t input_len, size_t* output_len) {
+  // return encode_base58(b + hash256(b)[:4])
+  unsigned char hash[SHA256_HASH_SIZE];
+  cal_sha256_hash(input_bytes, input_len, hash);
+  //cout << bytes_to_hex_string1() << endl;
+  cal_sha256_hash(hash, SHA256_HASH_SIZE, hash);  
+  unsigned char base58_input[input_len + 4];
+
+  memcpy(base58_input, input_bytes, input_len);
+  memcpy(base58_input + input_len, hash, 4);
+
+  return encode_bytes_to_base58_string(base58_input, input_len + 4, true, output_len);
 }

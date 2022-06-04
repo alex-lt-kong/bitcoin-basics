@@ -2,6 +2,7 @@
 #define UTILS_H
 
 #include <boost/multiprecision/cpp_int.hpp>
+#include "sha256.h"
 
 using namespace boost::multiprecision;
 using namespace std;
@@ -53,4 +54,5 @@ char* encode_bytes_to_base58_string(
   const unsigned char* input_bytes, const size_t input_len, const bool bytes_in_big_endian, size_t* output_len
 );
 
+char* encode_base58_checksum(const unsigned char* input_bytes, const size_t input_len, size_t* output_len);
 #endif

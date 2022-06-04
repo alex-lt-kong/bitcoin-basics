@@ -421,6 +421,7 @@ unsigned char* Signature::get_der_format(size_t* output_len) {
    * [21]       - s value length
    * [00....ec] - s value
    */
+
   const size_t INT256_SIZE = 32;
 
   size_t r_pos = 1;
@@ -465,8 +466,8 @@ unsigned char* Signature::get_der_format(size_t* output_len) {
   free(s_bytes);
   free(s_bytes_stripped);
   *output_len = results_len;
-  
-  return results;  
+
+  return results;
 }
 
 

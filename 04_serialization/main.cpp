@@ -3,6 +3,7 @@
 #include "misc.h"
 #include "sha256.h"
 #include "hmac.h"
+#include <sstream>
 
 void test_uncompressed_sec_format() {
   cout << "test_uncompressed_sec_format():" << endl;
@@ -107,6 +108,35 @@ void test_base58() {
   free(output);
 }
 
+void test_base58_checksum() {
+  cout << "test_base58_checksum():" << endl;
+  unsigned char input_bytes[] = {0xde, 0xad, 0xbe, 0xef};
+  size_t output_len;
+  char* output = encode_base58_checksum(input_bytes, sizeof(input_bytes), &output_len);
+  cout << "Function result: ";
+  for (int i = 0; i < output_len; ++i) { cout << output[i]; }
+  cout << endl;
+  cout << "Expected result: eFGDJPketnz" << endl;
+  free(output);
+
+  unsigned char input_bytes1[] = "Hello world!";
+  output = encode_base58_checksum(input_bytes1, sizeof(input_bytes1)-1, &output_len);
+  cout << "Function result: ";
+  for (int i = 0; i < output_len; ++i) { cout << output[i]; }
+  cout << endl;
+  cout << "Expected result: 9wWTEnNTWna86WmtFaRbXa" << endl;
+  free(output);
+
+  
+  char input_bytes2[] = "The quick brown fox jumps over the lazy dog.";
+  output = encode_base58_checksum((unsigned char*)input_bytes2, strlen(input_bytes2), &output_len);
+  cout << "Function result: ";
+  for (int i = 0; i < output_len; ++i) { cout << output[i]; }
+  cout << endl;
+  cout << "Expected result: 46auvTd4NTVoJhFVnfh9reLsP21HQAQUFXCCBzNZjAPwQBRpaSp4aDLzWajGrqq21B" << endl;
+  free(output);
+}
+
 int main() {
   test_uncompressed_sec_format();
   cout << endl;
@@ -115,5 +145,8 @@ int main() {
   test_der_sig_format();
   cout << endl;
   test_base58();
+  cout << endl;
+  test_base58_checksum();
+ // stringstream ss;
   cout << endl;
 }
