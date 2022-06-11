@@ -3,6 +3,7 @@
 
 #include <boost/multiprecision/cpp_int.hpp>
 #include "sha256.h"
+#include "ripemd160.h"
 
 using namespace boost::multiprecision;
 using namespace std;
@@ -42,17 +43,27 @@ void get_bytes_from_int256(
 bool fermat_primality_test(const int512_t input, const int iterations);
 
 /**
- *  @brief Encode a byte array into a base58 string
- *  @param input_bytes pointer to data in byte array to be encoded
- *  @param input_len Length of the data to be encoded
- *  @param bytes_in_big_endian whether input_bytes is in little or big endian order
- *  @param output_len pointer to an integer storing the length of output base58 string
- *  @returns A char pointer to the base58 representation of the input byte array. Users need to free()
- * the pointer after use.
+ * @brief Encode a byte array into a base58 string
+ * @param input_bytes pointer to data in byte array to be encoded
+ * @param input_len Length of the data to be encoded
+ * @param bytes_in_big_endian whether input_bytes is in little or big endian order
+ * @returns Pointer to a null-terminated string storing the base58 representation of the input byte array.
+ * Users need to free() the pointer after use.
  */
 char* encode_bytes_to_base58_string(
-  const unsigned char* input_bytes, const size_t input_len, const bool bytes_in_big_endian, size_t* output_len
+  const unsigned char* input_bytes, const size_t input_len, const bool bytes_in_big_endian
 );
 
-char* encode_base58_checksum(const unsigned char* input_bytes, const size_t input_len, size_t* output_len);
+/**
+ * @returns Pointer to a null-terminated string. Users need to free() the pointer after use.
+*/
+char* encode_base58_checksum(const unsigned char* input_bytes, const size_t input_len);
+
+/**
+ * @brief Calculate the hash160 hash value (i.e., RIPEMD160 on top of SHA256) from a given byte array
+ * @param input_bytes Pointer to the data the hash shall be calculated on.
+ * @param input_len Length of the input_bytes data, in byte.
+ * @param hash Preallocated 20-byte long array, where the result is delivered.
+*/
+void hash160(const unsigned char* input_bytes, const size_t input_len, unsigned char* hash);
 #endif

@@ -11,6 +11,7 @@
 #include "ecc.h"
 #include "utils.h"
 #include "hmac.h"
+#include "misc.h"
 
 using namespace std;
 using namespace boost::multiprecision;
@@ -389,6 +390,17 @@ unsigned char* S256Point::get_sec_format(const bool compressed = true) {
   return sec_bytes;
 }
 
+char* S256Point::get_address(bool compressed, bool testnet) {
+  const size_t sec_len = compressed ? (1 + 32) : (1 + 32 * 2);
+  unsigned char* sec_bytes = this->get_sec_format(compressed);
+  unsigned char hash[RIPEMD160_HASH_SIZE+1];
+  hash160(sec_bytes, sec_len, hash+1);
+  free(sec_bytes);
+  hash[0] = testnet ? 0x6f : 0x00;
+  return encode_base58_checksum(hash, RIPEMD160_HASH_SIZE+1);
+}
+
+
 Signature::Signature(int512_t r, int512_t s) {
   this->r_ = r;
   this->s_ = s;
@@ -481,7 +493,14 @@ ECDSAKey::ECDSAKey(const unsigned char* private_key_bytes, const size_t private_
   assert (private_key_length <= SHA256_HASH_SIZE);
   this->privkey_bytes_ = (unsigned char*)calloc(SHA256_HASH_SIZE, 1);
   memcpy(this->privkey_bytes_ + (SHA256_HASH_SIZE - private_key_length), private_key_bytes, private_key_length);
+  // Note the below lines are the same as ECDSAKey::ECDSAKey(const int512_t private_key);
+  // But in C++ we cant call another constructor within an constructor easily.
   this->privkey_int_ = get_int512_from_bytes(this->privkey_bytes_, SHA256_HASH_SIZE);
+  this->public_key_ = G * privkey_int_;  
+}
+
+ECDSAKey::ECDSAKey(const int512_t private_key) {
+  this->privkey_int_ = private_key;
   this->public_key_ = G * privkey_int_;
 }
 

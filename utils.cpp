@@ -62,9 +62,10 @@ bool fermat_primality_test(const int512_t input, const int iterations) {
 }
 
 char* encode_bytes_to_base58_string(
-  const unsigned char* input_bytes, const size_t input_len, const bool bytes_in_big_endian, size_t* output_len
+  const unsigned char* input_bytes, const size_t input_len, const bool bytes_in_big_endian
 ) {
-  *output_len = ceil(input_len * 1.36565823);
+  //cout << ceil(input_len * 1.36565823) - (input_len * 1.36565823) << endl;
+  size_t output_len = ceil(input_len * 1.36565823) + 1; // +1 for null-termination.
   int zero_count = 0;
   while (zero_count < input_len && input_bytes[zero_count] == 0)
 		++zero_count; // This is not strictly needed in the current implementation, but let's keep it anyway...
@@ -75,11 +76,10 @@ char* encode_bytes_to_base58_string(
 	 * before 0b11 1111 can be encoded.
 	 * Since 1 byte = 8 bits, there are (input_len * 8) bits to be represented. Therefore, we need:
 	 * (input_len * 8) / log(2)58 = (input_len * log(2)256) / log(2)58 = input_len * log(58)256 ≈ input_len * 1.36565823
-	 * Then we round it up.
 	 */
   int512_t num = get_int512_from_bytes(input_bytes, input_len, bytes_in_big_endian);
-	char* buf = (char*)calloc(*output_len, 1);
-  int idx = *output_len - 1;
+	char* buf = (char*)calloc(output_len, 1);
+  int idx = output_len - 2; // buf[idx-1] should remain \0 to make the string null-terminated.
   static const char b58_table[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
   while (num > 0) {
     buf[idx--] = b58_table[(char)(num % 58)];
@@ -90,10 +90,22 @@ char* encode_bytes_to_base58_string(
   while (idx > 0) {
     buf[idx--] = b58_table[0];
   }
-  return buf;
+
+  /* This part is a dirty hack--the issue is that I can't predict the length of the output with pinpoint
+    accuracy...so here if we calloc() too many memory blocks, we shorten the string by memcpy()ing...
+    So that we are sure that we wont get a string whose first byte is null...
+  */
+  char* buf1;
+  if (buf[0] == '\0') {
+    buf1 = (char*)calloc(output_len - 1, 1);
+    memcpy(buf1, buf+1, output_len - 1);
+    free(buf);
+    return buf1;
+  } else { buf1 = buf; }
+  return buf1;
 }
 
-char* encode_base58_checksum(const unsigned char* input_bytes, const size_t input_len, size_t* output_len) {
+char* encode_base58_checksum(const unsigned char* input_bytes, const size_t input_len) {
   // return encode_base58(b + hash256(b)[:4])
   unsigned char hash[SHA256_HASH_SIZE];
   cal_sha256_hash(input_bytes, input_len, hash);
@@ -103,5 +115,11 @@ char* encode_base58_checksum(const unsigned char* input_bytes, const size_t inpu
   memcpy(base58_input, input_bytes, input_len);
   memcpy(base58_input + input_len, hash, 4);
 
-  return encode_bytes_to_base58_string(base58_input, input_len + 4, true, output_len);
+  return encode_bytes_to_base58_string(base58_input, input_len + 4, true);
+}
+
+void hash160(const unsigned char* input_bytes, const size_t input_len, unsigned char* hash) {
+  unsigned char sha256_hash[SHA256_HASH_SIZE];
+  cal_sha256_hash(input_bytes, input_len, sha256_hash);
+  cal_rpiemd160_hash(sha256_hash, SHA256_HASH_SIZE, hash);
 }
