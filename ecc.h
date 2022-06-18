@@ -165,7 +165,7 @@ public:
   /**
    * @brief A detailed comment is not provided because it is still not sure about the purpose of this method...
    * @returns Pointer to a null-terminated string. Users are reminded to free() the pointer after use.
-  */
+   */
   char* get_address(bool compressed, bool testnet);
 };
 
@@ -174,9 +174,7 @@ extern S256Point G;
 
 class ECDSAKey {
 protected:
-  unsigned char* privkey_bytes_ = nullptr;
-  //How about unsigned char* privkey_bytes_[SHA256_HASH_SIZE]? Seems it will not be as obvious as this...
-
+  unsigned char privkey_bytes_[32] = {0};
   int512_t privkey_int_ = -1;
   /**
    * The public key in an ECDSA key pair. It is generated from G * private_key.
@@ -213,7 +211,18 @@ public:
    * @return the deterministic K
    */
   int512_t get_deterministic_k(unsigned char* msg_hash, size_t msg_hash_len);
+  /**
+   * @brief Get the public key of this ECDSAKey instance
+   */
   S256Point public_key();
+  /**
+   * @brief Get the private key of this ECDSAKey instance in Wallet Import Format (WIF format)
+   * @param compressed If the private key is compressed? (But we are not using SEC, what's the difference?)
+   * @param testnet If the key is to be used on the testnet?
+   * @returns Pointer to a null-terminated string containing the private key in WIF format.
+   * Users are reminded to free() the pointer after use.
+   */
+  char* get_wif_private_key(bool compressed, bool testnet);
   
 };
 

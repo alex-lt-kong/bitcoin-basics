@@ -214,8 +214,8 @@ void testSHA256() {
 
   unsigned char output[SHA256_HASH_SIZE];
 
-  cal_sha256_hash(output, input, sizeof(input));
-  cout << bytes_to_hex_string(output, sizeof(output)) << endl;
+  cal_sha256_hash(input, sizeof(input), output);
+  cout << bytes_to_hex_string(output, sizeof(output), false) << endl;
 }
 
 void testBytesToInt512() {
@@ -229,14 +229,14 @@ void testSignatureCreation() {
 
   unsigned char secretChars[] = {'m', 'y', ' ', 's', 'e', 'c', 'r', 'e', 't' };
   unsigned char secretBytes[SHA256_HASH_SIZE];
-  cal_sha256_hash(secretBytes, secretChars, sizeof(secretChars));
-  cal_sha256_hash(secretBytes, secretBytes, SHA256_HASH_SIZE);
+  cal_sha256_hash(secretChars, sizeof(secretChars), secretBytes);
+  cal_sha256_hash(secretBytes, SHA256_HASH_SIZE, secretBytes);
   int512_t secret = get_int512_from_bytes(secretBytes, SHA256_HASH_SIZE);
 
   unsigned char msgChars[] = {'m', 'y', ' ', 'm', 'e', 's', 's', 'a', 'g', 'e' };
   unsigned char msgHashBytes[SHA256_HASH_SIZE];
-  cal_sha256_hash(msgHashBytes, msgChars, sizeof(msgChars));
-  cal_sha256_hash(msgHashBytes, msgHashBytes, SHA256_HASH_SIZE);
+  cal_sha256_hash(msgChars, sizeof(msgChars), msgHashBytes);
+  cal_sha256_hash(msgHashBytes, SHA256_HASH_SIZE, msgHashBytes);
   int512_t msgHash = get_int512_from_bytes(msgHashBytes, SHA256_HASH_SIZE);
 
   S256Point p = G * secret;
@@ -263,7 +263,7 @@ void testHMACSHA256() {
   unsigned char data[] = { 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x20, 0x77, 0x6f, 0x72, 0x6c, 0x64 }; // Hello world
   unsigned char output[SHA256_HASH_SIZE];
   hmac_sha256(key, sizeof(key), data, sizeof(data), output);
-  cout << bytes_to_hex_string(output, sizeof(output)) << endl;
+  cout << bytes_to_hex_string(output, sizeof(output), false) << endl;
 }
 
 int main() {

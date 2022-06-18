@@ -120,8 +120,8 @@ void test_base58_checksum() {
   free(output);
 }
 
-void test_address() {
-  cout << "test_address():" << endl;
+void test_hash160_address() {
+  cout << "test_hash160_address():" << endl;
   char* addr;
 
   ECDSAKey key = ECDSAKey(5002);
@@ -144,6 +144,30 @@ void test_address() {
   free(addr);
 }
 
+void test_privkey_wif_address() {
+  cout << "test_privkey_wif_address():" << endl;
+  char* addr;
+
+  ECDSAKey key = ECDSAKey(5003);
+  addr = key.get_wif_private_key(true, true);
+  cout << "Function result: "<< addr << "\n"
+       << "Expected result: cMahea7zqjxrtgAbB7LSGbcQUr1uX1ojuat9jZodMN8rFTv2sfUK" << endl;
+  free(addr);
+
+  ECDSAKey key2 = ECDSAKey((int512_t)2021 * 2021 * 2021 * 2021 * 2021);
+  addr = key2.get_wif_private_key(false, true);
+  cout << "Function result: "<< addr << "\n"
+       << "Expected result: 91avARGdfge8E4tZfYLoxeJ5sGBdNJQH4kvjpWAxgzczjbCwxic" << endl;
+  free(addr);
+
+  unsigned char priv_key3[] = {0x05, 0x43, 0x21, 0xde, 0xad, 0xbe, 0xef};
+  ECDSAKey key3 = ECDSAKey(priv_key3, sizeof(priv_key3));
+  addr = key3.get_wif_private_key(true, false);
+  cout << "Function result: "<< addr << "\n"
+       << "Expected result: KwDiBf89QgGbjEhKnhXJuH7LrciVrZi3qYjgiuQJv1h8Ytr2S53a" << endl;
+  free(addr);
+}
+
 int main() {
   test_uncompressed_sec_format();
   cout << endl;
@@ -155,6 +179,8 @@ int main() {
   cout << endl;
   test_base58_checksum();
   cout << endl;
-  test_address();
+  test_hash160_address();
+  cout << endl;
+  test_privkey_wif_address();
   cout << endl;
 }

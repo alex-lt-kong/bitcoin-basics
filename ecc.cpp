@@ -491,7 +491,6 @@ S256Point G = S256Point(
 
 ECDSAKey::ECDSAKey(const unsigned char* private_key_bytes, const size_t private_key_length) {
   assert (private_key_length <= SHA256_HASH_SIZE);
-  this->privkey_bytes_ = (unsigned char*)calloc(SHA256_HASH_SIZE, 1);
   memcpy(this->privkey_bytes_ + (SHA256_HASH_SIZE - private_key_length), private_key_bytes, private_key_length);
   // Note the below lines are the same as ECDSAKey::ECDSAKey(const int512_t private_key);
   // But in C++ we cant call another constructor within an constructor easily.
@@ -501,13 +500,14 @@ ECDSAKey::ECDSAKey(const unsigned char* private_key_bytes, const size_t private_
 
 ECDSAKey::ECDSAKey(const int512_t private_key) {
   this->privkey_int_ = private_key;
+  get_bytes_from_int256((int256_t)private_key, true, this->privkey_bytes_);
   this->public_key_ = G * privkey_int_;
 }
 
 ECDSAKey::~ECDSAKey() {
-  if (this->privkey_bytes_ != nullptr) {
+  /*if (this->privkey_bytes_ != nullptr) {
     delete this->privkey_bytes_;
-  }
+  }*/
 }
 
 string ECDSAKey::to_string() {
@@ -580,4 +580,13 @@ int512_t ECDSAKey::get_deterministic_k(unsigned char* msgHashBytes, size_t msgHa
 
 S256Point ECDSAKey::public_key() {
   return this->public_key_;
+}
+
+char* ECDSAKey::get_wif_private_key(bool compressed, bool testnet) {
+  const size_t input_len = (compressed ? 34 : 33);
+  unsigned char input[input_len] = {0};
+  input[0] = (testnet ? 0xef : 0x80);
+  if (compressed) { input[33] = 0x01; }  
+  memcpy(input + 1, this->privkey_bytes_, 32);
+  return encode_base58_checksum(input, input_len);
 }

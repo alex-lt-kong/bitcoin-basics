@@ -1,9 +1,7 @@
 # bitcoin-fundamentals
 
-* C/C++ implementation of Python [examples](https://github.com/jimmysong/programmingbitcoin) 
+* "C-style" C++ implementation of Python [examples](https://github.com/jimmysong/programmingbitcoin) 
 in Jimmy Song's [Programming Bitcoin](https://www.oreilly.com/library/view/programming-bitcoin/9781492031482/).
-(For learning purpose, many components, especially those involving bit/byte-level manipulation, are in "C-style" C++, rather than
-"modern-style" C++.)
 
 * Boost library is needed for 256-bit integer support: `apt install libboost-all-dev` 
 
