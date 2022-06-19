@@ -154,7 +154,6 @@ FieldElementPoint::FieldElementPoint(FieldElement x, FieldElement y, FieldElemen
   }
 }
 
-// Omitting x and y and passing only a and b in y^2 = x^3 + ax + b means this FieldElementPoint is point at infinity
 FieldElementPoint::FieldElementPoint(FieldElement a, FieldElement b) {
   if (a.prime() == b.prime()) { /*good*/ }
   else { throw invalid_argument("prime numbers are different"); }
@@ -524,7 +523,6 @@ string ECDSAKey::to_string() {
 
 Signature ECDSAKey::sign(unsigned char* msgHashBytes, size_t msgHashLen) {
   int512_t k = this->get_deterministic_k(msgHashBytes, msgHashLen);
-  cout << "k is " << k << endl;
   int512_t r = (G * k).x().num();
   int512_t kInv = boost::integer::mod_inverse(k, G.order());
   int512_t sig = (int512_t)((int1024_t)(get_int512_from_bytes(msgHashBytes, msgHashLen) + this->privkey_int_ * r) * kInv % G.order());

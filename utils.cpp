@@ -21,7 +21,7 @@ int512_t get_int512_from_bytes(
   assert (CHAR_BIT == 8); 
 
   if (bytes_in_big_endian == false) {
-    for (int i = input_len; i >= 0; i--) {
+    for (int i = input_len - 1; i >= 0; i--) {
       result = (result << 8) + input_bytes[i];
     }
   } else {
