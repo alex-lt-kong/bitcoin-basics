@@ -23,8 +23,10 @@ void testDivision() {
   FieldElement *a = new FieldElement(7, 19);
   FieldElement b = FieldElement(5, 19);
   cout << "Test division:\n"
-       << (FieldElement(2, 19)/FieldElement(7, 19)).to_string() << "\n"
-       << ((*a)/b).to_string() << endl;
+       << "Result: " << (FieldElement(2, 19)/FieldElement(7, 19)).to_string() << "\n"
+       << "Expect: 3 (19)" << "\n"
+       << "Result: " << ((*a)/b).to_string() << "\n"
+       << "Expect: 9 (19)" << endl;
   delete a;
 }
 
@@ -34,7 +36,7 @@ void testPower() {
   FieldElement b = FieldElement(1, 13);
   cout << "Result: " << ((*a).power(3) == b) << "\n"
        << "Expect: 1\n"
-       << "Result: "(FieldElement(12, 97).power(7) * FieldElement(77, 97).power(49)).to_string()
+       << "Result: " << (FieldElement(12, 97).power(7) * FieldElement(77, 97).power(49)).to_string()
        << "Expect: 63 (97)"
        << endl;
   delete a;
@@ -57,18 +59,16 @@ void testMultiplication() {
 
 void exercise8() {
   cout << "exercise8():" << endl;
-  cout << (FieldElement(3, 31)/FieldElement(24, 31)).to_string() << endl;
-  try {
-    cout << (FieldElement(17, 31).power(-3)).to_string() << endl;
-    cout << (FieldElement(4, 31).power(-4)*FieldElement(11, 31)).to_string() << endl;
-  } catch (const invalid_argument& ia) {
-    cerr << "Error: " << ia.what() << '\n';
-  } catch (runtime_error& re) {
-    cerr << "runtime_error: " << re.what() << '\n';
-  }
+  cout << "Result: " << (FieldElement(3, 31)/FieldElement(24, 31)).to_string() << "\n"
+       << "Expect: 4 (31)" << endl;
+  cout << "Result: " << (FieldElement(17, 31).power(-3)).to_string() << "\n"
+       << "Expect: 29 (31)" << endl;
+  cout << "Result: " << (FieldElement(4, 31).power(-4)*FieldElement(11, 31)).to_string() << "\n"
+       << "Expect: 13 (31)" << endl;
 }
 
 void test_fermat_primality_test() {
+  cout << "test_fermat_primality_test():" << endl;
   for (int i = 1; i < 1024; i++) {
     if (fermat_primality_test(i, 1024) == true) {
       cout << i << ", ";

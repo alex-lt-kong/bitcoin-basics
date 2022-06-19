@@ -2,7 +2,7 @@ INCS = -I../cryptographic-algorithms -I../
 LIBS = -lboost_random
 
 main.out: main.cpp ecc.o utils.o sha256.o sha1.o hmac.o misc.o ripemd160.o
-	g++ main.cpp ecc.o utils.o sha256.o sha1.o hmac.o misc.o ripemd160.o -o main.out $(INCS)
+	g++ main.cpp ecc.o utils.o sha256.o sha1.o hmac.o misc.o ripemd160.o -o main.out $(INCS) $(LIBS)
 
 ecc.o: ../ecc.cpp ../ecc.h sha256.o
 	g++ -c ../ecc.cpp $(INCS)

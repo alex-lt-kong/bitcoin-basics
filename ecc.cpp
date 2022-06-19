@@ -121,8 +121,14 @@ FieldElement FieldElement::operator/(const FieldElement& other)
 }
 
 FieldElement FieldElement::power(int512_t exponent)
-{  
-  return FieldElement(powm(this->num_, exponent, this->prime_), this->prime_);
+{
+  if (exponent >= 0) {
+    // exponent == 0 seems still undefined, but Jimmy's book doesn't touch this,
+    // so this is not handled at the moment.
+    return FieldElement(powm(this->num_, exponent, this->prime_), this->prime_);
+  } else {
+    return FieldElement(powm(this->num_, this->prime_ - 1 + exponent, this->prime_), this->prime_);
+  }
 }
 
 string FieldElement::to_string(bool inHex) {

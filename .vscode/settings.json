@@ -98,5 +98,6 @@
     "stack": "cpp",
     "version": "cpp",
     "sha256.c": "cpp"
-  }
+  },
+  "python.pythonPath": "/usr/bin/python3"
 }
