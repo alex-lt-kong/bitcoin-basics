@@ -19,7 +19,7 @@ protected:
   // Note that in Python we prepend underscores, in C++ it is recommended to append underscores as variables
   // start with an underscore or double underscore are reserved for the C++ implementers
   int512_t num_ = 0, prime_ = 2;
-public:    
+public:
   FieldElement(int512_t num, int512_t prime);
   FieldElement();    
   bool operator==(const FieldElement& other) const;

@@ -1,4 +1,5 @@
-INCS = -I../cryptographic-algorithms -I../ -lboost_random
+INCS = -I../cryptographic-algorithms -I../
+LIBS = -lboost_random
 
 main.out: main.cpp ecc.o utils.o sha256.o sha1.o hmac.o misc.o ripemd160.o
 	g++ main.cpp ecc.o utils.o sha256.o sha1.o hmac.o misc.o ripemd160.o -o main.out $(INCS)
