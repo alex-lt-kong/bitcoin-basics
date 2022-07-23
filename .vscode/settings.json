@@ -97,7 +97,8 @@
     "queue": "cpp",
     "stack": "cpp",
     "version": "cpp",
-    "sha256.c": "cpp"
+    "sha256.c": "cpp",
+    "stdint.h": "c"
   },
   "python.pythonPath": "/usr/bin/python3"
 }

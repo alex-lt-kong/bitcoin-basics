@@ -23,7 +23,7 @@ misc.o: ../cryptographic-algorithms/misc.c ../cryptographic-algorithms/misc.h
 	gcc -c ../cryptographic-algorithms/misc.c
 
 utils.o: ../utils.cpp ../utils.h
-	g++ -c ../utils.cpp  -I../cryptographic-algorithms
+	g++ -c ../utils.cpp -I../cryptographic-algorithms
 
 clean:
 	rm *.o main.out

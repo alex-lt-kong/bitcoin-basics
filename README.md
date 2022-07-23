@@ -12,3 +12,11 @@ repo
 * Boost library is needed for 256-bit integer support: `apt install libboost-all-dev` 
 
 * The book's analogy on ECDSA makes the thing even more difficult to understand, may use this instead: https://cryptobook.nakov.com/digital-signatures/ecdsa-sign-verify-messages
+
+* The project is developed on little-endian architectures, some bitwise operations may not work on big-endian architectures.
+  Fortunately, both Intel and AMD's CPUs little-endian.
+
+## Repo structure
+
+* `ecc.h`/`ecc.cpp`: implementation of the ECDSA algorithm from scratch.
+* `tx.h`/`tx.cpp`: transaction parser.

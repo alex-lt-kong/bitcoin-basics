@@ -1,6 +1,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <stdint.h>
 #include <boost/multiprecision/cpp_int.hpp>
 #include "sha256.h"
 #include "ripemd160.h"
@@ -66,4 +67,20 @@ char* encode_base58_checksum(const unsigned char* input_bytes, const size_t inpu
  * @param hash Preallocated 20-byte long array, where the result is delivered.
 */
 void hash160(const unsigned char* input_bytes, const size_t input_len, unsigned char* hash);
+
+/**
+ * @brief Read a variable integer from a pointer
+ * @param ptr pointer to a series of bytes from where the variable int will be read. The function will
+ * neither change the content pointed by the pointer nor move the pointer forward.
+ * @returns the length of the variable integer being read
+*/
+uint64_t read_variable_int(uint8_t* ptr, size_t* int_len);
+
+/**
+ * @brief Encode an int64 to a variable integer
+ * @param num
+ * @returns the pointer to the encoded varint or NULL if error,
+ * users are reminded to free() the pointer after using it.
+*/
+uint8_t* encode_variable_int(uint64_t num);
 #endif
