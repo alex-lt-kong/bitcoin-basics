@@ -125,18 +125,21 @@ void hash160(const unsigned char* input_bytes, const size_t input_len, unsigned 
 }
 
 uint64_t read_variable_int(uint8_t* ptr, size_t* int_len) {
+  // Per C standard, shifting by a negative value or a value greater than or equal to the number of bits of
+  // the left operand is undefined. We need to cast the left operand to a bigger type of integer to make it work.
+  // I believe prt[1] does not need to be casted, just casting it make the code a bit prettier... 
   *int_len = 1;
   if (ptr[0] == 0xfd) {
     *int_len += 2;     // the next two bytes are the number
-    return (ptr[1] << 0) | (ptr[2] << 8);
+    return ((uint64_t)ptr[1] << 0) | ((uint64_t)ptr[2] << 8);
   } else if (ptr[0] == 0xfe) {
     *int_len += 4;     // the next four bytes are the number
-    return (ptr[1] << 0) | (ptr[2] << 8) | (ptr[3] << 16) | (ptr[4] << 24);
+    return ((uint64_t)ptr[1] << 0) | ((uint64_t)ptr[2] << 8) | ((uint64_t)ptr[3] << 16) | ((uint64_t)ptr[4] << 24);
   } else if (ptr[0] == 0xff) {
     *int_len += 8;     // the next eight bytes are the number
     return (
-      (ptr[1] << 0)  | (ptr[2] << 8)  | (ptr[3] << 16) | (ptr[4] << 24) |
-      (ptr[5] << 32) | (ptr[6] << 40) | (ptr[7] << 48) | (ptr[8] << 56)
+      ((uint64_t)ptr[1] << 0)  | ((uint64_t)ptr[2] << 8)  | ((uint64_t)ptr[3] << 16) | ((uint64_t)ptr[4] << 24) |
+      ((uint64_t)ptr[5] << 32) | ((uint64_t)ptr[6] << 40) | ((uint64_t)ptr[7] << 48) | ((uint64_t)ptr[8] << 56)
     );
   } else {
     return ptr[0];
@@ -146,9 +149,9 @@ uint64_t read_variable_int(uint8_t* ptr, size_t* int_len) {
 uint8_t* encode_variable_int(uint64_t num) {
   uint8_t* result = nullptr;
   if (num < 0xfd) {
-    result = (uint8_t*)malloc(1);
-    result[0] = num;
-  } else if (num < 0x100000) { // 1048576, i.e., 2^20
+    result = (uint8_t*)malloc(1 + 0);
+    memcpy(result + 0, &num, 1);
+  } else if (num < 0x10000) { // 1048576, i.e., 2^20
     result = (uint8_t*)malloc(1 + 2);
     result[0] = 0xfd;
     memcpy(result + 1, &num, 2);
@@ -156,12 +159,10 @@ uint8_t* encode_variable_int(uint64_t num) {
     result = (uint8_t*)malloc(1 + 4);
     result[0] = 0xfe;
     memcpy(result + 1, &num, 4);
-  } else if (num < 0x10000000000000000) {
+  } else {
     result = (uint8_t*)malloc(1 + 8);
     result[0] = 0xff;
     memcpy(result + 1, &num, 8);
-  } else {
-    return nullptr;
   }
   return result;
 }
