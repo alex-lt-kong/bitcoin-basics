@@ -11,7 +11,7 @@ using namespace boost::multiprecision;
 using namespace std;
 
 int512_t get_int512_from_bytes(
-  const unsigned char* input_bytes, const size_t input_len, const bool bytes_in_big_endian
+  const uint8_t* input_bytes, const size_t input_len, const bool bytes_in_big_endian
 ) {
 
   int512_t result = 0;
@@ -32,7 +32,7 @@ int512_t get_int512_from_bytes(
   return result;
 }
 
-void get_bytes_from_int256(const int256_t input_int, const bool bytes_in_big_endian, unsigned char* output_bytes) {
+void get_bytes_from_int256(const int256_t input_int, const bool bytes_in_big_endian, uint8_t* output_bytes) {
 
   const size_t INT256_SIZE = 32;
   memcpy(output_bytes, &input_int, INT256_SIZE);
@@ -62,7 +62,7 @@ bool fermat_primality_test(const int512_t input, const int iterations) {
 }
 
 char* encode_bytes_to_base58_string(
-  const unsigned char* input_bytes, const size_t input_len, const bool bytes_in_big_endian
+  const uint8_t* input_bytes, const size_t input_len, const bool bytes_in_big_endian
 ) {
   //cout << ceil(input_len * 1.36565823) - (input_len * 1.36565823) << endl;
   size_t output_len = ceil(input_len * 1.36565823) + 1; // +1 for null-termination.
@@ -105,12 +105,12 @@ char* encode_bytes_to_base58_string(
   return buf1;
 }
 
-char* encode_base58_checksum(const unsigned char* input_bytes, const size_t input_len) {
+char* encode_base58_checksum(const uint8_t* input_bytes, const size_t input_len) {
   // return encode_base58(b + hash256(b)[:4])
-  unsigned char hash[SHA256_HASH_SIZE];
+  uint8_t hash[SHA256_HASH_SIZE];
   cal_sha256_hash(input_bytes, input_len, hash);
   cal_sha256_hash(hash, SHA256_HASH_SIZE, hash);  
-  unsigned char base58_input[input_len + 4];
+  uint8_t base58_input[input_len + 4];
 
   memcpy(base58_input, input_bytes, input_len);
   memcpy(base58_input + input_len, hash, 4);
@@ -118,8 +118,8 @@ char* encode_base58_checksum(const unsigned char* input_bytes, const size_t inpu
   return encode_bytes_to_base58_string(base58_input, input_len + 4, true);
 }
 
-void hash160(const unsigned char* input_bytes, const size_t input_len, unsigned char* hash) {
-  unsigned char sha256_hash[SHA256_HASH_SIZE];
+void hash160(const uint8_t* input_bytes, const size_t input_len, uint8_t* hash) {
+  uint8_t sha256_hash[SHA256_HASH_SIZE];
   cal_sha256_hash(input_bytes, input_len, sha256_hash);
   cal_rpiemd160_hash(sha256_hash, SHA256_HASH_SIZE, hash);
 }

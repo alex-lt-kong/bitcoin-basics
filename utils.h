@@ -23,7 +23,7 @@ using namespace std;
  * What if input_bytes is still { 0xff, 0x00 } but we set bytes_in_big_endian = false? The int512_t should be 255.
  */
 int512_t get_int512_from_bytes(
-  const unsigned char* input_bytes, const size_t input_len, const bool bytes_in_big_endian=true
+  const uint8_t* input_bytes, const size_t input_len, const bool bytes_in_big_endian=true
 );
 
 /**
@@ -33,7 +33,7 @@ int512_t get_int512_from_bytes(
  * @param output_bytes a pre-allocated, 32-byte long array used to store the result
  */
 void get_bytes_from_int256(
-  const int256_t input_int, const bool bytes_in_big_endian, unsigned char* output_bytes
+  const int256_t input_int, const bool bytes_in_big_endian, uint8_t* output_bytes
 );
 
 /**
@@ -52,13 +52,13 @@ bool fermat_primality_test(const int512_t input, const int iterations);
  * Users need to free() the pointer after use.
  */
 char* encode_bytes_to_base58_string(
-  const unsigned char* input_bytes, const size_t input_len, const bool bytes_in_big_endian
+  const uint8_t* input_bytes, const size_t input_len, const bool bytes_in_big_endian
 );
 
 /**
  * @returns Pointer to a null-terminated string. Users need to free() the pointer after use.
 */
-char* encode_base58_checksum(const unsigned char* input_bytes, const size_t input_len);
+char* encode_base58_checksum(const uint8_t* input_bytes, const size_t input_len);
 
 /**
  * @brief Calculate the hash160 hash value (i.e., RIPEMD160 on top of SHA256) from a given byte array
@@ -66,7 +66,7 @@ char* encode_base58_checksum(const unsigned char* input_bytes, const size_t inpu
  * @param input_len Length of the input_bytes data, in byte.
  * @param hash Preallocated 20-byte long array, where the result is delivered.
 */
-void hash160(const unsigned char* input_bytes, const size_t input_len, unsigned char* hash);
+void hash160(const uint8_t* input_bytes, const size_t input_len, uint8_t* hash);
 
 /**
  * @brief Read a variable integer from a pointer

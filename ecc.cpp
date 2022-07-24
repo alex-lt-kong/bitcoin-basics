@@ -368,27 +368,27 @@ string S256Point::to_string() {
   return ss.str();
 }
 
-unsigned char* S256Point::get_sec_format(const bool compressed = true) {
+uint8_t* S256Point::get_sec_format(const bool compressed = true) {
   // we can't use sizeof(int256_t) instead of KEY_SIZE = 32--sizeof(int256_t) is 48, not 32
   const int KEY_SIZE = 32;
-  unsigned char* sec_bytes;
+  uint8_t* sec_bytes;
   assert (this->x().num() <= (int512_t)"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
   assert (this->y().num() <= (int512_t)"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
   
-  unsigned char x_[KEY_SIZE];
-  unsigned char y_[KEY_SIZE];
+  uint8_t x_[KEY_SIZE];
+  uint8_t y_[KEY_SIZE];
 
   get_bytes_from_int256((int256_t)this->x().num(), true, x_);
   get_bytes_from_int256((int256_t)this->y().num(), true, y_);
 
   if (compressed == false) {
-    sec_bytes = (unsigned char*)calloc(1 + KEY_SIZE * 2, 1);
+    sec_bytes = (uint8_t*)calloc(1 + KEY_SIZE * 2, 1);
     sec_bytes[0] = 0x04;
 
     memcpy(sec_bytes + 1, x_, KEY_SIZE);
     memcpy(sec_bytes + 1 + KEY_SIZE, y_, KEY_SIZE);
   } else {
-    sec_bytes = (unsigned char*)calloc(1 + KEY_SIZE, 1);
+    sec_bytes = (uint8_t*)calloc(1 + KEY_SIZE, 1);
     sec_bytes[0] = this->y().num() % 2 == 0 ? 0x02 : 0x03;    
     memcpy(sec_bytes + 1, x_, KEY_SIZE);
   }
@@ -397,8 +397,8 @@ unsigned char* S256Point::get_sec_format(const bool compressed = true) {
 
 char* S256Point::get_address(bool compressed, bool testnet) {
   const size_t sec_len = compressed ? (1 + 32) : (1 + 32 * 2);
-  unsigned char* sec_bytes = this->get_sec_format(compressed);
-  unsigned char hash[RIPEMD160_HASH_SIZE+1];
+  uint8_t* sec_bytes = this->get_sec_format(compressed);
+  uint8_t hash[RIPEMD160_HASH_SIZE+1];
   hash160(sec_bytes, sec_len, hash+1);
   free(sec_bytes);
   hash[0] = testnet ? 0x6f : 0x00;
@@ -425,7 +425,7 @@ int512_t Signature::s() {
   return this->s_;
 }
 
-unsigned char* Signature::get_der_format(size_t* output_len) {
+uint8_t* Signature::get_der_format(size_t* output_len) {
   /*
    * DER format explained:
    * [30][45][02][20][37206a0610995c58074999cb9767b87af4c4978db68c06e8e6e81d282047a7c6][02][21][008ca63759c1157ebeaec0d03cecca119fc9a75bf8e6d0fa65c841c8e2738cdaec]
@@ -443,8 +443,8 @@ unsigned char* Signature::get_der_format(size_t* output_len) {
 
   size_t r_pos = 1;
   size_t s_pos = 1;
-  unsigned char* r_bytes = (unsigned char*)calloc(INT256_SIZE + 1, sizeof(unsigned char));
-  unsigned char* s_bytes = (unsigned char*)calloc(INT256_SIZE + 1, sizeof(unsigned char));
+  uint8_t* r_bytes = (uint8_t*)calloc(INT256_SIZE + 1, sizeof(uint8_t));
+  uint8_t* s_bytes = (uint8_t*)calloc(INT256_SIZE + 1, sizeof(uint8_t));
   // the extra 1 byte is reserved for the possible prepending of 0x00
 
   get_bytes_from_int256((int256_t)this->r(), true, r_bytes + 1);
@@ -458,13 +458,13 @@ unsigned char* Signature::get_der_format(size_t* output_len) {
   size_t r_bytes_stripped_len = INT256_SIZE + 1 - r_pos;
   size_t s_bytes_stripped_len = INT256_SIZE + 1 - s_pos;
   
-  unsigned char* r_bytes_stripped = (unsigned char*)calloc(r_bytes_stripped_len, sizeof(unsigned char));
-  unsigned char* s_bytes_stripped = (unsigned char*)calloc(s_bytes_stripped_len, sizeof(unsigned char));
+  uint8_t* r_bytes_stripped = (uint8_t*)calloc(r_bytes_stripped_len, sizeof(uint8_t));
+  uint8_t* s_bytes_stripped = (uint8_t*)calloc(s_bytes_stripped_len, sizeof(uint8_t));
   memcpy(r_bytes_stripped, r_bytes + r_pos, r_bytes_stripped_len);
   memcpy(s_bytes_stripped, s_bytes + s_pos, s_bytes_stripped_len);
 
   size_t results_len = 2 + 2 + r_bytes_stripped_len + 2 + s_bytes_stripped_len;
-  unsigned char* results = (unsigned char*)calloc(results_len, sizeof(unsigned char));
+  uint8_t* results = (uint8_t*)calloc(results_len, sizeof(uint8_t));
 
   results[0] = 0x30;
   results[1] = results_len - 2; // results[0] and results[1] are not considered a part of the "results"..
@@ -494,7 +494,7 @@ S256Point G = S256Point(
     S256Element((int512_t)"0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8")
 );
 
-ECDSAKey::ECDSAKey(const unsigned char* private_key_bytes, const size_t private_key_length) {
+ECDSAKey::ECDSAKey(const uint8_t* private_key_bytes, const size_t private_key_length) {
   assert (private_key_length <= SHA256_HASH_SIZE);
   memcpy(this->privkey_bytes_ + (SHA256_HASH_SIZE - private_key_length), private_key_bytes, private_key_length);
   // Note the below lines are the same as ECDSAKey::ECDSAKey(const int512_t private_key);
@@ -521,7 +521,7 @@ string ECDSAKey::to_string() {
   return ss.str();
 }
 
-Signature ECDSAKey::sign(unsigned char* msgHashBytes, size_t msgHashLen) {
+Signature ECDSAKey::sign(uint8_t* msgHashBytes, size_t msgHashLen) {
   int512_t k = this->get_deterministic_k(msgHashBytes, msgHashLen);
   int512_t r = (G * k).x().num();
   int512_t kInv = boost::integer::mod_inverse(k, G.order());
@@ -533,13 +533,13 @@ Signature ECDSAKey::sign(unsigned char* msgHashBytes, size_t msgHashLen) {
   return Signature(r, sig);
 }
 
-int512_t ECDSAKey::get_deterministic_k(unsigned char* msgHashBytes, size_t msgHashLen) {
+int512_t ECDSAKey::get_deterministic_k(uint8_t* msgHashBytes, size_t msgHashLen) {
   assert (msgHashLen == SHA256_HASH_SIZE);
-  unsigned char kBytes[] = {
+  uint8_t kBytes[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
   };
-  unsigned char vBytes[] = {
+  uint8_t vBytes[] = {
     0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 
     0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01
   };
@@ -549,13 +549,13 @@ int512_t ECDSAKey::get_deterministic_k(unsigned char* msgHashBytes, size_t msgHa
     msgHashInt -= G.order();
   }
 
-  unsigned short int dataLen = (SHA256_HASH_SIZE + 1 + SHA256_HASH_SIZE + SHA256_HASH_SIZE) * sizeof(unsigned char);
-  unsigned char* data = (unsigned char*)malloc(dataLen * sizeof(unsigned char));
+  unsigned short int dataLen = (SHA256_HASH_SIZE + 1 + SHA256_HASH_SIZE + SHA256_HASH_SIZE) * sizeof(uint8_t);
+  uint8_t* data = (uint8_t*)malloc(dataLen * sizeof(uint8_t));
   memcpy(data, vBytes, SHA256_HASH_SIZE);
   data[SHA256_HASH_SIZE] = 0x00;
   memcpy(data + SHA256_HASH_SIZE + 1, this->privkey_bytes_, SHA256_HASH_SIZE);
   memcpy(data + SHA256_HASH_SIZE + 1 + SHA256_HASH_SIZE, msgHashBytes, SHA256_HASH_SIZE);
-  unsigned char out[SHA256_HASH_SIZE];
+  uint8_t out[SHA256_HASH_SIZE];
   hmac_sha256(kBytes, SHA256_HASH_SIZE, data, dataLen, kBytes);
   hmac_sha256(kBytes, SHA256_HASH_SIZE, vBytes, SHA256_HASH_SIZE, vBytes);
 
@@ -588,7 +588,7 @@ S256Point ECDSAKey::public_key() {
 
 char* ECDSAKey::get_wif_private_key(bool compressed, bool testnet) {
   const size_t input_len = (compressed ? 34 : 33);
-  unsigned char input[input_len] = {0};
+  uint8_t input[input_len] = {0};
   input[0] = (testnet ? 0xef : 0x80);
   if (compressed) { input[33] = 0x01; }  
   memcpy(input + 1, this->privkey_bytes_, 32);

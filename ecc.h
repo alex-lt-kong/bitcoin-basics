@@ -146,7 +146,7 @@ public:
    * @param output_len pointer to memory where the method writes the length of the output DER hex string.
    * @returns a hex string representing the Signature in DER format
    */
-  unsigned char* get_der_format(size_t* output_len);
+  uint8_t* get_der_format(size_t* output_len);
 };
 
 /**
@@ -208,7 +208,7 @@ public:
    * If compression is enabled, the array is 33-byte long; otherwise it is 65-byte long.
    * Users are reminded to free() the pointer after use.
    */
-  unsigned char* get_sec_format(const bool compressed);
+  uint8_t* get_sec_format(const bool compressed);
   /**
    * @brief A detailed comment is not provided because it is still not sure about the purpose of this method...
    * @returns Pointer to a null-terminated string. Users are reminded to free() the pointer after use.
@@ -221,7 +221,7 @@ extern S256Point G;
 
 class ECDSAKey {
 protected:
-  unsigned char privkey_bytes_[32] = {0};
+  uint8_t privkey_bytes_[32] = {0};
   int512_t privkey_int_ = -1;
   /**
    * The public key in an ECDSA key pair. It is generated from G * private_key.
@@ -235,7 +235,7 @@ public:
    * @param private_key_bytes a pointer pointing to an array of bytes as the private_key_bytes
    * @param private_key_len length of the private_key_bytes in bytes. In the current design it can't be greater than 32.
    */
-  ECDSAKey(const unsigned char* private_key_bytes, const size_t private_key_len);
+  ECDSAKey(const uint8_t* private_key_bytes, const size_t private_key_len);
   /**
    * @brief Initialize an ECDSA private key object by providing a secret key in int512_t
    * @param private_key the private key
@@ -250,14 +250,14 @@ public:
    * @param msg_hash_len length of the double SHA256 hash, it should always be equal to SHA256_HASH_SIZE.
    * @returns a Signature object
    */
-  Signature sign(unsigned char* msg_hash, size_t msg_hash_len);
+  Signature sign(uint8_t* msg_hash, size_t msg_hash_len);
   /**
    * @brief Get a deterministic (instead of a random) K for ECDSA signature creation per RFC 6979
-   * @param msg_hash an unsigned char pointer pointing to the message in bytes
+   * @param msg_hash an uint8_t pointer pointing to the message in bytes
    * @param msg_hash_len length of the message
    * @return the deterministic K
    */
-  int512_t get_deterministic_k(unsigned char* msg_hash, size_t msg_hash_len);
+  int512_t get_deterministic_k(uint8_t* msg_hash, size_t msg_hash_len);
   /**
    * @brief Get the public key of this ECDSAKey instance
    */

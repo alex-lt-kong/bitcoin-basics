@@ -268,26 +268,26 @@ void testS256Verification() {
 
 void testBytesToInt512() {
   cout << "testBytesToInt512():" << endl;
-  unsigned char input0[] = { 0xff, 0x00 };
+  uint8_t input0[] = { 0xff, 0x00 };
   cout << "Result: " << get_int512_from_bytes(input0, sizeof(input0), true) << "\n"
        << "Expect: 65280"
        << endl;
   cout << "Result: " << get_int512_from_bytes(input0, sizeof(input0), false) << "\n"
        << "Expect: 255"
        << endl;
-  unsigned char input1[] = { 0xde, 0xad, 0xbe, 0xef };
+  uint8_t input1[] = { 0xde, 0xad, 0xbe, 0xef };
   cout << "Result: " << get_int512_from_bytes(input1, sizeof(input1), true) << "\n"
        << "Expect: 3735928559"
        << endl;
-  unsigned char input2[] = { 0x05, 0x43, 0x21, 0xde, 0xad, 0xbe, 0xef };
+  uint8_t input2[] = { 0x05, 0x43, 0x21, 0xde, 0xad, 0xbe, 0xef };
   cout << "Result: " << get_int512_from_bytes(input2, sizeof(input2), false) << "\n"
        << "Expect: 67482173399188229"
        << endl;
-  unsigned char input3[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+  uint8_t input3[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
   cout << "Result: " << get_int512_from_bytes(input3, sizeof(input3), false) << "\n"
        << "Expect: 0"
        << endl;
-  unsigned char input4[] = { 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xee };
+  uint8_t input4[] = { 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xee };
   cout << "Result: " << get_int512_from_bytes(input4, sizeof(input4), false) << "\n"
        << "Expect: 1123923222922975560859903"
        << endl;
@@ -296,14 +296,14 @@ void testBytesToInt512() {
 void testSignatureCreation() {
   cout << "testSignatureCreation():" << endl;
 
-  unsigned char secretChars[] = {'m', 'y', ' ', 's', 'e', 'c', 'r', 'e', 't' };
-  unsigned char secretBytes[SHA256_HASH_SIZE];
+  uint8_t secretChars[] = {'m', 'y', ' ', 's', 'e', 'c', 'r', 'e', 't' };
+  uint8_t secretBytes[SHA256_HASH_SIZE];
   cal_sha256_hash(secretChars, sizeof(secretChars), secretBytes);
   cal_sha256_hash(secretBytes, SHA256_HASH_SIZE, secretBytes);
   int512_t secret = get_int512_from_bytes(secretBytes, SHA256_HASH_SIZE);
 
-  unsigned char msgChars[] = {'m', 'y', ' ', 'm', 'e', 's', 's', 'a', 'g', 'e' };
-  unsigned char msgHashBytes[SHA256_HASH_SIZE];
+  uint8_t msgChars[] = {'m', 'y', ' ', 'm', 'e', 's', 's', 'a', 'g', 'e' };
+  uint8_t msgHashBytes[SHA256_HASH_SIZE];
   cal_sha256_hash(msgChars, sizeof(msgChars), msgHashBytes);
   cal_sha256_hash(msgHashBytes, SHA256_HASH_SIZE, msgHashBytes);
   int512_t msgHash = get_int512_from_bytes(msgHashBytes, SHA256_HASH_SIZE);
@@ -333,7 +333,7 @@ void testSignatureCreation() {
 
   pk = ECDSAKey(12345);
   
-  cal_sha256_hash((unsigned char*)"Programming Bitcoin!", strlen("Programming Bitcoin!"), msgHashBytes);
+  cal_sha256_hash((uint8_t*)"Programming Bitcoin!", strlen("Programming Bitcoin!"), msgHashBytes);
   cal_sha256_hash(msgHashBytes, SHA256_HASH_SIZE, msgHashBytes);  
   cout << "Result: Deterministic K: " << hex << pk.get_deterministic_k(msgHashBytes, SHA256_HASH_SIZE) << dec << "\n"
        << "Expect: Deterministic K: abef7a40d9bd76aef7ee7e733404ecfcd8041550a68625d7cc0608b0025038b1"
