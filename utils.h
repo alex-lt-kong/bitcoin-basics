@@ -72,15 +72,18 @@ void hash160(const uint8_t* input_bytes, const size_t input_len, uint8_t* hash);
  * @brief Read a variable integer from a pointer
  * @param ptr pointer to a series of bytes from where the variable int will be read. The function will
  * neither change the content pointed by the pointer nor move the pointer forward.
- * @returns the length of the variable integer being read
+ * @returns the uint64 decoded from a variable integer
+ * @note the current implementation supports little-endian architectures only
 */
-uint64_t read_variable_int(uint8_t* ptr, size_t* int_len);
+uint64_t read_variable_int(uint8_t* ptr);
 
 /**
- * @brief Encode an int64 to a variable integer
- * @param num
- * @returns the pointer to the encoded varint or NULL if error,
+ * @brief Encode an uint64 to a variable integer
+ * @param num the unsigned int64 to be encoded
+ * @param *int_len the length of the encoded variable integer (i.e., the size of the resultant bytes array)
+ * @returns the pointer to the encoded varint or NULL on error,
  * users are reminded to free() the pointer after using it.
+ * @note the current implementation supports little-endian architectures only
 */
-uint8_t* encode_variable_int(uint64_t num);
+uint8_t* encode_variable_int(const uint64_t num, size_t* int_len);
 #endif

@@ -25,8 +25,8 @@ Tx::~Tx() {
   }
 }
 
-void Tx::parse(uint8_t* serialization) {
+uint32_t Tx::parse(uint8_t* serialization) {
   uint8_t* ptr = serialization;
   unsigned int version = (ptr[0] << 0) | (ptr[1] << 8) | (ptr[2] << 16) | (ptr[3] << 24);
-  printf("%u\n", version);
+  return version;
 }

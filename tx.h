@@ -26,7 +26,7 @@ public:
    * @brief 
    * @param serialization the memory will NOT be managed by the method.
   */
-  static void parse(uint8_t* serialization);
+  static uint32_t parse(uint8_t* serialization);
   ~Tx();
 };
 
