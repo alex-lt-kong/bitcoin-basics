@@ -6,16 +6,44 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "./cryptographic-algorithms/sha256.h"
 #include "utils.h"
 
 using namespace std;
+
+class TxIn {
+private:
+  uint8_t prev_tx_id[SHA256_HASH_SIZE];
+  uint32_t prev_tx_idx;
+  void* script_sig;
+  uint32_t sequence;
+protected:
+public:
+  
+  /**
+   * @brief Constructor
+   * @param version
+   * @param tx_ins the memory will be managed by this Tx instance after being passed to it
+   * @param tx_outs the memory will be managed by this Tx instance after being passed to it
+   * @param locktime
+   * @param is_testnet
+   */
+  TxIn(const uint8_t* prev_tx_id, uint32_t prev_tx_idx, void* script_sig, uint32_t sequence);
+  TxIn();
+  void parse(stringstream* ss);
+  uint8_t* get_prev_tx_id();
+  uint32_t get_prev_tx_idx();
+  uint32_t get_sequence();
+
+  ~TxIn();
+};
 
 class Tx {
 private:
   uint32_t version = 0;
   size_t tx_in_count = 0;
-  uint8_t** tx_ins = nullptr;
-  uint8_t** tx_outs = nullptr;
+  vector<TxIn> tx_ins;
+  void* tx_outs = nullptr;
   unsigned int locktime = -1;
   bool is_testnet = false;
 protected:
@@ -28,7 +56,7 @@ public:
    * @param locktime
    * @param is_testnet
    */
-  Tx(int version, uint8_t** tx_ins, uint8_t** tx_outs, unsigned int locktime, bool is_testnet);
+  Tx(int version, vector<TxIn> tx_ins, void* tx_outs, unsigned int locktime, bool is_testnet);
   Tx();
   /**
    * @brief Fill in the Tx instance by parsing bytes from a stringstream.
@@ -36,6 +64,7 @@ public:
   void parse(stringstream* ss);
   uint32_t get_version();
   uint32_t get_tx_in_count();
+  vector<TxIn> get_tx_ins();
   void to_string();
   /**
    * @brief 
@@ -45,25 +74,5 @@ public:
   ~Tx();
 };
 
-class TxIn {
-private:
-  Tx prev_tx;
-  void* prev_index;
-  void* script_sig;
-  uint32_t sequence;
-protected:
-public:
-  /**
-   * @brief Constructor
-   * @param version
-   * @param tx_ins the memory will be managed by this Tx instance after being passed to it
-   * @param tx_outs the memory will be managed by this Tx instance after being passed to it
-   * @param locktime
-   * @param is_testnet
-   */
-  TxIn(Tx prev_tx, void* prev_index, void* script_sig, uint32_t sequence);
-  
-  ~TxIn();
-};
 
 #endif

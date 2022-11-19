@@ -113,6 +113,18 @@ void test_parse() {
   printf("Expected result: 1\n");
   printf("Function result: %u\n", my_tx.get_tx_in_count());
   printf("Expected result: 1\n");
+  vector<TxIn> tx_ins = my_tx.get_tx_ins();
+  uint8_t* prev_tx_id = tx_ins[0].get_prev_tx_id();
+  printf("Function result: ");
+  for (int i = 0; i < 32; ++i) {
+    printf("%02x", prev_tx_id[i]);
+  }
+  printf("\n");
+  printf("Expected result: d1c789a9c60383bf715f3f6ad9d14b91fe55f3deb369fe5d9280cb1a01793f81\n");
+  printf("Function result: %u\n", tx_ins[0].get_prev_tx_idx());
+  printf("Expected result: 0\n");
+  printf("Function result: %#02x\n", tx_ins[0].get_sequence());
+  printf("Expected result: 0xfffffffe\n");
   free(hex_input);
 }
 
