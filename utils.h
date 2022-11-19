@@ -70,12 +70,11 @@ void hash160(const uint8_t* input_bytes, const size_t input_len, uint8_t* hash);
 
 /**
  * @brief Read a variable integer from a pointer
- * @param ptr pointer to a series of bytes from where the variable int will be read. The function will
- * neither change the content pointed by the pointer nor move the pointer forward.
+ * @param ss a stringstream from which bytes will be read from
  * @returns the uint64 decoded from a variable integer
  * @note the current implementation supports little-endian architectures only
 */
-uint64_t read_variable_int(uint8_t* ptr);
+uint64_t read_variable_int(stringstream* ss);
 
 /**
  * @brief Encode an uint64 to a variable integer

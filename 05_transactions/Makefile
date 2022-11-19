@@ -4,22 +4,22 @@ main.out: main.o tx.o utils.o sha256.o ripemd160.o misc.o
 	g++ main.o tx.o utils.o sha256.o ripemd160.o misc.o -o main.out -I../cryptographic-algorithms -lboost_random $(OPT)
 
 main.o: main.cpp
-	g++ -c main.cpp -I../ -I../cryptographic-algorithms  $(OPT)
+	g++ -c main.cpp -I../ -I../cryptographic-algorithms $(OPT)
 
 tx.o: ../tx.cpp ../tx.h
-	g++ -c ../tx.cpp -I../cryptographic-algorithms  $(OPT)
+	g++ -c ../tx.cpp -I../cryptographic-algorithms $(OPT)
 
 sha256.o: ../cryptographic-algorithms/sha256.c ../cryptographic-algorithms/sha256.h
-	gcc -c ../cryptographic-algorithms/sha256.c  $(OPT)
+	gcc -c ../cryptographic-algorithms/sha256.c $(OPT)
 
 ripemd160.o: ../cryptographic-algorithms/ripemd160.c ../cryptographic-algorithms/ripemd160.h
-	gcc -c ../cryptographic-algorithms/ripemd160.c  $(OPT)
+	gcc -c ../cryptographic-algorithms/ripemd160.c $(OPT)
 
 misc.o: ../cryptographic-algorithms/misc.c ../cryptographic-algorithms/misc.h
-	gcc -c ../cryptographic-algorithms/misc.c  $(OPT)
+	gcc -c ../cryptographic-algorithms/misc.c $(OPT)
 
 utils.o: ../utils.cpp ../utils.h
-	g++ -c ../utils.cpp -I../cryptographic-algorithms  $(OPT)
+	g++ -c ../utils.cpp -I../cryptographic-algorithms $(OPT)
 
 clean:
 	rm *.o

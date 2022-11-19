@@ -124,24 +124,31 @@ void hash160(const uint8_t* input_bytes, const size_t input_len, uint8_t* hash) 
   cal_rpiemd160_hash(sha256_hash, SHA256_HASH_SIZE, hash);
 }
 
-uint64_t read_variable_int(uint8_t* ptr) {
+uint64_t read_variable_int(stringstream* ss) {
   // Per C standard, shifting by a negative value or a value greater than or equal to the number of bits of
   // the left operand is undefined. We need to cast the left operand to a bigger type of integer to make it work.
   // I believe prt[1] does not need to be casted, just casting it make the code a bit prettier... 
-  if (ptr[0] == 0xfd) {
+
+  uint8_t buf[8] = {0}; // defining buf as char[] seems to trigger UB
+  (*ss).read((char*)buf, 1);  
+  
+  if (buf[0] == 0xfd) {
     // the next two bytes are the number
-    return ((uint64_t)ptr[1] << 0) | ((uint64_t)ptr[2] << 8);
-  } else if (ptr[0] == 0xfe) {
+    (*ss).read((char*)buf, 2);
+    return (buf[0] << 0) | (buf[1] << 8);
+  } else if (buf[0] == 0xfe) {
     // the next four bytes are the number
-    return ((uint64_t)ptr[1] << 0) | ((uint64_t)ptr[2] << 8) | ((uint64_t)ptr[3] << 16) | ((uint64_t)ptr[4] << 24);
-  } else if (ptr[0] == 0xff) {
+    (*ss).read((char*)buf, 4);
+    return ((uint64_t)buf[0] << 0) | ((uint64_t)buf[1] << 8) | ((uint64_t)buf[2] << 16) | ((uint64_t)buf[3] << 24);
+  } else if (buf[0] == 0xff) {
     // the next eight bytes are the number
+    (*ss).read((char*)buf, 8);
     return (
-      ((uint64_t)ptr[1] << 0)  | ((uint64_t)ptr[2] << 8)  | ((uint64_t)ptr[3] << 16) | ((uint64_t)ptr[4] << 24) |
-      ((uint64_t)ptr[5] << 32) | ((uint64_t)ptr[6] << 40) | ((uint64_t)ptr[7] << 48) | ((uint64_t)ptr[8] << 56)
+      ((uint64_t)buf[1] << 0)  | ((uint64_t)buf[1] << 8)  | ((uint64_t)buf[2] << 16) | ((uint64_t)buf[3] << 24) |
+      ((uint64_t)buf[4] << 32) | ((uint64_t)buf[5] << 40) | ((uint64_t)buf[6] << 48) | ((uint64_t)buf[7] << 56)
     );
   } else {
-    return ptr[0];
+    return buf[0];
   }
 }
 
