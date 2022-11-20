@@ -121,10 +121,19 @@ void test_parse() {
   }
   printf("\n");
   printf("Expected result: d1c789a9c60383bf715f3f6ad9d14b91fe55f3deb369fe5d9280cb1a01793f81\n");
-  printf("Function result: %u\n", tx_ins[0].get_prev_tx_idx());
-  printf("Expected result: 0\n");
-  printf("Function result: %#02x\n", tx_ins[0].get_sequence());
-  printf("Expected result: 0xfffffffe\n");
+  printf("Function get_prev_tx_idx() result: %u\n", tx_ins[0].get_prev_tx_idx());
+  printf("Expected get_prev_tx_idx() result: 0\n");
+  printf("Function get_sequence() result: %#02x\n", tx_ins[0].get_sequence());
+  printf("Expected get_sequence() result: 0xfffffffe\n");
+
+  printf("Function get_tx_out_count() result: %u\n", my_tx.get_tx_out_count());
+  printf("Expected get_tx_out_count() result: 2\n");
+
+  vector<TxOut> tx_outs = my_tx.get_tx_outs();
+  printf("Function tx_outs[0].get_amount() result: %lu\n", tx_outs[0].get_amount());
+  printf("Expected tx_outs[0].get_amount() result: 32454049\n");
+  printf("Function tx_outs[1].get_amount() result: %lu\n", tx_outs[1].get_amount());
+  printf("Expected tx_outs[1].get_amount() result: 10011545\n");
   free(hex_input);
 }
 

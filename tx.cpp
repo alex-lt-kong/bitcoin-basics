@@ -1,6 +1,6 @@
 #include "tx.h"
 
-Tx::Tx(int version, vector<TxIn> tx_ins, void* tx_outs, unsigned int locktime, bool is_testnet) {
+Tx::Tx(int version, vector<TxIn> tx_ins, vector<TxOut> tx_outs, unsigned int locktime, bool is_testnet) {
   this->version = version;
   this->tx_ins = tx_ins;
   this->tx_outs = tx_outs;
@@ -25,6 +25,12 @@ void Tx::parse(stringstream* ss) {
     tx_in.parse(ss);
     this->tx_ins.push_back(tx_in);
   }
+  this->tx_out_count = read_variable_int(ss);
+  for (size_t i = 0; i < this->tx_out_count; ++i) {
+    TxOut tx_out = TxOut();
+    tx_out.parse(ss);
+    this->tx_outs.push_back(tx_out);
+  }
 }
 
 uint32_t Tx::get_version() {
@@ -35,8 +41,16 @@ uint32_t Tx::get_tx_in_count() {
   return this->tx_in_count;
 }
 
+uint32_t Tx::get_tx_out_count() {
+  return this->tx_out_count;
+}
+
 vector<TxIn> Tx::get_tx_ins() {
   return this->tx_ins;
+}
+
+vector<TxOut> Tx::get_tx_outs() {
+  return this->tx_outs;
 }
 
 Tx::~Tx() {}
@@ -80,4 +94,33 @@ uint32_t TxIn::get_sequence() {
 }
 
 TxIn::~TxIn() {
+}
+
+
+
+
+TxOut::TxOut(const uint64_t amount, void* script_pubkey) {
+  this->amount = amount;
+  this->script_pubkey = script_pubkey;
+}
+
+TxOut::TxOut() {}
+
+void TxOut::parse(stringstream* ss) {
+  uint8_t buf[8];
+  ss->read((char*)buf, 8);
+  this->amount = (
+    buf[0] << 0 | buf[1] << 8 | buf[2] << 16 | buf[3] << 24
+  );
+  uint64_t script_len = read_variable_int(ss);
+  char* dummy = (char*)malloc(sizeof(char) * script_len);
+  ss->read(dummy, script_len); // The parsing of script will be skipped for the time being.
+  free(dummy);
+}
+
+uint64_t TxOut::get_amount() {
+  return this->amount;
+}
+
+TxOut::~TxOut() {
 }
