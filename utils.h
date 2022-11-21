@@ -3,8 +3,10 @@
 
 #include <stdint.h>
 #include <boost/multiprecision/cpp_int.hpp>
-#include "sha256.h"
-#include "ripemd160.h"
+
+#include "./cryptographic-algorithms/src/sha256.h"
+#include "./cryptographic-algorithms/src/ripemd160.h"
+#include "./cryptographic-algorithms/src/misc.h"
 
 using namespace boost::multiprecision;
 using namespace std;

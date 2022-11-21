@@ -4,7 +4,7 @@
 
 #include "tx.h"
 #include "utils.h"
-#include "./cryptographic-algorithms/misc.h"
+#include "./cryptographic-algorithms/src/misc.h"
 
 using namespace std;
 

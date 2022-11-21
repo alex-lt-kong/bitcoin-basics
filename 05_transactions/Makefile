@@ -9,14 +9,14 @@ main.o: main.cpp
 tx.o: ../tx.cpp ../tx.h
 	g++ -c ../tx.cpp -I../cryptographic-algorithms $(OPT)
 
-sha256.o: ../cryptographic-algorithms/sha256.c ../cryptographic-algorithms/sha256.h
-	gcc -c ../cryptographic-algorithms/sha256.c $(OPT)
+sha256.o: ../cryptographic-algorithms/src/sha256.c ../cryptographic-algorithms/src/sha256.h
+	gcc -c ../cryptographic-algorithms/src/sha256.c $(OPT)
 
-ripemd160.o: ../cryptographic-algorithms/ripemd160.c ../cryptographic-algorithms/ripemd160.h
-	gcc -c ../cryptographic-algorithms/ripemd160.c $(OPT)
+ripemd160.o: ../cryptographic-algorithms/src/ripemd160.c ../cryptographic-algorithms/src/ripemd160.h
+	gcc -c ../cryptographic-algorithms/src/ripemd160.c $(OPT)
 
-misc.o: ../cryptographic-algorithms/misc.c ../cryptographic-algorithms/misc.h
-	gcc -c ../cryptographic-algorithms/misc.c $(OPT)
+misc.o: ../cryptographic-algorithms/src/misc.c ../cryptographic-algorithms/src/misc.h
+	gcc -c ../cryptographic-algorithms/src/misc.c $(OPT)
 
 utils.o: ../utils.cpp ../utils.h
 	g++ -c ../utils.cpp -I../cryptographic-algorithms $(OPT)
