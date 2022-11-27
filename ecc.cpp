@@ -10,8 +10,6 @@
 
 #include "ecc.h"
 #include "utils.h"
-#include "hmac.h"
-#include "misc.h"
 
 using namespace std;
 using namespace boost::multiprecision;

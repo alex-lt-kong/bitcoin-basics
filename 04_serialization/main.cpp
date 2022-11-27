@@ -1,9 +1,8 @@
+#include <sstream>
+
 #include "ecc.h"
 #include "utils.h"
-#include "misc.h"
-#include "sha256.h"
-#include "hmac.h"
-#include <sstream>
+
 
 void test_uncompressed_sec_format() {
   cout << "test_uncompressed_sec_format():" << endl;
