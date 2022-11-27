@@ -1,7 +1,7 @@
 OPT = -O3 -Wall
 
 main.out: main.o tx.o utils.o sha256.o ripemd160.o misc.o
-	g++ main.o tx.o utils.o sha256.o ripemd160.o misc.o -o main.out -I../cryptographic-algorithms -lboost_random $(OPT)
+	g++ main.o tx.o utils.o sha256.o ripemd160.o misc.o -o main.out -I../cryptographic-algorithms -lboost_random $(OPT) -lcurl
 
 main.o: main.cpp
 	g++ -c main.cpp -I../ -I../cryptographic-algorithms $(OPT)

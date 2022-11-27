@@ -1,4 +1,4 @@
-# bitcoin-fundamentals
+# bitcoin-internals
 
 * The repo is still a work in progress..
 
@@ -11,14 +11,20 @@ in Jimmy Song's [Programming Bitcoin](https://www.oreilly.com/library/view/progr
     repo or in the [cryptographic-algorithms](https://github.com/alex-lt-kong/cryptographic-algorithms) 
 repo
 
-* Boost library is needed for 256-bit integer support: `apt install libboost-all-dev` 
-
 * The book's analogy on ECDSA makes the thing even more difficult to understand, may use this instead: https://cryptobook.nakov.com/digital-signatures/ecdsa-sign-verify-messages
 
 * The project is developed on little-endian architectures, some bitwise operations will definitely **not** work on big-endian architectures.
   Fortunately, Intel, AMD and most ARM CPUs are little-endian.
 
+## Dependancies:
+
+* Boost library is needed for 256-bit integer support: `apt install libboost-all-dev` 
+* cURL library is needed for network communication: `apt install libcurl4`
+
+
 ## Repo structure
 
+* `00-N`: test functions that make sure libraries work correctly. Bitcoin functionalities are implemented in
+`ecc.cpp`/`tx.cpp`.
 * `ecc.h`/`ecc.cpp`: implementation of the ECDSA algorithm from scratch.
 * `tx.h`/`tx.cpp`: transaction parser.
