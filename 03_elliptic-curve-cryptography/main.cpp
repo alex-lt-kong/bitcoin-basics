@@ -2,11 +2,9 @@
 #include <stdexcept>
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/integer/mod_inverse.hpp>
+
 #include "ecc.h"
 #include "utils.h"
-#include "misc.h"
-#include "sha256.h"
-#include "hmac.h"
 
 using namespace std;
 //namespace mp = boost::multiprecision;
