@@ -5,6 +5,7 @@
 
 #include "tx.h"
 #include "utils.h"
+#include "script.h"
 #include "op.h"
 #include "./cryptographic-algorithms/src/misc.h"
 #include "./cryptographic-algorithms/src/sha256.h"
@@ -94,9 +95,65 @@ void test_op_hash160() {
   printf("\n");
 }
 
+void test_script_parser() {
+  printf("test_script_parser():\n");
+  size_t input_len;
+  // The input hex string is from the book
+  char* hex_input = (char*)hex_string_to_bytes(
+    "6a47304402207899531a52d59a6de200179928ca900254a36b8dff8bb75f5f5d71b1cdc26125022008b422690b8461cb52c3cc30330b23d574351872b7c361e9aae3649071c1a7160121035d5c93d9ac96881f19ba1f686f15f009ded7c62efe85a872e6a19b43c15a2937",
+    &input_len
+  );
+  stringstream ss;
+  ss.write(hex_input, input_len);
+  free(hex_input);
+  Script my_script = Script();
+  bool ret_val = my_script.parse(&ss);
+  printf("Function my_script.parse(&ss) result: %d\n", ret_val);
+  printf("Expected my_script.parse(&ss) result: 1\n");
+  printf("Function my_script.get_cmds().size() result: %ld\n", my_script.get_cmds().size());
+  printf("Expected my_script.get_cmds().size() result: 2\n");
+  vector<vector<uint8_t>> cmds = my_script.get_cmds();
+  printf("Function cmds[0].data() result: %s\n", bytes_to_hex_string(cmds[0].data(), cmds[0].size(), false));
+  printf(
+    "Expected cmds[0].data() result: "
+    "304402207899531a52d59a6de200179928ca900254a36b8dff8bb75f5f5d71b1cdc2612502"
+    "2008b422690b8461cb52c3cc30330b23d574351872b7c361e9aae3649071c1a71601\n"
+  );
+  printf("Function cmds[1].data() result: %s\n", bytes_to_hex_string(cmds[1].data(), cmds[1].size(), false));
+  printf("Expected cmds[1].data() result: 035d5c93d9ac96881f19ba1f686f15f009ded7c62efe85a872e6a19b43c15a2937\n");
+
+
+  hex_input = (char*)hex_string_to_bytes(
+    "1976a914cebb2851a9c7cfe2582c12ecaf7f3ff4383d1dc088ac",
+    &input_len
+  );
+  // This test case is manually constructed from transaction:
+  // d21736be48b88d15591b101ecadcba8f65713876ffb2b29d60de01dfaef8b120
+  ss.clear();
+  ss.write(hex_input, input_len);
+  free(hex_input);
+  my_script = Script();
+  ret_val = my_script.parse(&ss);
+  printf("Function my_script.parse(&ss) result: %d\n", ret_val);
+  printf("Expected my_script.parse(&ss) result: 1\n");
+  printf("Function my_script.get_cmds().size() result: %ld\n", my_script.get_cmds().size());
+  printf("Expected my_script.get_cmds().size() result: 5\n");
+  cmds = my_script.get_cmds();
+  printf("Function cmds[0].data() result: %s\n", bytes_to_hex_string(cmds[0].data(), cmds[0].size(), false));
+  printf("Expected cmds[0].data() result: 76\n");
+  printf("Function cmds[1].data() result: %s\n", bytes_to_hex_string(cmds[1].data(), cmds[1].size(), false));
+  printf("Expected cmds[1].data() result: a9\n");
+  printf("Function cmds[2].data() result: %s\n", bytes_to_hex_string(cmds[2].data(), cmds[2].size(), false));
+  printf("Expected cmds[2].data() result: cebb2851a9c7cfe2582c12ecaf7f3ff4383d1dc0\n");
+  printf("Function cmds[3].data() result: %s\n", bytes_to_hex_string(cmds[3].data(), cmds[3].size(), false));
+  printf("Expected cmds[3].data() result: 88\n");
+  printf("Function cmds[4].data() result: %s\n", bytes_to_hex_string(cmds[4].data(), cmds[4].size(), false));
+}
+
 int main() {
   test_op_dup();
   test_op_hash256();
   test_op_hash160();
+  test_script_parser();
   return 0;
 }
