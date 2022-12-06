@@ -2,6 +2,8 @@
 #include <stack>
 #include <stdio.h>
 #include <stdlib.h>
+#include <CUnit/Basic.h>
+#include <CUnit/Automated.h>
 
 #include "tx.h"
 #include "utils.h"
@@ -150,7 +152,54 @@ void test_script_parser() {
   printf("Function cmds[4].data() result: %s\n", bytes_to_hex_string(cmds[4].data(), cmds[4].size(), false));
 }
 
+int init_suite_success(void) { return 0; }
+int init_suite_failure(void) { return -1; }
+int clean_suite_success(void) { return 0; }
+int clean_suite_failure(void) { return -1; }
+
+void test_success1(void)
+{
+   CU_ASSERT(1);
+}
+
+int get_num() {
+  return 2;
+}
+
+void test_success2(void)
+{
+   CU_ASSERT_NOT_EQUAL(2, get_num());
+}
+
 int main() {
+  CU_pSuite pSuite = NULL;
+   /* initialize the CUnit test registry */
+   if (CUE_SUCCESS != CU_initialize_registry())
+      return CU_get_error();
+   /* add a suite to the registry */
+   pSuite = CU_add_suite("Suite_success", init_suite_success, clean_suite_success);
+   if (NULL == pSuite) {
+      CU_cleanup_registry();
+      return CU_get_error();
+   }
+
+  printf("hello\n");
+   /* add the tests to the suite */
+   if ((NULL == CU_add_test(pSuite, "successful_test_1", test_success1)) ||
+       (NULL == CU_add_test(pSuite, "successful_test_2", test_success2)))
+   {
+      CU_cleanup_registry();
+      printf("hello\n");
+      return CU_get_error();
+   }
+
+  /* Run all tests using the basic interface */
+  CU_basic_set_mode(CU_BRM_VERBOSE);
+  CU_basic_run_tests();
+  printf("\n");
+  CU_basic_show_failures(CU_get_failure_list());
+  printf("\n\n");
+
   test_op_dup();
   test_op_hash256();
   test_op_hash160();

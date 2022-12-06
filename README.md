@@ -18,9 +18,9 @@ repo
 
 ## Dependancies:
 
-* Boost library is needed for 256-bit integer support: `apt install libboost-all-dev` 
-* cURL library is needed for network communication: `apt install libcurl4`
-
+* Boost for 256-bit integer support: `apt install libboost-all-dev` 
+* cURL for network communication: `apt install libcurl4`
+* CuTest for unit testing: `apt-get install libcunit1 libcunit1-doc libcunit1-dev`
 
 ## Repo structure
 
