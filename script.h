@@ -20,10 +20,10 @@ public:
   Script();
   /**
    * @brief Fill in the Script instance by parsing bytes from a stringstream.
-   * @param ss a stringstream from which bytes will be read from. Passing NULL/nullptr triggers undefined behaviors
+   * @param d a vector from which bytes will be read from. Passing NULL/nullptr triggers undefined behaviors
    * @returns whether the stringstream is parsed successfully
    */
-  bool parse(stringstream* ss);
+  bool parse(vector<uint8_t>& d);
   vector<vector<uint8_t>> get_cmds();
   ~Script();
 };

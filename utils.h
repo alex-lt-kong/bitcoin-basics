@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <boost/multiprecision/cpp_int.hpp>
+#include <vector>
 
 #include "./cryptographic-algorithms/src/sha256.h"
 #include "./cryptographic-algorithms/src/ripemd160.h"
@@ -76,7 +77,7 @@ void hash160(const uint8_t* input_bytes, const size_t input_len, uint8_t* hash);
  * @returns the uint64 decoded from a variable integer
  * @note the current implementation supports little-endian architectures only
 */
-uint64_t read_variable_int(stringstream* ss);
+uint64_t read_variable_int(vector<uint8_t>& d);
 
 /**
  * @brief Encode an uint64 to a variable integer

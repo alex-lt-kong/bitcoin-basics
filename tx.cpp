@@ -17,23 +17,25 @@ void Tx::to_string() {
   printf("This is only a dummy one at the moment!");
 }
 
-bool Tx::parse(stringstream* ss) {
-  char buf[4];
-  ss->read(buf, 4);
+bool Tx::parse(vector<uint8_t>& d) {
+  uint8_t buf[4];
+  memcpy(buf, d.data(), 4);
+  d.erase(d.begin(), d.begin() + 4);
   this->version = (buf[0] << 0 | buf[1] << 8 | buf[2] << 16 | buf[3] << 24);
-  this->tx_in_count = read_variable_int(ss);
+  this->tx_in_count = read_variable_int(d);
   for (size_t i = 0; i < this->tx_in_count; ++i) {
     TxIn tx_in = TxIn();
-    tx_in.parse(ss);
+    tx_in.parse(d);
     this->tx_ins.push_back(tx_in);
   }
-  this->tx_out_count = read_variable_int(ss);
+  this->tx_out_count = read_variable_int(d);
   for (size_t i = 0; i < this->tx_out_count; ++i) {
     TxOut tx_out = TxOut();
-    tx_out.parse(ss);
+    tx_out.parse(d);
     this->tx_outs.push_back(tx_out);
   }
-  ss->read(buf, 4);
+  memcpy(buf, d.data(), 4);
+  d.erase(d.begin(), d.begin() + 4);
   this->locktime = (buf[0] << 0 | buf[1] << 8 | buf[2] << 16 | buf[3] << 24);
   return true;
 }
@@ -54,8 +56,13 @@ size_t Tx::fetch_tx_cb(char *ptr, size_t size, size_t nmemb, void *This) {
   }
   memcpy(null_terminated_resp, ptr, realsize);
   size_t out_len;
-  char* hex_input = (char*)hex_string_to_bytes((char*)null_terminated_resp, &out_len);
-  ((Tx*)This)->fetched_ss->write(hex_input, realsize);
+  uint8_t* hex_input = hex_string_to_bytes((char*)null_terminated_resp, &out_len);
+  if (hex_input == NULL) {
+    return 0;
+  }
+  for (size_t i = 0; i < realsize; ++i) {
+    ((Tx*)This)->fetched_d->push_back(hex_input[i]);
+  }
   free(hex_input);
   return realsize;
 }
@@ -73,8 +80,8 @@ bool Tx::fetch(const uint8_t tx_id[SHA256_HASH_SIZE], const bool testnet) {
   CURLcode res;
  
   curl = curl_easy_init();
-  stringstream _ss = stringstream("");
-  this->fetched_ss = &_ss;
+  vector<uint8_t> _d;
+  this->fetched_d = &_d;
   bool retval = false;
   if(curl) {
     curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -88,7 +95,7 @@ bool Tx::fetch(const uint8_t tx_id[SHA256_HASH_SIZE], const bool testnet) {
       fprintf(stderr, "curl_easy_perform() failed: %s\n",
               curl_easy_strerror(res));
     else {
-       retval = this->parse(this->fetched_ss);
+       retval = this->parse(*(this->fetched_d));
     }
     /* always cleanup */
     curl_easy_cleanup(curl);    
@@ -144,17 +151,20 @@ TxIn::TxIn(const uint8_t* prev_tx_id, uint32_t prev_tx_idx, void* script_sig, ui
 
 TxIn::TxIn() {}
 
-void TxIn::parse(stringstream* ss) {
-  ss->read((char*)this->prev_tx_id, SHA256_HASH_SIZE);
+void TxIn::parse(vector<uint8_t>& d) {
+  memcpy(this->prev_tx_id, d.data(), SHA256_HASH_SIZE);
+  d.erase(d.begin(), d.begin() + SHA256_HASH_SIZE);
+  
   reverse(this->prev_tx_id, this->prev_tx_id + SHA256_HASH_SIZE);
   uint8_t buf[4];
-  ss->read((char*)buf, 4);
+  memcpy(buf, d.data(), 4);
+  d.erase(d.begin(), d.begin() + 4);
   this->prev_tx_idx = (buf[0] << 0 | buf[1] << 8 | buf[2] << 16 | buf[3] << 24);
-  uint64_t script_len = read_variable_int(ss);
-  char* dummy = (char*)malloc(sizeof(char) * script_len);
-  ss->read(dummy, script_len); // The parsing of script will be skipped for the time being.
-  free(dummy);
-  ss->read((char*)buf, 4);
+  uint64_t script_len = read_variable_int(d);
+  d.erase(d.begin(), d.begin() + script_len);
+  // The parsing of script will be skipped for the time being.
+  memcpy(buf, d.data(), 4);
+  d.erase(d.begin(), d.begin() + 4);
   this->sequence = (buf[0] << 0 | buf[1] << 8 | buf[2] << 16 | buf[3] << 24);
   // The sequence field doesn't appears to be useful for Bitcoin's operation now due to security concerns.
 }
@@ -191,16 +201,17 @@ TxOut::TxOut(const uint64_t amount, void* script_pubkey) {
 
 TxOut::TxOut() {}
 
-void TxOut::parse(stringstream* ss) {
+void TxOut::parse(vector<uint8_t>& d) {
   uint8_t buf[8];
-  ss->read((char*)buf, 8);
+  memcpy(buf, d.data(), 8);
+  d.erase(d.begin(), d.begin() + 8);
   this->amount = (
     buf[0] << 0 | buf[1] << 8 | buf[2] << 16 | buf[3] << 24
   );
-  uint64_t script_len = read_variable_int(ss);
-  char* dummy = (char*)malloc(sizeof(char) * script_len);
-  ss->read(dummy, script_len); // The parsing of script will be skipped for the time being.
-  free(dummy);
+  uint64_t script_len = read_variable_int(d);
+
+  d.erase(d.begin(), d.begin() + script_len);
+  // The parsing of script will be skipped for the time being.
 }
 
 uint64_t TxOut::get_amount() {

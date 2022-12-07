@@ -33,7 +33,7 @@ public:
   /**
    * @brief Fill in the TxOut instance by parsing bytes from a stringstream.
    */
-  void parse(stringstream* ss);
+  void parse(vector<uint8_t>& ss);
   uint8_t* serialize();
   uint64_t get_amount();
 
@@ -62,7 +62,7 @@ public:
   /**
    * @brief Fill in the TxIn instance by parsing bytes from a stringstream.
    */
-  void parse(stringstream* ss);
+  void parse(vector<uint8_t>& ss);
   /**
    * @brief get the ID of the previous transaction
    */
@@ -91,7 +91,7 @@ private:
   uint32_t locktime = -1;
   // Used to store the stringstream returned by cURL. As cURL's response is delivered through a callback method,
   // we need to save it to a variable and then read it from another method.
-  stringstream* fetched_ss;
+  vector<uint8_t>* fetched_d;
   bool is_testnet = false;
 
   static size_t fetch_tx_cb(char *ptr, size_t size, size_t nmemb, void *This);
@@ -111,7 +111,7 @@ public:
    * @brief Fill in the Tx instance by parsing bytes from a stringstream.
    * @returns whether the stringstream is parsed successfully
    */
-  bool parse(stringstream* ss);
+  bool parse(vector<uint8_t>& ss);
   /**
    * @brief Fill in the Tx instance by fetching bytes from a remote URL.
    * @returns whether the fetch()ing and subsequent parse()ing is successful
