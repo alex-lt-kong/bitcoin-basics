@@ -8,9 +8,11 @@ Tx::Tx(int version, vector<TxIn> tx_ins, vector<TxOut> tx_outs, unsigned int loc
   this->tx_outs = tx_outs;
   this->locktime = locktime;
   this->is_testnet = is_testnet;
+  this->curl_buffer = (uint8_t*)malloc(sizeof(uint8_t) * this->curl_buffer_size);
 }
 
 Tx::Tx() {
+  this->curl_buffer = (uint8_t*)malloc(sizeof(uint8_t) * this->curl_buffer_size);
 }
 
 void Tx::to_string() {
@@ -44,26 +46,13 @@ size_t Tx::fetch_tx_cb(char *ptr, size_t size, size_t nmemb, void *This) {
   // The method is designed this way following the instructions here:
   // https://daniel.haxx.se/blog/2021/09/27/common-mistakes-when-using-libcurl/
   size_t realsize = size * nmemb;
-  /*
-  for (int i = 0; i < realsize; ++i) {
-    printf("%c", ptr[i]);
-  }
-  printf("\n");
-  */
-  uint8_t* null_terminated_resp = (uint8_t*)calloc(realsize + 1, sizeof(uint8_t));
-  if (null_terminated_resp == NULL) {
-    return 0;
-  }
-  memcpy(null_terminated_resp, ptr, realsize);
-  size_t out_len;
-  uint8_t* hex_input = hex_string_to_bytes((char*)null_terminated_resp, &out_len);
-  if (hex_input == NULL) {
-    return 0;
-  }
   for (size_t i = 0; i < realsize; ++i) {
-    ((Tx*)This)->fetched_d->push_back(hex_input[i]);
+    ((Tx*)This)->curl_buffer[((Tx*)This)->curl_buffer_end++] = ptr[i];
+    if (((Tx*)This)->curl_buffer_end >= ((Tx*)This)->curl_buffer_size) {
+      fprintf(stderr, "Buffer overflow?!\n");
+      return 0;
+    }
   }
-  free(hex_input);
   return realsize;
 }
 
@@ -80,8 +69,6 @@ bool Tx::fetch(const uint8_t tx_id[SHA256_HASH_SIZE], const bool testnet) {
   CURLcode res;
  
   curl = curl_easy_init();
-  vector<uint8_t> _d;
-  this->fetched_d = &_d;
   bool retval = false;
   if(curl) {
     curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -95,7 +82,7 @@ bool Tx::fetch(const uint8_t tx_id[SHA256_HASH_SIZE], const bool testnet) {
       fprintf(stderr, "curl_easy_perform() failed: %s\n",
               curl_easy_strerror(res));
     else {
-       retval = this->parse(*(this->fetched_d));
+      retval = true;
     }
     /* always cleanup */
     curl_easy_cleanup(curl);    
@@ -105,6 +92,17 @@ bool Tx::fetch(const uint8_t tx_id[SHA256_HASH_SIZE], const bool testnet) {
 
 uint32_t Tx::get_version() {
   return this->version;
+}
+
+/**
+ * @brief returns the internal cURL buffer. Do NOT modify the content of it!
+*/
+uint8_t* Tx::get_curl_buffer() {
+  return this->curl_buffer;
+}
+
+size_t Tx::get_curl_buffer_end() {
+  return this->curl_buffer_end;
 }
 
 uint32_t Tx::get_tx_in_count() {
@@ -138,7 +136,9 @@ uint32_t Tx::get_fee() {
   return input_sum - output_sum;
 }
 
-Tx::~Tx() {}
+Tx::~Tx() {
+  free(this->curl_buffer);
+}
 
 
 

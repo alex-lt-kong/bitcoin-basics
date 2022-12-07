@@ -92,6 +92,9 @@ private:
   // Used to store the stringstream returned by cURL. As cURL's response is delivered through a callback method,
   // we need to save it to a variable and then read it from another method.
   vector<uint8_t>* fetched_d;
+  size_t curl_buffer_size = 65536;
+  size_t curl_buffer_end = 0;
+  uint8_t* curl_buffer;
   bool is_testnet = false;
 
   static size_t fetch_tx_cb(char *ptr, size_t size, size_t nmemb, void *This);
@@ -113,8 +116,9 @@ public:
    */
   bool parse(vector<uint8_t>& ss);
   /**
-   * @brief Fill in the Tx instance by fetching bytes from a remote URL.
-   * @returns whether the fetch()ing and subsequent parse()ing is successful
+   * @brief Fetch data from a remote URL for parse()ing. Users need to get the fetched data with
+   * get_curl_buffer() and get_curl_buffer_end().
+   * @returns whether the fetch()ing is successful
    */
   bool fetch(const uint8_t tx_id[SHA256_HASH_SIZE], const bool testnet);
   uint32_t get_version();
@@ -124,7 +128,8 @@ public:
   vector<TxOut> get_tx_outs();
   uint32_t get_locktime();
   uint32_t get_fee();
-
+  uint8_t* get_curl_buffer();
+  size_t get_curl_buffer_end();
   void to_string();
   /**
    * @brief 
