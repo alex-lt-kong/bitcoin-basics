@@ -82,6 +82,7 @@ bool Tx::fetch(const uint8_t tx_id[SHA256_HASH_SIZE], const bool testnet) {
       fprintf(stderr, "curl_easy_perform() failed: %s\n",
               curl_easy_strerror(res));
     else {
+      this->curl_buffer[this->curl_buffer_end++] = '\0';
       retval = true;
     }
     /* always cleanup */
@@ -183,7 +184,16 @@ uint32_t TxIn::get_sequence() {
 
 uint64_t TxIn::get_value(const bool testnet) {
   Tx tx = Tx();
-  tx.fetch(this->get_prev_tx_id(), testnet);
+  if (!tx.fetch(this->get_prev_tx_id(), testnet)) {
+    fprintf(stderr, " Failed to fetch() tx_id\n");
+    return 0;
+  }
+  size_t hex_len;
+  uint8_t* hex_input = hex_string_to_bytes((char*)tx.get_curl_buffer(), &hex_len);
+  vector<uint8_t> d(hex_len);
+  memcpy(d.data(), hex_input, hex_len);
+  free(hex_input);
+  tx.parse(d);
   vector<TxOut> tx_outs = tx.get_tx_outs();
   return tx_outs[this->get_prev_tx_idx()].get_amount();
 }
