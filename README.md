@@ -20,11 +20,11 @@ repo
 
 * Boost for 256-bit integer support: `apt install libboost-all-dev` 
 * cURL for network communication: `apt install libcurl4`
-* CuTest for unit testing: `apt-get install libcunit1 libcunit1-doc libcunit1-dev`
+* Criterion for unit testing: `apt install libcriterion-dev libcriterion3`
 
 ## Repo structure
 
-* `00-N`: test functions that make sure libraries work correctly. Bitcoin functionalities are implemented in
-`ecc.cpp`/`tx.cpp`.
-* `ecc.h`/`ecc.cpp`: implementation of the ECDSA algorithm from scratch.
-* `tx.h`/`tx.cpp`: transaction parser.
+* `00-N`: driver functions that make sure libraries work correctly. Bitcoin functionalities are implemented in:
+  * `ecc.h`/`ecc.cpp`: implementation of the ECDSA algorithm from scratch.
+  * `script.cpp`/`script.h`: Script parser.
+  * `tx.h`/`tx.cpp`: transaction parser.
