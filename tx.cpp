@@ -202,8 +202,6 @@ TxIn::~TxIn() {
 }
 
 
-
-
 TxOut::TxOut(const uint64_t amount, void* script_pubkey) {
   this->amount = amount;
   this->script_pubkey = script_pubkey;
