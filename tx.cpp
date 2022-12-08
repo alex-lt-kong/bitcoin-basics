@@ -8,16 +8,9 @@ Tx::Tx(int version, vector<TxIn> tx_ins, vector<TxOut> tx_outs, unsigned int loc
   this->tx_outs = tx_outs;
   this->locktime = locktime;
   this->is_testnet = is_testnet;
-  this->curl_buffer = (uint8_t*)malloc(sizeof(uint8_t) * this->curl_buffer_size);
 }
 
-Tx::Tx() {
-  this->curl_buffer = (uint8_t*)malloc(sizeof(uint8_t) * this->curl_buffer_size);
-}
-
-void Tx::to_string() {
-  printf("This is only a dummy one at the moment!");
-}
+Tx::Tx() {}
 
 bool Tx::parse(vector<uint8_t>& d) {
   uint8_t buf[4];
@@ -42,68 +35,78 @@ bool Tx::parse(vector<uint8_t>& d) {
   return true;
 }
 
-size_t Tx::fetch_tx_cb(char *ptr, size_t size, size_t nmemb, void *This) {
+size_t Tx::fetch_tx_cb(char *contents, size_t size, size_t nmemb, void *userp) {
   // The method is designed this way following the instructions here:
   // https://daniel.haxx.se/blog/2021/09/27/common-mistakes-when-using-libcurl/
+  // https://curl.se/libcurl/c/getinmemory.html
   size_t realsize = size * nmemb;
-  for (size_t i = 0; i < realsize; ++i) {
-    ((Tx*)This)->curl_buffer[((Tx*)This)->curl_buffer_end++] = ptr[i];
-    if (((Tx*)This)->curl_buffer_end >= ((Tx*)This)->curl_buffer_size) {
-      fprintf(stderr, "Buffer overflow?!\n");
-      return 0;
-    }
+  struct CurlMemBufStruct *mem = (struct CurlMemBufStruct *)userp;
+
+  uint8_t* ptr = (uint8_t*)realloc(mem->buf, mem->size + realsize + 1);
+  if(!ptr) {
+    fprintf(stderr, "not enough memory (realloc returned NULL)\n");
+    return 0;
   }
+  mem->buf = ptr;
+  memcpy(&(mem->buf[mem->size]), contents, realsize);
+  mem->size += realsize;
+  mem->buf[mem->size] = 0; // This makes sure that the ultimate result is always null-terminated
   return realsize;
 }
 
-bool Tx::fetch(const uint8_t tx_id[SHA256_HASH_SIZE], const bool testnet) {
-  char* tx_id_bytes = bytes_to_hex_string(tx_id, SHA256_HASH_SIZE, false);
+int Tx::fetch_tx(const uint8_t tx_id[SHA256_HASH_SIZE], const bool testnet, vector<uint8_t>& d) {
+  char* tx_id_str = bytes_to_hex_string(tx_id, SHA256_HASH_SIZE, false);
+  if (tx_id_str == NULL) {
+    fprintf(stderr, "Failed to get tx_id string.\n");    
+    return 1;
+  }
+  if (strlen(tx_id_str) != SHA256_HASH_SIZE * 2) {
+    fprintf(stderr, "Invalid tx_id string length: %lu\n", strlen(tx_id_str));
+    free(tx_id_str);
+    return 2;
+  }
   char url[PATH_MAX] = {0};
   if (testnet) {
-    snprintf(url, PATH_MAX, "https://blockstream.info/testnet/api/tx/%s/hex", tx_id_bytes);
+    snprintf(url, PATH_MAX - 128, "https://blockstream.info/testnet/api/tx/%s/hex", tx_id_str);
   } else {
-    snprintf(url, PATH_MAX, "https://blockstream.info/api/tx/%s/hex", tx_id_bytes);
+    snprintf(url, PATH_MAX - 128, "https://blockstream.info/api/tx/%s/hex", tx_id_str);
   }  
-  free(tx_id_bytes);
+  free(tx_id_str);
+  struct CurlMemBufStruct curl_buf;
+  curl_buf.buf = (uint8_t*)malloc(1);  /* will be grown as needed by the realloc above */
+  curl_buf.size = 0;    /* no data at this point */
   CURL *curl;
   CURLcode res;
  
   curl = curl_easy_init();
-  bool retval = false;
+  int retval = 0;
   if(curl) {
     curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, Tx::fetch_tx_cb);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&curl_buf);
     /* Perform the request, res will get the return code */
     res = curl_easy_perform(curl);
     /* Check for errors */
-    if(res != CURLE_OK)
-      fprintf(stderr, "curl_easy_perform() failed: %s\n",
-              curl_easy_strerror(res));
-    else {
-      this->curl_buffer[this->curl_buffer_end++] = '\0';
-      retval = true;
+    if(res != CURLE_OK) {
+      fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+      retval = 4;
+    } else {
+      d.resize(curl_buf.size + 1);      
+      memcpy(d.data(), curl_buf.buf, curl_buf.size);
+      d[curl_buf.size] = '\0';
     }
     /* always cleanup */
     curl_easy_cleanup(curl);    
+  } else {
+    fprintf(stderr, "Failed to initialize curl.\n");
+    return 3;
   }
   return retval;
 }
 
 uint32_t Tx::get_version() {
   return this->version;
-}
-
-/**
- * @brief returns the internal cURL buffer. Do NOT modify the content of it!
-*/
-uint8_t* Tx::get_curl_buffer() {
-  return this->curl_buffer;
-}
-
-size_t Tx::get_curl_buffer_end() {
-  return this->curl_buffer_end;
 }
 
 uint32_t Tx::get_tx_in_count() {
@@ -137,9 +140,7 @@ uint32_t Tx::get_fee() {
   return input_sum - output_sum;
 }
 
-Tx::~Tx() {
-  free(this->curl_buffer);
-}
+Tx::~Tx() {}
 
 
 
@@ -184,13 +185,14 @@ uint32_t TxIn::get_sequence() {
 
 uint64_t TxIn::get_value(const bool testnet) {
   Tx tx = Tx();
-  if (!tx.fetch(this->get_prev_tx_id(), testnet)) {
+  vector<uint8_t> d(64);
+  if (Tx::fetch_tx(this->get_prev_tx_id(), testnet, d) != 0) {
     fprintf(stderr, " Failed to fetch() tx_id\n");
     return 0;
   }
   size_t hex_len;
-  uint8_t* hex_input = hex_string_to_bytes((char*)tx.get_curl_buffer(), &hex_len);
-  vector<uint8_t> d(hex_len);
+  uint8_t* hex_input = hex_string_to_bytes((char*)d.data(), &hex_len);
+  d.resize(hex_len); // let's re-use the same vector...
   memcpy(d.data(), hex_input, hex_len);
   free(hex_input);
   tx.parse(d);

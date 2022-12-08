@@ -11,6 +11,11 @@
 
 using namespace std;
 
+struct CurlMemBufStruct {
+  uint8_t *buf;
+  size_t size;
+};
+
 class Tx;
 
 class TxOut {
@@ -65,6 +70,7 @@ public:
   void parse(vector<uint8_t>& ss);
   /**
    * @brief get the ID of the previous transaction
+   * @returns the ID of the previous transaction. As specified in Bitcoin's protocol, the ID is a SHA256_HASH
    */
   uint8_t* get_prev_tx_id();
   /**
@@ -89,15 +95,8 @@ private:
   vector<TxIn> tx_ins;
   vector<TxOut> tx_outs;
   uint32_t locktime = -1;
-  // Used to store the stringstream returned by cURL. As cURL's response is delivered through a callback method,
-  // we need to save it to a variable and then read it from another method.
-  vector<uint8_t>* fetched_d;
-  size_t curl_buffer_size = 65536;
-  size_t curl_buffer_end = 0;
-  uint8_t* curl_buffer;
   bool is_testnet = false;
-
-  static size_t fetch_tx_cb(char *ptr, size_t size, size_t nmemb, void *This);
+  static size_t fetch_tx_cb(char *content, size_t size, size_t nmemb, void *userp);
 protected:
 public:
   /**
@@ -116,11 +115,15 @@ public:
    */
   bool parse(vector<uint8_t>& ss);
   /**
-   * @brief Fetch data from a remote URL for parse()ing. Users need to get the fetched data with
-   * get_curl_buffer() and get_curl_buffer_end().
-   * @returns whether the fetch()ing is successful
+   * @brief Fetch transaction data (essentially a series of bytes) from a remote URL and deliver them to a vector.
+   * 
+   * @param tx_id The transaction ID
+   * @param testnet testnet or mainnet
+   * @param d a vector reference which will be resize()ed and where the bytes will be written to.
+   * Given the design of the REST API, a '\0' will always be appended to make d.data() null-terminated
+   * @return 0 means success, otherwise error code.
    */
-  bool fetch(const uint8_t tx_id[SHA256_HASH_SIZE], const bool testnet);
+  int static fetch_tx(const uint8_t tx_id[SHA256_HASH_SIZE], const bool testnet, vector<uint8_t>& d);
   uint32_t get_version();
   uint32_t get_tx_in_count();
   uint32_t get_tx_out_count();
@@ -128,8 +131,6 @@ public:
   vector<TxOut> get_tx_outs();
   uint32_t get_locktime();
   uint32_t get_fee();
-  uint8_t* get_curl_buffer();
-  size_t get_curl_buffer_end();
   void to_string();
   /**
    * @brief 
