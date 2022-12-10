@@ -37,7 +37,7 @@ void test_der_sig_format() {
   size_t output_len;
   der = sig.get_der_format(&output_len);
   cout << "Function result: ";
-  for (int i = 0; i < output_len; ++i)
+  for (size_t i = 0; i < output_len; ++i)
     cout << hex << setfill('0') << setw(2) << (int)der[i] << "";
   cout << endl;
   cout << "Expected result: "
