@@ -41,10 +41,10 @@ vector<uint8_t> Script::serialize() {
       /*
         data/operand needs two bytes to encode, we need to encode 76 and then encode its real length.
         In Jimmy Song's implementation, an exception will be thrown is operand_len > 520.
-        This may make the client strictly follows the Bitcoin, but it may cause the client fail to parse some
-        transactions on Bitcoin's main chain (such as this one: d29c9c0e8e4d2a9790922af73f0b8d51f0bd4bb19940d9cf910ead8fbe85bc9b).
-        As a result, we don't enforce the rule here.
-        Some discussion here:
+        This may make the client strictly follow the Bitcoin specs, but it may cause the client fail to parse some
+        transactions on Bitcoin's main chain (such as this one:
+        d29c9c0e8e4d2a9790922af73f0b8d51f0bd4bb19940d9cf910ead8fbe85bc9b).
+        As a result, we don't enforce the rule here. Some relevant discussion:
         https://bitcoin.stackexchange.com/questions/78572/op-return-max-bytes-clarification
       */
       d.push_back(77); // OP_PUSHDATA2
