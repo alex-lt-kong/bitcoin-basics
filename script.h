@@ -24,6 +24,11 @@ public:
    * @returns whether the stringstream is parsed successfully
    */
   bool parse(vector<uint8_t>& d);
+  /**
+   * @brief Generate a series of bytes representing the cmds we parse()
+   * @returns a vector contains bytes or an empty vector on error. Error info will be sent to stderr.
+  */
+  vector<uint8_t> serialize();
   vector<vector<uint8_t>> get_cmds();
   ~Script();
 };

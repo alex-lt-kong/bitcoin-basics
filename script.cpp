@@ -8,6 +8,62 @@ Script:: Script(vector<vector<uint8_t>> cmds) {
 Script::Script() {
 
 }
+vector<uint8_t> Script::serialize() {
+  vector<uint8_t> d(0);
+  if (this->cmds.size() == 0) {
+    fprintf(stderr, "this->cmds is empty, serialize() is not supposed to be called!\n");
+    return vector<uint8_t>(0);
+  }
+  size_t idx = 0;
+  while (idx < this->cmds.size()) {
+    if (this->cmds[idx].size() == 1) { // it must be an opcode
+      if (this->cmds[idx][0] >= 78 || this->cmds[idx][0] == 0) {
+        d.push_back(this->cmds[idx][0]);
+        ++idx;
+        continue;
+      }
+      fprintf(stderr, "this is supposed to be impossible: %d\n", this->cmds[idx][0]);
+      // it seems to me that an operand must be at least two-byte long--first byte denotes the length of data (whose
+      // value is 1) and the 2nd byte is the operand
+      return vector<uint8_t>(0);
+    }
+    size_t operand_len = this->cmds[idx].size();
+    if (operand_len < 75) {
+      d.push_back(operand_len);
+      // data/operand does not need any extra bytes to encode, we directly push_back() operand_len
+    }  
+    else if (operand_len > 75 && operand_len < 256) {
+      // data/operand needs one byte to encode, we need to encode 76 and then encode its real length
+      d.push_back(76); // OP_PUSHDATA1
+      d.push_back((uint8_t)operand_len); // there should be no wrapping.
+    }
+    else {
+      /*
+        data/operand needs two bytes to encode, we need to encode 76 and then encode its real length.
+        In Jimmy Song's implementation, an exception will be thrown is operand_len > 520.
+        This may make the client strictly follows the Bitcoin, but it may cause the client fail to parse some
+        transactions on Bitcoin's main chain (such as this one: d29c9c0e8e4d2a9790922af73f0b8d51f0bd4bb19940d9cf910ead8fbe85bc9b).
+        As a result, we don't enforce the rule here.
+        Some discussion here:
+        https://bitcoin.stackexchange.com/questions/78572/op-return-max-bytes-clarification
+      */
+      d.push_back(77); // OP_PUSHDATA2
+      d.push_back((uint8_t)operand_len); // there should be wrapping, for 0x0A0B0C0D, it extracts 0D at 0
+      d.push_back((uint8_t)(operand_len >> 8)); // there should be wrapping, for 0x0A0B0C0D, it extracts 0C at 1      
+    }
+    for (size_t j = 0; j < operand_len; ++j) {
+      d.push_back(this->cmds[idx][j]);
+    }
+    ++idx;
+  }
+  size_t varint_len;
+  uint8_t* varint_bytes_size = encode_variable_int(d.size(), &varint_len);
+  for (int i = varint_len - 1; i >= 0; --i) {
+    d.insert(d.begin(), varint_bytes_size[i]);
+  }
+  free(varint_bytes_size);
+  return d;
+}
 
 bool Script::parse(vector<uint8_t>& d) {
   // https://en.bitcoin.it/wiki/Script
@@ -23,7 +79,7 @@ bool Script::parse(vector<uint8_t>& d) {
     ++ count;
     if (current >= 1 && current <= 75) {
       // an ordinary element should be between 1 to 75 bytes. If current is smaller then 75, it implies this component
-      // is an ordinary element
+      // is an ordinary element (i.e., data, not opcodes)
       vector<uint8_t> cmd(current);
       memcpy(cmd.data(), d.data(), current);
       d.erase(d.begin(), d.begin() + current);
@@ -45,13 +101,14 @@ bool Script::parse(vector<uint8_t>& d) {
       uint8_t buf[2];
       memcpy(buf, d.data(), 2);
       d.erase(d.begin(), d.begin() + 2);
-      data_length = buf[0] << 0 | buf[1] << 8;
-      vector<uint8_t> cmd(data_length);      
+      data_length = buf[0] << 0 | buf[1] << 8; // little-endian bytes to int
+      vector<uint8_t> cmd(data_length);
       memcpy(cmd.data(), d.data(), data_length);
       d.erase(d.begin(), d.begin() + data_length);
       this->cmds.push_back(cmd);
       count += data_length + 2;
     } else {
+      // otherwise it is an opcode
       vector<uint8_t> cmd{ current };
       this->cmds.push_back(cmd);
     }
