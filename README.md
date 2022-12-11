@@ -19,7 +19,7 @@ repo
 ## Dependancies:
 
 * Boost for 256-bit integer support: `apt install libboost-all-dev` 
-* cURL for network communication: `apt install libcurl4`
+* cURL for network communication: `apt-get install libcurl4-gnutls-dev`
 * Criterion for unit testing: `apt install libcriterion-dev libcriterion3`
 
 ## Repo structure
