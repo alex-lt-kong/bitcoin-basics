@@ -3,8 +3,8 @@
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/integer/mod_inverse.hpp>
 
-#include "ecc.h"
-#include "utils.h"
+#include "../src/ecc.h"
+#include "../src/utils.h"
 
 using namespace std;
 //namespace mp = boost::multiprecision;

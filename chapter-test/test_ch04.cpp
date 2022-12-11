@@ -1,7 +1,7 @@
 #include <sstream>
 
-#include "ecc.h"
-#include "utils.h"
+#include "../src/ecc.h"
+#include "../src/utils.h"
 
 
 void test_uncompressed_sec_format() {

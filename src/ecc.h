@@ -3,9 +3,9 @@
 
 #include <boost/multiprecision/cpp_int.hpp>
 
-#include "./cryptographic-algorithms/src/sha256.h"
-#include "./cryptographic-algorithms/src/hmac.h"
-#include "./cryptographic-algorithms/src/misc.h"
+#include "../cryptographic-algorithms/src/sha256.h"
+#include "../cryptographic-algorithms/src/hmac.h"
+#include "../cryptographic-algorithms/src/misc.h"
 
 using namespace std;
 using namespace boost::multiprecision;

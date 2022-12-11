@@ -24,7 +24,11 @@ repo
 
 ## Repo structure
 
-* `00-N`: driver functions that make sure libraries work correctly. Bitcoin functionalities are implemented in:
+* `chapter-test`: driver functions that make sure libraries work correctly. There is one test driver source code file
+for each chapter in Jimmy's book
+* `src`: source code that implements a Bitcoin client
   * `ecc.h`/`ecc.cpp`: implementation of the ECDSA algorithm from scratch.
-  * `script.cpp`/`script.h`: Script parser.
-  * `tx.h`/`tx.cpp`: transaction parser.
+  * `script.cpp`/`script.h`: parser and serializer of Bitcoin's Script language.
+  * `tx.h`/`tx.cpp`: transaction parser and serializer.
+  * `op.h`: define operations of Bitcoin's Script virtual machine.
+  * `utils.h`/`utils.cpp`: utility functions

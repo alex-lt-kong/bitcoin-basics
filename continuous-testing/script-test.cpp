@@ -2,9 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../tx.h"
-#include "../script.h"
-#include "../utils.h"
+#include "../src/tx.h"
+#include "../src/script.h"
+#include "../src/utils.h"
 #include "../cryptographic-algorithms/src/misc.h"
 
 using namespace std;
@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
     return 1;
   }
   size_t cmds_size = my_script.get_cmds().size();
-  if (cmds_size <= 1) {
+  if (cmds_size < 1) {
     fprintf(stderr, "unexpected cmds_size: %lu\n", cmds_size);
     return 1;
   }

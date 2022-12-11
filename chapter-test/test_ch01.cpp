@@ -1,8 +1,8 @@
 #include <iostream>
 #include <stdexcept>
 #include <math.h>
-#include "../ecc.h"
-#include "../utils.h"
+#include "../src/ecc.h"
+#include "../src/utils.h"
 
 using namespace std;
 

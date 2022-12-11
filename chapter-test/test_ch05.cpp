@@ -4,9 +4,9 @@
 #include <criterion/criterion.h>
 #include <criterion/new/assert.h>
 
-#include "tx.h"
-#include "utils.h"
-#include "./cryptographic-algorithms/src/misc.h"
+#include "../src/tx.h"
+#include "../src/utils.h"
+#include "../cryptographic-algorithms/src/misc.h"
 
 using namespace std;
 
