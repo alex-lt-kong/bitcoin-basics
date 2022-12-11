@@ -13,13 +13,15 @@ using namespace std;
 class Script {
 private:
   vector<vector<uint8_t>> cmds;
+  bool is_nonstandard;
 protected:
 public:
   
   Script(vector<vector<uint8_t>> cmds);
   Script();
   /**
-   * @brief Fill in the Script instance by parsing bytes from a stringstream.
+   * @brief Fill in the Script instance by parsing bytes from a stringstream. Script object has an is_nonstandard 
+   * member variable, it will be set to true if parse() method consider the input bytes are non-standard.
    * @param d a vector from which bytes will be read from. Passing NULL/nullptr triggers undefined behaviors
    * @returns whether the stringstream is parsed successfully
    */
@@ -30,6 +32,11 @@ public:
   */
   vector<uint8_t> serialize();
   vector<vector<uint8_t>> get_cmds();
+  /**
+   * @brief If the parse() method is called and a non-standard Script is parsed, a private is_nonstandard member variable
+   * will be set. Callers can query the status of it by calling this method.
+  */
+  bool is_nonstandard_script_parsed();
   ~Script();
 };
 

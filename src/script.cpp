@@ -3,11 +3,13 @@
 
 Script:: Script(vector<vector<uint8_t>> cmds) {
   this->cmds = cmds; // this makes a copy of cmds.
+  this->is_nonstandard = false;
 }
 
 Script::Script() {
-
+  this->is_nonstandard = false;
 }
+
 vector<uint8_t> Script::serialize() {
   vector<uint8_t> d(0);
   if (this->cmds.size() == 0) {
@@ -72,7 +74,7 @@ bool Script::parse(vector<uint8_t>& d) {
   uint8_t current = 0;
   size_t data_length = 0;
   this->cmds.clear();
-  
+  this->is_nonstandard = false;
   while (count < script_len) {
     if (d.size() == 0) {
       fprintf(stderr, "script_len indicates there are more bytes to read but the bytes vector already empty!\n");
@@ -84,6 +86,11 @@ bool Script::parse(vector<uint8_t>& d) {
     if (current >= 1 && current <= 75) {
       // an ordinary element should be between 1 to 75 bytes. If current is smaller then 75, it implies this component
       // is an ordinary element (i.e., data, not opcodes)
+      if (current > d.size()) {
+        fprintf(stderr, "WARNING: non-standard Script section detected: incorrect operand length\n");
+        current = d.size();
+        this->is_nonstandard = true;
+      }
       vector<uint8_t> cmd(current);
       memcpy(cmd.data(), d.data(), current);
       d.erase(d.begin(), d.begin() + current);
@@ -94,6 +101,11 @@ bool Script::parse(vector<uint8_t>& d) {
       // the element has.
       memcpy(&data_length, d.data(), 1);
       d.erase(d.begin());
+      if (data_length > d.size()) {
+        fprintf(stderr, "WARNING: non-standard Script section detected: incorrect operand length\n");
+        data_length = d.size();
+        this->is_nonstandard = true;
+      }
       vector<uint8_t> cmd(data_length);
       memcpy(cmd.data(), d.data(), data_length);
       d.erase(d.begin(), d.begin() + data_length);
@@ -106,6 +118,11 @@ bool Script::parse(vector<uint8_t>& d) {
       memcpy(buf, d.data(), 2);
       d.erase(d.begin(), d.begin() + 2);
       data_length = buf[0] << 0 | buf[1] << 8; // little-endian bytes to int
+      if (data_length > d.size()) {
+        fprintf(stderr, "WARNING: non-standard Script section detected: incorrect operand length\n");
+        data_length = d.size();
+        this->is_nonstandard = true;
+      }
       vector<uint8_t> cmd(data_length);
       memcpy(cmd.data(), d.data(), data_length);
       d.erase(d.begin(), d.begin() + data_length);
@@ -122,6 +139,10 @@ bool Script::parse(vector<uint8_t>& d) {
 
 vector<vector<uint8_t>> Script::get_cmds() {
   return this->cmds;
+}
+
+bool Script::is_nonstandard_script_parsed() {
+  return this->is_nonstandard;
 }
 
 Script::~Script() {}

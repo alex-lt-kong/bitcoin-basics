@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
     d.insert(d.begin(), input_len_varint[i]);
   }
   free(input_len_varint);
-
+  
   Script my_script = Script();
   bool retval = my_script.parse(d);  
   if (retval != true) {
@@ -37,13 +37,22 @@ int main(int argc, char **argv) {
     fprintf(stderr, "unexpected cmds_size: %lu\n", cmds_size);
     return 1;
   }
-  vector<uint8_t> out_d = my_script.serialize();
+  if (!my_script.is_nonstandard_script_parsed()) {
+    vector<uint8_t> out_d = my_script.serialize();
+    char* serialized_chrs = bytes_to_hex_string(out_d.data() + varint_len, out_d.size() - varint_len, false);
 
-  char* serialized_chrs = bytes_to_hex_string(out_d.data() + varint_len, out_d.size() - varint_len, false);
-  if (strcmp(serialized_chrs, argv[1]) != 0) {
-    fprintf(stderr, "parse() and serialize() result in different byte string: %s\n", serialized_chrs);
+    if (strcmp(serialized_chrs, argv[1]) != 0) {
+      fprintf(stderr, "parse() and serialize() result in different byte string:\nActual: %s\nExpect:%s\n", serialized_chrs, argv[1]);
+    }
+    free(serialized_chrs);
+  } else {
+    fprintf(
+      stderr,
+      "the Script is non-standard, the serialize() check will be skipped and "
+      "the serialize()'ed bytes array is very likely to be different\n"
+    );
   }
-  free(serialized_chrs);
+  
   printf("okay\n");
   return 0;
 }
