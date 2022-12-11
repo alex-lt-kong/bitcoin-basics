@@ -74,6 +74,10 @@ bool Script::parse(vector<uint8_t>& d) {
   this->cmds.clear();
   
   while (count < script_len) {
+    if (d.size() == 0) {
+      fprintf(stderr, "script_len indicates there are more bytes to read but the bytes vector already empty!\n");
+      return false;
+    }
     current = d[0];
     d.erase(d.begin());
     ++ count;

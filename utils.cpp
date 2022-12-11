@@ -66,7 +66,7 @@ char* encode_bytes_to_base58_string(
 ) {
   //cout << ceil(input_len * 1.36565823) - (input_len * 1.36565823) << endl;
   size_t output_len = ceil(input_len * 1.36565823) + 1; // +1 for null-termination.
-  int zero_count = 0;
+  size_t zero_count = 0;
   while (zero_count < input_len && input_bytes[zero_count] == 0)
 		++zero_count; // This is not strictly needed in the current implementation, but let's keep it anyway...
 	/*

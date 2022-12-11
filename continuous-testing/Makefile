@@ -1,13 +1,16 @@
 OPT = -O3 -Wall
 
-main.out: main.o tx.o utils.o sha256.o ripemd160.o misc.o
-	g++ main.o tx.o utils.o sha256.o ripemd160.o misc.o -o main.out -I../cryptographic-algorithms -lboost_random $(OPT) -lcurl
+main: script-test.o script.o tx.o utils.o sha256.o ripemd160.o misc.o
+	g++ script-test.o script.o tx.o utils.o sha256.o ripemd160.o misc.o -o script-test.out -I../cryptographic-algorithms -lboost_random $(OPT) -lcurl
 
-main.o: main.cpp
-	g++ -c main.cpp -I../ -I../cryptographic-algorithms $(OPT)
+script-test.o: script-test.cpp
+	g++ -c script-test.cpp -o script-test.o -I../ -I../cryptographic-algorithms $(OPT)
 
 tx.o: ../tx.cpp ../tx.h
 	g++ -c ../tx.cpp -I../cryptographic-algorithms $(OPT)
+
+script.o: ../script.cpp ../script.h
+	g++ -c ../script.cpp -I../cryptographic-algorithms $(OPT)
 
 sha256.o: ../cryptographic-algorithms/src/sha256.c ../cryptographic-algorithms/src/sha256.h
 	gcc -c ../cryptographic-algorithms/src/sha256.c $(OPT)
