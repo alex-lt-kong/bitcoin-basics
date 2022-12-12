@@ -113,7 +113,7 @@ Test(ch04_test_suite, test_der_sig_format) {
   free(hex_str);
 }
 
-Test(ch04_test_suite, test_base58) {
+Test(ch04_test_suite, test_bytes_to_base58) {
   const size_t test_case_size = 6;
   uint8_t inputs[test_case_size][128] = {
     {0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x20, 0x57, 0x6F, 0x72, 0x6C, 0x64, 0x21}, // Hello World!
@@ -141,26 +141,25 @@ Test(ch04_test_suite, test_base58) {
   }
 }
 
-void test_base58_checksum() {
-  cout << "test_base58_checksum():" << endl;
-  uint8_t input_bytes[] = {0xde, 0xad, 0xbe, 0xef};
-  char* output = encode_base58_checksum(input_bytes, sizeof(input_bytes));
-  cout << "Function result: " << output << "\n"
-       << "Expected result: eFGDJPketnz" << endl;
-  free(output);
-
-  uint8_t input_bytes1[] = "Hello world!";
-  output = encode_base58_checksum(input_bytes1, sizeof(input_bytes1)-1);
-  cout << "Function result: " << output << "\n"
-       << "Expected result: 9wWTEnNTWna86WmtFaRbXa" << endl;
-  free(output);
-
-  
-  char input_bytes2[] = "The quick brown fox jumps over the lazy dog.";
-  output = encode_base58_checksum((uint8_t*)input_bytes2, strlen(input_bytes2));
-  cout << "Function result: " << output << "\n"
-       << "Expected result: 46auvTd4NTVoJhFVnfh9reLsP21HQAQUFXCCBzNZjAPwQBRpaSp4aDLzWajGrqq21B" << endl;
-  free(output);
+Test(ch04_test_suite, test_base58_checksum) {
+  const size_t test_case_size = 3;
+  uint8_t input_bytes[test_case_size][64] = {
+    {0xde, 0xad, 0xbe, 0xef},
+    "Hello world!",
+    "The quick brown fox jumps over the lazy dog."
+  };
+  size_t input_bytes_len[test_case_size] = {4,12,44};
+  char expected_outputs[test_case_size][128] = {
+    "eFGDJPketnz",
+    "9wWTEnNTWna86WmtFaRbXa",
+    "46auvTd4NTVoJhFVnfh9reLsP21HQAQUFXCCBzNZjAPwQBRpaSp4aDLzWajGrqq21B"
+  };  
+  char* output;
+  for (size_t i = 0; i < test_case_size; ++i) {
+    output = encode_base58_checksum(input_bytes[i], input_bytes_len[i]);
+    cr_expect(eq(str, output, expected_outputs[i]));
+    free(output);
+  }
 }
 
 void test_hash160_address() {
