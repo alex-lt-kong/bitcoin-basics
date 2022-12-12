@@ -553,7 +553,7 @@ int512_t ECDSAKey::get_deterministic_k(uint8_t* msgHashBytes, size_t msgHashLen)
   data[SHA256_HASH_SIZE] = 0x00;
   memcpy(data + SHA256_HASH_SIZE + 1, this->privkey_bytes_, SHA256_HASH_SIZE);
   memcpy(data + SHA256_HASH_SIZE + 1 + SHA256_HASH_SIZE, msgHashBytes, SHA256_HASH_SIZE);
-  uint8_t out[SHA256_HASH_SIZE];
+
   hmac_sha256(kBytes, SHA256_HASH_SIZE, data, dataLen, kBytes);
   hmac_sha256(kBytes, SHA256_HASH_SIZE, vBytes, SHA256_HASH_SIZE, vBytes);
 

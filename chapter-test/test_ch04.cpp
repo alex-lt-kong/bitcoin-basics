@@ -1,19 +1,21 @@
 #include <sstream>
+#include <criterion/criterion.h>
+#include <criterion/new/assert.h>
 
 #include "../src/ecc.h"
 #include "../src/utils.h"
 
-
-void test_uncompressed_sec_format() {
+Test(ch04_test_suite, test_uncompressed_sec_format) {
   cout << "test_uncompressed_sec_format():" << endl;
   uint8_t private_key_bytes3[] = { 0x0d, 0xea, 0xdb, 0xee, 0xf1, 0x23, 0x45 };
   ECDSAKey pk3 = ECDSAKey(private_key_bytes3, sizeof(private_key_bytes3));
   uint8_t* sec = pk3.public_key().get_sec_format(false);
   for (int i = 0; i < (32 * 2 + 1); ++i)
-    cout << hex << setfill('0') << setw(2) << (int)sec[i] << "";
+  cout << hex << setfill('0') << setw(2) << (int)sec[i] << "";
   cout << endl;
   free(sec);
 }
+
 
 void test_compressed_sec_format() {
   cout << "test_compressed_sec_format():" << endl;
@@ -26,26 +28,24 @@ void test_compressed_sec_format() {
   free(sec);
 }
 
-
-void test_der_sig_format() {
+Test(ch04_test_suite, test_der_sig_format) {
   cout << "test_der_sig_format():" << endl;
   Signature sig = Signature(
     (int512_t)"0x37206a0610995c58074999cb9767b87af4c4978db68c06e8e6e81d282047a7c6",
     (int512_t)"0x8ca63759c1157ebeaec0d03cecca119fc9a75bf8e6d0fa65c841c8e2738cdaec"
   );
-  uint8_t* der;
   size_t output_len;
-  der = sig.get_der_format(&output_len);
-  cout << "Function result: ";
-  for (size_t i = 0; i < output_len; ++i)
-    cout << hex << setfill('0') << setw(2) << (int)der[i] << "";
-  cout << endl;
-  cout << "Expected result: "
-       << "3045022037206a0610995c58074999cb9767b87af4c4978db68c06e8e6e81d282047a7c6022100"
-       << "8ca63759c1157ebeaec0d03cecca119fc9a75bf8e6d0fa65c841c8e2738cdaec" << endl;
+  uint8_t* der = sig.get_der_format(&output_len);
+  char* hex_str = bytes_to_hex_string(der, output_len, false);
+  cr_expect(
+    eq(
+      str, hex_str,
+      "3045022037206a0610995c58074999cb9767b87af4c4978db68c06e8e6e81d282047a7c60221008ca63759c1157ebeaec0d03cecca119fc9a75bf8e6d0fa65c841c8e2738cdaec"
+    )
+  );
   free(der);
+  free(hex_str);
 }
-
 
 void test_base58() {
   cout << "test_base58():" << endl;
@@ -166,7 +166,7 @@ void test_privkey_wif_address() {
        << "Expected result: KwDiBf89QgGbjEhKnhXJuH7LrciVrZi3qYjgiuQJv1h8Ytr2S53a" << endl;
   free(addr);
 }
-
+/*
 int main() {
   test_uncompressed_sec_format();
   cout << endl;
@@ -182,4 +182,4 @@ int main() {
   cout << endl;
   test_privkey_wif_address();
   cout << endl;
-}
+}*/
