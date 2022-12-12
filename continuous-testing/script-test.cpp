@@ -39,6 +39,10 @@ int main(int argc, char **argv) {
   }
   if (!my_script.is_nonstandard_script_parsed()) {
     vector<uint8_t> out_d = my_script.serialize();
+    if (out_d.size() == 0) {
+      printf("failed to serialize() Script\n");
+      return 1;
+    }
     char* serialized_chrs = bytes_to_hex_string(out_d.data() + varint_len, out_d.size() - varint_len, false);
 
     if (strcmp(serialized_chrs, argv[1]) != 0) {

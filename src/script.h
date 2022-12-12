@@ -13,6 +13,7 @@ using namespace std;
 class Script {
 private:
   vector<vector<uint8_t>> cmds;
+  vector<bool> is_opcode;
   bool is_nonstandard;
 protected:
 public:

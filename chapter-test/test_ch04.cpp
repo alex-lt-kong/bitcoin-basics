@@ -162,67 +162,40 @@ Test(ch04_test_suite, test_base58_checksum) {
   }
 }
 
-void test_hash160_address() {
-  cout << "test_hash160_address():" << endl;
-  char* addr;
-
+Test(ch04_test_suite, test_hash160_address) {
   ECDSAKey key = ECDSAKey(5002);
-  addr = key.public_key().get_address(false, true);
-  cout << "Function result: "<< addr << "\n"
-       << "Expected result: mmTPbXQFxboEtNRkwfh6K51jvdtHLxGeMA" << endl;
-  free(addr);
-
-  ECDSAKey key2 = ECDSAKey((int512_t)2020 * 2020 * 2020 * 2020 * 2020);
-  addr = key2.public_key().get_address(true, true);
-  cout << "Function result: "<< addr << "\n"
-       << "Expected result: mopVkxp8UhXqRYbCYJsbeE1h1fiF64jcoH" << endl;
-  free(addr);
-
-  uint8_t priv_key3[] = {0x01, 0x23, 0x45, 0xde, 0xad, 0xbe, 0xef};
-  ECDSAKey key3= ECDSAKey(priv_key3, sizeof(priv_key3));
-  addr = key3.public_key().get_address(true, false);
-  cout << "Function result: "<< addr << "\n"
-       << "Expected result: 1F1Pn2y6pDb68E5nYJJeba4TLg2U7B6KF1" << endl;
-  free(addr);
-}
-
-void test_privkey_wif_address() {
-  cout << "test_privkey_wif_address():" << endl;
   char* addr;
-
-  ECDSAKey key = ECDSAKey(5003);
-  addr = key.get_wif_private_key(true, true);
-  cout << "Function result: "<< addr << "\n"
-       << "Expected result: cMahea7zqjxrtgAbB7LSGbcQUr1uX1ojuat9jZodMN8rFTv2sfUK" << endl;
+  addr = key.public_key().get_address(false, true);
+  cr_expect(eq(str, addr, "mmTPbXQFxboEtNRkwfh6K51jvdtHLxGeMA"));
   free(addr);
 
-  ECDSAKey key2 = ECDSAKey((int512_t)2021 * 2021 * 2021 * 2021 * 2021);
-  addr = key2.get_wif_private_key(false, true);
-  cout << "Function result: "<< addr << "\n"
-       << "Expected result: 91avARGdfge8E4tZfYLoxeJ5sGBdNJQH4kvjpWAxgzczjbCwxic" << endl;
+  key = ECDSAKey((int512_t)2020 * 2020 * 2020 * 2020 * 2020);
+  addr = key.public_key().get_address(true, true);
+  cr_expect(eq(str, addr, "mopVkxp8UhXqRYbCYJsbeE1h1fiF64jcoH"));
   free(addr);
 
-  uint8_t priv_key3[] = {0x05, 0x43, 0x21, 0xde, 0xad, 0xbe, 0xef};
-  ECDSAKey key3 = ECDSAKey(priv_key3, sizeof(priv_key3));
-  addr = key3.get_wif_private_key(true, false);
-  cout << "Function result: "<< addr << "\n"
-       << "Expected result: KwDiBf89QgGbjEhKnhXJuH7LrciVrZi3qYjgiuQJv1h8Ytr2S53a" << endl;
+  uint8_t priv_key[] = {0x01, 0x23, 0x45, 0xde, 0xad, 0xbe, 0xef};
+  key = ECDSAKey(priv_key, sizeof(priv_key) / sizeof(priv_key[0]));
+  addr = key.public_key().get_address(true, false);
+  cr_expect(eq(str, addr, "1F1Pn2y6pDb68E5nYJJeba4TLg2U7B6KF1"));
   free(addr);
 }
-/*
-int main() {
-  test_uncompressed_sec_format();
-  cout << endl;
-  test_compressed_sec_format();
-  cout << endl;
-  test_der_sig_format();
-  cout << endl;
-  test_base58();
-  cout << endl;
-  test_base58_checksum();
-  cout << endl;
-  test_hash160_address();
-  cout << endl;
-  test_privkey_wif_address();
-  cout << endl;
-}*/
+
+Test(ch04_test_suite, test_privkey_wif_address) {
+  ECDSAKey key = ECDSAKey(5003);
+  char* addr;
+  addr = key.get_wif_private_key(true, true);
+  cr_expect(eq(str, addr, "cMahea7zqjxrtgAbB7LSGbcQUr1uX1ojuat9jZodMN8rFTv2sfUK"));
+  free(addr);
+
+  key = ECDSAKey((int512_t)2021 * 2021 * 2021 * 2021 * 2021);
+  addr = key.get_wif_private_key(false, true);
+  cr_expect(eq(str, addr, "91avARGdfge8E4tZfYLoxeJ5sGBdNJQH4kvjpWAxgzczjbCwxic"));
+  free(addr);
+
+  uint8_t priv_key[] = {0x05, 0x43, 0x21, 0xde, 0xad, 0xbe, 0xef};
+  key = ECDSAKey(priv_key, sizeof(priv_key) / sizeof(priv_key[0]));
+  addr = key.get_wif_private_key(true, false);
+  cr_expect(eq(str, addr, "KwDiBf89QgGbjEhKnhXJuH7LrciVrZi3qYjgiuQJv1h8Ytr2S53a"));
+  free(addr);
+}

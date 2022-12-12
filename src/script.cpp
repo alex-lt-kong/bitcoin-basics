@@ -18,16 +18,15 @@ vector<uint8_t> Script::serialize() {
   }
   size_t idx = 0;
   while (idx < this->cmds.size()) {
-    if (this->cmds[idx].size() == 1) { // it must be an opcode
+    if (this->is_opcode[idx] == true) {
       if (this->cmds[idx][0] >= 78 || this->cmds[idx][0] == 0) {
         d.push_back(this->cmds[idx][0]);
         ++idx;
         continue;
+      } else {
+        fprintf(stderr, "Invalid opcode: %d\n", this->cmds[idx][0]);
+        return vector<uint8_t>(0);
       }
-      fprintf(stderr, "this is supposed to be impossible: %d\n", this->cmds[idx][0]);
-      // it seems to me that an operand must be at least two-byte long--first byte denotes the length of data (whose
-      // value is 1) and the 2nd byte is the operand
-      return vector<uint8_t>(0);
     }
     size_t operand_len = this->cmds[idx].size();
     if (operand_len < 75) {
@@ -74,6 +73,7 @@ bool Script::parse(vector<uint8_t>& d) {
   uint8_t current = 0;
   size_t data_length = 0;
   this->cmds.clear();
+  this->is_opcode.clear();
   this->is_nonstandard = false;
   while (count < script_len) {
     if (d.size() == 0) {
@@ -95,6 +95,7 @@ bool Script::parse(vector<uint8_t>& d) {
       memcpy(cmd.data(), d.data(), current);
       d.erase(d.begin(), d.begin() + current);
       this->cmds.push_back(cmd);
+      this->is_opcode.push_back(false);
       count += current;
     } else if (current == 76) {
       // 76 corresponds to OP_PUSHDATA1, meaning that we read the next byte, which specifies how many bytes
@@ -110,6 +111,7 @@ bool Script::parse(vector<uint8_t>& d) {
       memcpy(cmd.data(), d.data(), data_length);
       d.erase(d.begin(), d.begin() + data_length);
       this->cmds.push_back(cmd);
+      this->is_opcode.push_back(false);
       count += data_length + 1;
     } else if (current == 77) {
       // 77 corresponds to OP_PUSHDATA2, meaning that we read the next 2 bytes
@@ -127,12 +129,18 @@ bool Script::parse(vector<uint8_t>& d) {
       memcpy(cmd.data(), d.data(), data_length);
       d.erase(d.begin(), d.begin() + data_length);
       this->cmds.push_back(cmd);
+      this->is_opcode.push_back(false);
       count += data_length + 2;
     } else {
       // otherwise it is an opcode
       vector<uint8_t> cmd{ current };
       this->cmds.push_back(cmd);
+      this->is_opcode.push_back(true);
     }
+  }
+  if (count != script_len) {
+    this->cmds.clear();
+     this->is_opcode.clear();
   }
   return count == script_len;
 }
