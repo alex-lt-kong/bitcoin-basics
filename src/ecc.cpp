@@ -139,8 +139,8 @@ string FieldElement::to_string(bool inHex) {
 
 
 FieldElementPoint::FieldElementPoint(FieldElement x, FieldElement y, FieldElement a, FieldElement b) {
-  //if (x.prime() == y.prime() == a.prime() == b.prime()) { /*good*/ }
-  //else { throw invalid_argument("prime numbers are different"); }
+  if (x.prime() == y.prime() && y.prime() == a.prime() && a.prime() == b.prime()) { /*good*/ }
+  else { throw invalid_argument("prime numbers are different"); }
 
   this->x_ = FieldElement(x.num(), x.prime());
   this->y_ = FieldElement(y.num(), y.prime());
@@ -183,7 +183,7 @@ FieldElementPoint FieldElementPoint::operator+(const FieldElementPoint& other)
     throw std::invalid_argument("Two FieldElementPoints are not on the same curve");
   }
 
-  // Point at infinity is defined as I where point A + I = A. Visualization: ./00_assets/fig_02-15.png
+  // Point at infinity is defined as I where point A + I = A. Visualization: ./assets/fig_02-15.png
   if (this->infinity_) { return other; }
   if (other.infinity_) { return *this; }
   // meaning that A + (-A) = I. Visualization: ./00_assets/fig_02-15.png
@@ -192,7 +192,7 @@ FieldElementPoint FieldElementPoint::operator+(const FieldElementPoint& other)
   }
 
   if (*this == other && this->y_ == FieldElement(0, this->y_.prime())) {
-    // It means p1 == p2 and tangent is a vertical line. Visualization: ./00_assets/fig_02-19.png
+    // It means p1 == p2 and tangent is a vertical line. Visualization: ./assets/fig_02-19.png
     return FieldElementPoint(this->a_, this->b_);
   }  
   
@@ -201,7 +201,7 @@ FieldElementPoint FieldElementPoint::operator+(const FieldElementPoint& other)
   //It is NOT left undefined--it will be defined by the default constructor!
   if (this->x_ == other.x_ && this->y_ == other.y_) {
     // p1 == p2, need some calculus to derive formula: (slope = 3x^2 + a) / 2y
-    // Essentially this is the tangent line at P1. Visualization: ./00_assets/fig_02-18.png
+    // Essentially this is the tangent line at P1. Visualization: ./assets/fig_02-18.png
     slope = (this->x_.power(2) * 3 + this->a_) / (this->y_ * 2);
   } else {
     // general case. Visualization: ./00_assets/fig_02-11.png
@@ -265,10 +265,16 @@ bool FieldElementPoint::infinity() {
 }
 
 FieldElement FieldElementPoint::x() {
+  if (this->infinity_) {
+    throw invalid_argument("Point is at infinity, does not have x coordinate");
+  }
   return this->x_;
 }
 
 FieldElement FieldElementPoint::y() {
+  if (this->infinity_) {
+    throw invalid_argument("Point is at infinity, does not have y coordinate");
+  }
   return this->y_;
 }
 

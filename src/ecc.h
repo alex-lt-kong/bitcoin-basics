@@ -83,12 +83,15 @@ public:
    * @param y the y coordinate of the point
    * @param a the a coefficient as defined in the elliptic curve's canonical form
    * @param b the b coefficient as defined in the elliptic curve's canonical form
+   * @throw invalid_argument if a, b, x, y are not in the same finite field (i.e., their prime numbers are different)
+   * or if the point (x, y) is not on the curve
    */
   FieldElementPoint(FieldElement x, FieldElement y, FieldElement a, FieldElement b);
   /**
    * @brief Initialize a field element point at infinity "on" curve y^2 = x^3 + ax + b. No x and y are passed.
    * @param a the a coefficient as defined in the elliptic curve's canonical form
    * @param b the b coefficient as defined in the elliptic curve's canonical form
+   * @throw invalid_argument if a and b are not in the same finite field (i.e., their prime numbers are different)
    */
   FieldElementPoint(FieldElement a, FieldElement b);
   ~FieldElementPoint();
@@ -97,8 +100,21 @@ public:
   FieldElementPoint operator+=(const FieldElementPoint& other);
   FieldElementPoint operator*(const int512_t coef);
   string to_string(bool inHex=false);
+  /**
+   * @brief Check if the FieldElementPoint is at Infinity
+   */
   bool infinity();
+  /**
+   * @brief Get the x coordinate of the point 
+   * @return FieldElement 
+   * @throw invalid_argument if the point is at infinity
+   */
   FieldElement x();
+  /**
+   * @brief Get the y coordinate of the point 
+   * @return FieldElement 
+   * @throw invalid_argument if the point is at infinity
+   */
   FieldElement y();
   FieldElement a();
   FieldElement b();

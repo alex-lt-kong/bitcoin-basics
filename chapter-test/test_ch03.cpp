@@ -146,6 +146,7 @@ Test(ch03_test_suite, testFieldElementPointAddition) {
 
 Test(ch03_test_suite, testFieldElementPointScalarMultiplication) {
   int prime = 223;
+  int512_t num = -1;
   FieldElement a = FieldElement(0, prime);
   FieldElement b = FieldElement(7, prime);
 
@@ -158,12 +159,14 @@ Test(ch03_test_suite, testFieldElementPointScalarMultiplication) {
   y1 = FieldElement(105, prime);
   FieldElementPoint p1 = FieldElementPoint(x1, y1, a, b);
   res = p1 + p1;
+  cr_expect(res.infinity() == false);
   cr_expect(res.x().num() == 49);
   cr_expect(res.y().num() == 71);
   cr_expect(res.a().num() == 0);
   cr_expect(res.b().num() == 7);
 
   res = p1 * 2;
+  cr_expect(res.infinity() == false);
   cr_expect(res.x().num() == 49);
   cr_expect(res.y().num() == 71);
   cr_expect(res.a().num() == 0);
@@ -174,12 +177,14 @@ Test(ch03_test_suite, testFieldElementPointScalarMultiplication) {
   y1 = FieldElement(98, prime);
   p1 = FieldElementPoint(x1, y1, a, b);
   res = p1 + p1;
+  cr_expect(res.infinity() == false);
   cr_expect(res.x().num() == 64);
   cr_expect(res.y().num() == 168);
   cr_expect(res.a().num() == 0);
   cr_expect(res.b().num() == 7);
 
   res = p1 * 2;
+  cr_expect(res.infinity() == false);
   cr_expect(res.x().num() == 64);
   cr_expect(res.y().num() == 168);
   cr_expect(res.a().num() == 0);
@@ -190,23 +195,27 @@ Test(ch03_test_suite, testFieldElementPointScalarMultiplication) {
   p1 = FieldElementPoint(x1, y1, a, b);
   
   res = p1 + p1;
+  cr_expect(res.infinity() == false);
   cr_expect(res.x().num() == 36);
   cr_expect(res.y().num() == 111);
   cr_expect(res.a().num() == 0);
   cr_expect(res.b().num() == 7);
 
   res = p1 * 2;
+  cr_expect(res.infinity() == false);
   cr_expect(res.x().num() == 36);
   cr_expect(res.y().num() == 111);
   cr_expect(res.a().num() == 0);
   cr_expect(res.b().num() == 7);
 
   res = p1 * 4;
+  cr_expect(res.infinity() == false);
   cr_expect(res.x().num() == 194);
   cr_expect(res.y().num() == 51);
   cr_expect(res.a().num() == 0);
   cr_expect(res.b().num() == 7);
   res = p1 + p1 + p1 + p1;
+  cr_expect(res.infinity() == false);
   cr_expect(res.x().num() == 194);
   cr_expect(res.y().num() == 51);
   cr_expect(res.a().num() == 0);
@@ -214,41 +223,70 @@ Test(ch03_test_suite, testFieldElementPointScalarMultiplication) {
 
 
   res = p1 * 8;
+  cr_expect(res.infinity() == false);
   cr_expect(res.x().num() == 116);
   cr_expect(res.y().num() == 55);
   cr_expect(res.a().num() == 0);
   cr_expect(res.b().num() == 7);
   res = p1 + p1 + p1 + p1 + p1 + p1 + p1 + p1;
+  cr_expect(res.infinity() == false);
   cr_expect(res.x().num() == 116);
   cr_expect(res.y().num() == 55);
   cr_expect(res.a().num() == 0);
   cr_expect(res.b().num() == 7);
 
   res = p1 * 21;
-  cr_expect(res.x().num() == 194);
-  cr_expect(res.y().num() == 51);
+  cr_expect(res.infinity());
+  cr_expect(res.a().num() == 0);
+  cr_expect(res.b().num() == 7);
+  
+  res = p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1;
+  cr_expect(res.infinity());
+  
   cr_expect(res.a().num() == 0);
   cr_expect(res.b().num() == 7);
 
-  cout << "Result1: " << (p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1).to_string() << "\n"
-       << "Result2: " << (p1 * 21).to_string() << "\n"
-       << "Expect:  FieldElementPoint(Infinity)_0_7 FieldElement(223)"
-       << endl;
-
+  
+  try {
+    num = res.y().num();
+    cr_fail("Exception should be thrown.");
+  } catch (const invalid_argument& ia) {
+    cr_expect(num == -1);
+  }
   x1 = FieldElement(15, prime);
   y1 = FieldElement(86, prime);
   p1 = FieldElementPoint(x1, y1, a, b);
-  cout << "Result1: " << (p1 * 7).to_string() << "\n"
-       << "Result2: " << (p1 + p1 + p1 + p1 + p1 + p1 + p1).to_string() << "\n"
-       << "Expect:  FieldElementPoint(Infinity)_0_7 FieldElement(223)"
-       << endl;
-  cout << "Result1: " << (p1 * 8).to_string() << "\n"
-       << "Result2: " << (p1 + p1 + p1 + p1 + p1 + p1 + p1 + p1).to_string() << "\n"
-       << "Expect:  FieldElementPoint(15, 86)_0_7 FieldElement(223)"
-       << endl;
+  res = p1 * 7;
+  cr_expect(res.infinity());
+  num = -1;
+  try {
+    num = res.y().num();
+    cr_fail("Exception should be thrown.");
+  } catch (const invalid_argument& ia) {
+    cr_expect(num == -1);
+  }
+  cr_expect(res.a().num() == 0);
+  cr_expect(res.b().num() == 7);
+  res = res + p1;
+  cr_expect(res.x().num() == 15);
+  cr_expect(res.y().num() == 86);
+  cr_expect(res.a().num() == 0);
+  cr_expect(res.b().num() == 7);
+  
+  res = p1 * 8;
+  cr_expect(res.x().num() == 15);
+  cr_expect(res.y().num() == 86);
+  cr_expect(res.a().num() == 0);  
+  cr_expect(res.b().num() == 7);
+  
+  res = (p1 + p1 + p1 + p1) * 2;
+  cr_expect(res.x().num() == 15);
+  cr_expect(res.y().num() == 86);
+  cr_expect(res.a().num() == 0);
+  cr_expect(res.b().num() == 7);
 }
 
-void findOrderOfGroup() {
+Test(ch03_test_suite, findOrderOfGroup) {
   cout << "findOrderOfGroup():" << endl;
   int prime = 223;
   FieldElement a = FieldElement(0, prime);
@@ -263,13 +301,14 @@ void findOrderOfGroup() {
     p += orig;
     order ++;
   }
-  cout << "Result: Order of the group generated by " << orig.to_string() << " is: "<< order << "\n"
-       << "Expect: Order of the group generated by FieldElementPoint(15, 86)_0_7 FieldElement(223) is: 7" << endl;;
+  cr_expect(orig.x().num() == 15);
+  cr_expect(orig.y().num() == 86);
+  cr_expect(orig.a().num() == 0);
+  cr_expect(orig.b().num() == 7);
+  cr_expect(eq(int, order, 7));
 }
 
-
-void testSecp256k1() {
-  cout << "testSecp256k1():" << endl;
+Test(ch03_test_suite, testSecp256k1) {
   int512_t gx{"0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798"}; // string-based constructor
   int512_t gy{"0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8"};  
   // gx and gy are the coordinates of point g, which is the generator point, i.e., we add g to itself over and over again.
@@ -280,12 +319,26 @@ void testSecp256k1() {
   FieldElementPoint g = FieldElementPoint(
     FieldElement(gx, prime), FieldElement(gy, prime), FieldElement(0, prime), FieldElement(7, prime)
   );
-  cout << "Result: " << (g * order).to_string(true) << "\n"
-       << "Expect: FieldElementPoint(Infinity)_0_7 FieldElement(fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f)"
-       << endl;
-  cout << "Result: " << (g * order + g).to_string(true) << "\n"
-       << "Expect: FieldElementPoint(79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798, 483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8)_0_7 FieldElement(fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f)"
-       << endl;
+  FieldElementPoint res = g * order;
+  cr_expect(res.infinity());
+  cr_expect(res.a().num() == 0);
+  cr_expect(res.b().num() == 7);
+  cr_expect(res.a().prime() == (int512_t)"0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f");
+  cr_expect(res.infinity());
+  int512_t num = -1;
+  try {
+    num = res.x().num();
+    cr_fail("Exception should be thrown.");
+  } catch (const invalid_argument& ia) {
+    cr_expect(num == -1);
+  }
+
+  res = g * (order + 1);
+  cr_expect(res.a().num() == 0);
+  cr_expect(res.b().num() == 7);
+  cr_expect(res.x().num() == (int512_t)"0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798");
+  cr_expect(res.y().num() == (int512_t)"0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8");  
+  cr_expect(res.a().prime() == (int512_t)"0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f");
 }
 
 void testS256SubClass() {
