@@ -6,16 +6,19 @@
 #include "../src/utils.h"
 
 Test(ch04_test_suite, test_uncompressed_sec_format_from_bytes) {
-  const size_t test_case_size = 2;
-  uint8_t private_key_bytes[test_case_size][16] = {
+  const size_t test_case_size = 3;
+  uint8_t private_key_bytes[test_case_size][8] = {
+    {0x76, 0xE5, 0x4A, 0x40, 0xEF, 0xB6, 0x20}, // big-endian 2018 ^ 5 = 33466154331649568
     {0x00, 0x00, 0x13, 0x88}, // little-endian 5000 (0x1388)
     {0x0d, 0xea, 0xdb, 0xee, 0xf1, 0x23, 0x45} //0xdeadbeef12345   
   };
-  size_t private_bytes_sizes[test_case_size] = {4, 7};
+  size_t private_bytes_sizes[test_case_size] = {7, 4, 7};
   char expected_sec_strs[test_case_size][65 * 2 + 1] = {
+    "04027f3da1918455e03c46f659266a1bb5204e959db7364d2f473bdf8f0a13cc9dff87647fd023c13b4a4994f17691895806e1b40b57f4fd22581a4f46851f3b06",
     "04ffe558e388852f0120e46af2d1b370f85854a8eb0841811ece0e3e03d282d57c315dc72890a4f10a1481c031b03b351b0dc79901ca18a00cf009dbdb157a1d10",
-    "04d90cd625ee87dd38656dd95cf79f65f60f7273b67d3096e68bd81e4f5342691f842efa762fd59961d0e99803c61edba8b3e3f7dc3a341836f97733aebf987121"
+    "04d90cd625ee87dd38656dd95cf79f65f60f7273b67d3096e68bd81e4f5342691f842efa762fd59961d0e99803c61edba8b3e3f7dc3a341836f97733aebf987121"    
   };
+
   for (size_t i = 0; i < test_case_size; ++i) {
     ECDSAKey pk = ECDSAKey(private_key_bytes[i], private_bytes_sizes[i]);
     uint8_t* sec = pk.public_key().get_sec_format(false);
@@ -29,14 +32,16 @@ Test(ch04_test_suite, test_uncompressed_sec_format_from_bytes) {
 }
 
 Test(ch04_test_suite, test_uncompressed_sec_format_from_int512) {
-  const size_t test_case_size = 2;
+  const size_t test_case_size = 3;
   int512_t private_key_ints[test_case_size] = {
     5000,
-    33466154331649568 // 2018 ^ 5
+    (int512_t)33466154331649568, // 2018 ^ 5
+    (int512_t)3917405024756549   // big-endian 0xdeadbeef12345
   };
   char expected_sec_strs[test_case_size][65 * 2 + 1] = {
     "04ffe558e388852f0120e46af2d1b370f85854a8eb0841811ece0e3e03d282d57c315dc72890a4f10a1481c031b03b351b0dc79901ca18a00cf009dbdb157a1d10",
-    "04027f3da1918455e03c46f659266a1bb5204e959db7364d2f473bdf8f0a13cc9dff87647fd023c13b4a4994f17691895806e1b40b57f4fd22581a4f46851f3b06"
+    "04027f3da1918455e03c46f659266a1bb5204e959db7364d2f473bdf8f0a13cc9dff87647fd023c13b4a4994f17691895806e1b40b57f4fd22581a4f46851f3b06",
+    "04d90cd625ee87dd38656dd95cf79f65f60f7273b67d3096e68bd81e4f5342691f842efa762fd59961d0e99803c61edba8b3e3f7dc3a341836f97733aebf987121"
   };
   for (size_t i = 0; i < test_case_size; ++i) {
     ECDSAKey pk = ECDSAKey(private_key_ints[i]);
@@ -51,15 +56,17 @@ Test(ch04_test_suite, test_uncompressed_sec_format_from_int512) {
 }
 
 Test(ch04_test_suite, test_compressed_sec_format_from_bytes) {
-  const size_t test_case_size = 2;
-  uint8_t private_key_bytes[test_case_size][16] = {
-    {0x00, 0x00, 0x13, 0x89}, // little-endian 5001 (0x1389)
-    {0x0d, 0xea, 0xdb, 0xee, 0xf5, 0x43, 0x21} //0xdeadbeef54321 
+  const size_t test_case_size = 3;
+  uint8_t private_key_bytes[test_case_size][8] = {
+    {0x00, 0x00, 0x13, 0x89}, // big-endian 5001 (0x1389)
+    {0x0d, 0xea, 0xdb, 0xee, 0xf5, 0x43, 0x21}, //0xdeadbeef54321 
+    {0x77, 0x30, 0xC7, 0x81, 0xF7, 0xAE, 0x53} // big-endian 2019^5 = 7730C781F7AE53
   };
-  size_t private_bytes_sizes[test_case_size] = {4, 7};
+  size_t private_bytes_sizes[test_case_size] = {4, 7, 7};
   char expected_sec_strs[test_case_size][33 * 2 + 1] = {
     "0357a4f368868a8a6d572991e484e664810ff14c05c0fa023275251151fe0e53d1",
-    "0296be5b1292f6c856b3c5654e886fc13511462059089cdf9c479623bfcbe77690"
+    "0296be5b1292f6c856b3c5654e886fc13511462059089cdf9c479623bfcbe77690",
+    "02933ec2d2b111b92737ec12f1c5d20f3233a0ad21cd8b36d0bca7a0cfa5cb8701"
   };
   for (size_t i = 0; i < test_case_size; ++i) {
     ECDSAKey pk3 = ECDSAKey(private_key_bytes[i], private_bytes_sizes[i]);
@@ -74,14 +81,16 @@ Test(ch04_test_suite, test_compressed_sec_format_from_bytes) {
 }
 
 Test(ch04_test_suite, test_compressed_sec_format_from_int512) {
-  const size_t test_case_size = 2;
+  const size_t test_case_size = 3;
   int512_t private_key_ints[test_case_size] = {
     5001,
-    33549155665686099 // 2019 ^ 5
+    33549155665686099, // 2019 ^ 5
+    3917405025026849   // big-endian 0xdeadbeef54321
   };
   char expected_sec_strs[test_case_size][33 * 2 + 1] = {
     "0357a4f368868a8a6d572991e484e664810ff14c05c0fa023275251151fe0e53d1",
-    "02933ec2d2b111b92737ec12f1c5d20f3233a0ad21cd8b36d0bca7a0cfa5cb8701"
+    "02933ec2d2b111b92737ec12f1c5d20f3233a0ad21cd8b36d0bca7a0cfa5cb8701",
+    "0296be5b1292f6c856b3c5654e886fc13511462059089cdf9c479623bfcbe77690"
   };
   for (size_t i = 0; i < test_case_size; ++i) {
     ECDSAKey pk = ECDSAKey(private_key_ints[i]);

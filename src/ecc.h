@@ -261,8 +261,12 @@ public:
    * @brief Initialize an ECDSA private key object by providing a secret key in bytes
    * @param private_key_bytes a pointer pointing to an array of bytes as the private_key_bytes
    * @param private_key_len length of the private_key_bytes in bytes. In the current design it can't be greater than 32.
+   * @param reverse_byte_order this parameter is only useful if the private_keys_bytes are originally from a number,
+   * one needs to set this parameter correspondingly to let the constructor interpret the bytes array correctly.
+   * That is, for bit-endian number, set it to false; for little-endian number, set it to true.
+   * If the bytes array is given as it is, this can be left not set, which is default to false.
    */
-  ECDSAKey(const uint8_t* private_key_bytes, const size_t private_key_len);
+  ECDSAKey(const uint8_t* private_key_bytes, const size_t private_key_len, bool reverse_byte_order = false);
   /**
    * @brief Initialize an ECDSA private key object by providing a secret key in int512_t
    * @param private_key the private key

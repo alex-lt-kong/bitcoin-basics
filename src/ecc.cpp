@@ -506,12 +506,13 @@ S256Point G = S256Point(
     S256Element((int512_t)"0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8")
 );
 
-ECDSAKey::ECDSAKey(const uint8_t* private_key_bytes, const size_t private_key_length) {
+ECDSAKey::ECDSAKey(const uint8_t* private_key_bytes, const size_t private_key_length, bool reverse_byte_order) {
   assert (private_key_length <= SHA256_HASH_SIZE);
+  memset(this->privkey_bytes_, 0, SHA256_HASH_SIZE);
   memcpy(this->privkey_bytes_ + (SHA256_HASH_SIZE - private_key_length), private_key_bytes, private_key_length);
   // Note the below lines are the same as ECDSAKey::ECDSAKey(const int512_t private_key);
-  // But in C++ we cant call another constructor within an constructor easily.
-  this->privkey_int_ = get_int512_from_bytes(this->privkey_bytes_, SHA256_HASH_SIZE);
+  // But in C++ we cant call another constructor within a constructor easily.
+  this->privkey_int_ = get_int512_from_bytes(this->privkey_bytes_, SHA256_HASH_SIZE, !reverse_byte_order);
   this->public_key_ = G * privkey_int_;  
 }
 

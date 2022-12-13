@@ -287,7 +287,6 @@ Test(ch03_test_suite, testFieldElementPointScalarMultiplication) {
 }
 
 Test(ch03_test_suite, findOrderOfGroup) {
-  cout << "findOrderOfGroup():" << endl;
   int prime = 223;
   FieldElement a = FieldElement(0, prime);
   FieldElement b = FieldElement(7, prime);
@@ -337,43 +336,32 @@ Test(ch03_test_suite, testSecp256k1) {
   cr_expect(res.a().num() == 0);
   cr_expect(res.b().num() == 7);
   cr_expect(res.x().num() == (int512_t)"0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798");
-  cr_expect(res.y().num() == (int512_t)"0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8");  
+  cr_expect(res.y().num() == (int512_t)"0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8");
   cr_expect(res.a().prime() == (int512_t)"0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f");
 }
 
-void testS256SubClass() {
-  cout << "testS256SubClass():" << endl;
+Test(ch03_test_suite, testS256SubClass) {
   S256Element x = S256Element((int512_t)"0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798");
   S256Element y = S256Element((int512_t)"0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8");
   S256Element a = S256Element((int512_t)0);
   S256Element b = S256Element((int512_t)7);
   int512_t order{"0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141"};
   FieldElementPoint g = FieldElementPoint(x, y, a, b);
-  cout << "Result: " << (g * order).to_string(true) << "\n"
-       << "Expect: FieldElementPoint(Infinity)_0_7 FieldElement(fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f)"
-       << endl;
-  cout << "Result: " << (g * order + g).to_string(true) << "\n"
-       << "Expect: FieldElementPoint(79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798, 483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8)_0_7 FieldElement(fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f)"
-       << endl;
-
-  S256Point p1 = S256Point(x, y);
-  S256Point p2 = S256Point();
-  cout << "Result: " << p1.to_string() << "\n"
-       << "Expect: S256Point(79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798, 483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8)_0_7"
-       << endl;
-  cout << "Result: " << (p1 * order).to_string() << "\n"
-       << "Expect: S256Point(Infinity)_0_7"
-       << endl;
-  cout << "Result: " << (p1 * order + p1).to_string() << "\n"
-       << "Expect: S256Point(79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798, 483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8)_0_7"
-       << endl;
-  cout << "Result: " << p2.to_string() << "\n"
-       << "Expect: S256Point(Infinity)_0_7"
-       << endl;
+  FieldElementPoint res = g * order;
+  cr_expect(res.infinity());  
+  cr_expect(res.a().num() == 0);
+  cr_expect(res.b().num() == 7);
+  cr_expect(res.a().prime() == (int512_t)"0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f");
+  
+  res = g * order + g;
+  cr_expect(res.a().num() == 0);
+  cr_expect(res.b().num() == 7);
+  cr_expect(res.x().num() == (int512_t)"0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798");
+  cr_expect(res.y().num() == (int512_t)"0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8");
+  cr_expect(res.a().prime() == (int512_t)"0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f");
 }
 
-void testS256Verification() {
-  cout << "testS256Verification():" << endl;
+Test(ch03_test_suite, testS256Verification) {
   S256Point p1 = S256Point(
     (int512_t)"0x04519fac3d910ca7e7138f7013706f619fa8f033e6ec6e09370ea38cee6a7574",
     (int512_t)"0x82b51eab8c27c66e26c858a079bcdf4f1ada34cec420cafc7eac1a42216fb6c4"
@@ -382,9 +370,8 @@ void testS256Verification() {
     (int512_t)"0x37206a0610995c58074999cb9767b87af4c4978db68c06e8e6e81d282047a7c6",
     (int512_t)"0x8ca63759c1157ebeaec0d03cecca119fc9a75bf8e6d0fa65c841c8e2738cdaec"
   );
-  cout << "Result: " << p1.verify((int512_t)"0xbc62d4b80d9e36da29c16c5d4d9f11731f36052c72401a76c23c0fb5a9b74423", sig1) << "\n"
-       << "Expect: 1"
-       << endl;
+  cr_expect(eq(i32, p1.verify((int512_t)"0xbc62d4b80d9e36da29c16c5d4d9f11731f36052c72401a76c23c0fb5a9b74423", sig1), 1));
+  cr_expect(eq(i32, p1.verify((int512_t)"0xbc62d4b80d9e36da29c16c5d4d9f11731f36052c72401a76c23c0fb5a9b74422", sig1), 0));
 
   S256Point p2 = S256Point(
     (int512_t)"0x887387e452b8eacc4acfde10d9aaf7f6d9a0f975aabb10d006e4da568744d06c",
@@ -394,43 +381,36 @@ void testS256Verification() {
     (int512_t)"0xac8d1c87e51d0d441be8b3dd5b05c8795b48875dffe00b7ffcfac23010d3a395",
     (int512_t)"0x68342ceff8935ededd102dd876ffd6ba72d6a427a3edb13d26eb0781cb423c4"
   );
+  cr_expect(eq(i32, p2.verify((int512_t)"0xec208baa0fc1c19f708a9ca96fdeff3ac3f230bb4a7ba4aede4942ad003c0f60", sig2), 1));
+  cr_expect(eq(i32, p2.verify((int512_t)"0x7c076ff316692a3d7eb3c3bb0f8b1488cf72e1afcd929e29307032997a838a3d", sig2), 0));
+
   Signature sig3 = Signature(
     (int512_t)"0xeff69ef2b1bd93a66ed5219add4fb51e11a840f404876325a1e8ffe0529a2c",
     (int512_t)"0xc7207fee197d27c618aea621406f6bf5ef6fca38681d82b2f06fddbdce6feab6"
   );
-  cout << "Result: " << p2.verify((int512_t)"0xec208baa0fc1c19f708a9ca96fdeff3ac3f230bb4a7ba4aede4942ad003c0f60",sig2) << "\n"
-       << "Expect: 1"
-       << endl;
-  cout <<  "Result: " << p2.verify((int512_t)"0x7c076ff316692a3d7eb3c3bb0f8b1488cf72e1afcd929e29307032997a838a3d",sig3) << "\n"
-       << "Expect: 1"
-       << endl;
+  cr_expect(eq(i32, p2.verify((int512_t)"0xec208baa0fc1c19f708a9ca96fdeff3ac3f230bb4a7ba4aede4942ad003c0f60", sig3), 0));
+  cr_expect(eq(i32, p2.verify((int512_t)"0x7c076ff316692a3d7eb3c3bb0f8b1488cf72e1afcd929e29307032997a838a3d", sig3), 1));
 }
 
-void testBytesToInt512() {
-  cout << "testBytesToInt512():" << endl;
+Test(ch03_test_suite, testBytesToInt512) {
   uint8_t input0[] = { 0xff, 0x00 };
-  cout << "Result: " << get_int512_from_bytes(input0, sizeof(input0), true) << "\n"
-       << "Expect: 65280"
-       << endl;
-  cout << "Result: " << get_int512_from_bytes(input0, sizeof(input0), false) << "\n"
-       << "Expect: 255"
-       << endl;
+  cr_expect(get_int512_from_bytes(input0, sizeof(input0), true) == 65280);
+  cr_expect(get_int512_from_bytes(input0, sizeof(input0), false) == 255);
+
   uint8_t input1[] = { 0xde, 0xad, 0xbe, 0xef };
-  cout << "Result: " << get_int512_from_bytes(input1, sizeof(input1), true) << "\n"
-       << "Expect: 3735928559"
-       << endl;
+  cr_expect(get_int512_from_bytes(input1, sizeof(input1), true) == 3735928559);
+
   uint8_t input2[] = { 0x05, 0x43, 0x21, 0xde, 0xad, 0xbe, 0xef };
-  cout << "Result: " << get_int512_from_bytes(input2, sizeof(input2), false) << "\n"
-       << "Expect: 67482173399188229"
-       << endl;
+  cr_expect(get_int512_from_bytes(input2, sizeof(input2), false) == (int512_t)"67482173399188229");
+  
   uint8_t input3[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-  cout << "Result: " << get_int512_from_bytes(input3, sizeof(input3), false) << "\n"
-       << "Expect: 0"
-       << endl;
+  cr_expect(get_int512_from_bytes(input3, sizeof(input3), false) == 0);
+
   uint8_t input4[] = { 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xee };
-  cout << "Result: " << get_int512_from_bytes(input4, sizeof(input4), false) << "\n"
-       << "Expect: 1123923222922975560859903"
-       << endl;
+  cr_expect(get_int512_from_bytes(input4, sizeof(input4), false) == (int512_t)"1123923222922975560859903");
+
+  uint8_t input5[] = { 0x20, 0xB6, 0xEF, 0x40, 0x4A, 0xE5, 0x76 };
+  cr_expect(get_int512_from_bytes(input5, sizeof(input5), false) == (int512_t)"33466154331649568"); // 2018 ^ 5
 }
 
 void testSignatureCreation() {
