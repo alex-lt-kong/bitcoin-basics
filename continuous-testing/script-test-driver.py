@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+from base64 import decode
 import logging
 import requests
 import subprocess
@@ -43,6 +44,8 @@ for i in range(len(txes)):
         stdout, stderr = p.communicate()
         # stderr could contain some warning info, we will ignore them.
         retval = p.wait()
+        if stderr is not None and stderr.decode('utf8') != '':
+            print(stderr.decode('utf8'))
         if stdout.decode('utf8') == 'okay\n' and retval == 0:
             lgr.info(f'[{i+1}/{len(txes)}] {j+1}th input: test program [{test_program}] reports okay.')
         else:

@@ -41,6 +41,11 @@ public:
   FieldElement operator*(const FieldElement& other);
   FieldElement operator*(const int512_t other);
   FieldElement operator/(const FieldElement& other);
+  /**
+   * @brief Apply the exponentiation operation to the FieldElement object, using the object as base
+   * @param exponent
+   * @return 
+  */
   FieldElement power(int512_t exponent);
   string to_string(bool inHex=false);
   /**

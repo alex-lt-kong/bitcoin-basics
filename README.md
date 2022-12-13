@@ -32,4 +32,6 @@ for each chapter in Jimmy's book
   * `tx.h`/`tx.cpp`: transaction parser and serializer.
   * `op.h`: define operations of Bitcoin's Script virtual machine.
   * `utils.h`/`utils.cpp`: utility functions
-* `continuous-testing`: driver functions that test some critical functionals against Bitcoin blockchain explorer's result in realtime.
+* `continuous-testing`: driver functions that test some critical functionalities against Bitcoin blockchain explorer's result.
+The Python driver is designed to fetch the transactions from the latest block, so adding them to `crontab` and run it every
+~10 minutes means that each new block is throughly tested.
