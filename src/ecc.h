@@ -43,6 +43,12 @@ public:
   FieldElement operator/(const FieldElement& other);
   FieldElement power(int512_t exponent);
   string to_string(bool inHex=false);
+  /**
+   * @brief Get the number of the element. For the purpose of Bitcoin application, the number must be:
+   * 1. At most 512-bit long (in contrast, the long long type in C is 64-bit long)
+   * 2. A non-negative number smaller than the order (i.e. pre-defined prime) of the finite field   * 
+   * @return the number of the field element 
+   */
   int512_t num();
   int512_t prime();
 };
@@ -94,6 +100,8 @@ public:
   bool infinity();
   FieldElement x();
   FieldElement y();
+  FieldElement a();
+  FieldElement b();
 };
 
 /**

@@ -3,12 +3,12 @@ INCS = -I../cryptographic-algorithms -I../
 
 main.out: test_ch01.o test_ch02.o test_ch03.o test_ch04.o test_ch05.o test_ch06.o script.o tx.o utils.o sha256.o ripemd160.o misc.o ecc.o hmac.o sha1.o
 
-	g++ test_ch01.o               utils.o sha256.o misc.o ripemd160.o sha1.o ecc.o hmac.o -o test_ch01.out -lboost_random $(OPTS)
-	g++ test_ch02.o                                                                       -o test_ch02.out                $(OPTS)
-	g++ test_ch03.o               utils.o sha256.o misc.o ripemd160.o sha1.o ecc.o hmac.o -o test_ch03.out -lboost_random $(OPTS)
+	g++ test_ch01.o               utils.o sha256.o misc.o ripemd160.o sha1.o ecc.o hmac.o -o test_ch01.out                               -lboost_random $(OPTS)
+	g++ test_ch02.o                                                                       -o test_ch02.out                                              $(OPTS)
+	g++ test_ch03.o               utils.o sha256.o misc.o ripemd160.o sha1.o ecc.o hmac.o -o test_ch03.out                               -lboost_random $(OPTS) -lcriterion
 	g++ test_ch04.o               utils.o sha256.o misc.o ripemd160.o sha1.o ecc.o hmac.o -o test_ch04.out -I../cryptographic-algorithms -lboost_random $(OPT) -lcurl -lcriterion
-	g++ test_ch05.o script.o tx.o utils.o sha256.o misc.o ripemd160.o -o test_ch05.out -I../cryptographic-algorithms -lboost_random $(OPT) -lcurl -lcriterion
-	g++ test_ch06.o script.o tx.o utils.o sha256.o misc.o ripemd160.o -o test_ch06.out -I../cryptographic-algorithms -lboost_random $(OPT) -lcurl -lcriterion
+	g++ test_ch05.o script.o tx.o utils.o sha256.o misc.o ripemd160.o                     -o test_ch05.out -I../cryptographic-algorithms -lboost_random $(OPT) -lcurl -lcriterion
+	g++ test_ch06.o script.o tx.o utils.o sha256.o misc.o ripemd160.o                     -o test_ch06.out -I../cryptographic-algorithms -lboost_random $(OPT) -lcurl -lcriterion
 	
 
 test_ch01.o: test_ch01.cpp

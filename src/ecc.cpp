@@ -272,6 +272,14 @@ FieldElement FieldElementPoint::y() {
   return this->y_;
 }
 
+FieldElement FieldElementPoint::a() {
+  return this->a_;
+}
+
+FieldElement FieldElementPoint::b() {
+  return this->b_;
+}
+
 
 
 const int512_t S256Element::s256_prime_ = (int512_t)"0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f";

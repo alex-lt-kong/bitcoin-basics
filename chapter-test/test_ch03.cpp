@@ -2,64 +2,72 @@
 #include <stdexcept>
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/integer/mod_inverse.hpp>
+#include <criterion/criterion.h>
+#include <criterion/new/assert.h>
 
 #include "../src/ecc.h"
 #include "../src/utils.h"
 
 using namespace std;
-//namespace mp = boost::multiprecision;
 
-void testIfPointsOnCurve() {
-  cout << "testIfPointsOnCurve():" << endl;
-  try {
-    cout << "Expect (p1): NO exception thrown" << endl;
-    FieldElementPoint(
-      FieldElement(17, 223), FieldElement(56, 223), FieldElement(0, 223), FieldElement(7, 223)
-    );
-  } catch (const invalid_argument& ia) {
-    cerr << "p1: Invalid argument: " << ia.what() << endl;
-  }
+Test(ch03_test_suite, testIfPointsOnCurve) {
+  FieldElementPoint* fep = nullptr;
 
   try {
-    cout << "Expect (p2): NO exception thrown" << endl;
-    FieldElementPoint(
+    fep = new FieldElementPoint(
       FieldElement(17, 223), FieldElement(56, 223), FieldElement(0, 223), FieldElement(7, 223)
     );    
   } catch (const invalid_argument& ia) {
-    cerr << "p2: Invalid argument: " << ia.what() << endl;
+    cr_fail("No exception should be thrown.");
   }
+  cr_assert(fep != nullptr);
+  delete fep;  
+  fep = nullptr;
 
   try {
-    cout << "Expect (p3): exception WILL BE thrown" << endl;
-    FieldElementPoint(
-      FieldElement(200, 223), FieldElement(119, 223), FieldElement(0, 223), FieldElement(7, 223)
-    );
+    fep = new FieldElementPoint(
+      FieldElement(17, 223), FieldElement(56, 223), FieldElement(0, 223), FieldElement(7, 223)
+    );    
   } catch (const invalid_argument& ia) {
-    cerr << "p3: Invalid argument: " << ia.what() << endl;
+    cr_fail("No exception should be thrown.");
   }
+  cr_assert(fep != nullptr);
+  delete fep;
+  fep = nullptr;
 
   try {
-    cout << "Expect (p4): NO exception thrown" << endl;
-    FieldElementPoint(
+    fep = new FieldElementPoint(
       FieldElement(1, 223), FieldElement(193, 223), FieldElement(0, 223), FieldElement(7, 223)
     );
   } catch (const invalid_argument& ia) {
-    cerr << "p4: Invalid argument: " << ia.what() << endl;
+    cr_fail("No exception should be thrown.");
+  }
+  cr_assert(fep != nullptr);
+  delete fep;
+}
+
+Test(ch03_test_suite, testIfPointsNotOnCurve) {
+  FieldElementPoint* fep = nullptr;
+  try {
+    fep = new FieldElementPoint(
+      FieldElement(200, 223), FieldElement(119, 223), FieldElement(0, 223), FieldElement(7, 223)
+    );
+    cr_fail("Exception should be thrown.");
+  } catch (const invalid_argument& ia) {
+    cr_assert(fep == nullptr);
   }
   
   try {
-    cout << "Expect (p5): exception WILL BE thrown" << endl;
-    FieldElementPoint p5 = FieldElementPoint(
+    fep = new FieldElementPoint(
       FieldElement(42, 223), FieldElement(99, 223), FieldElement(0, 223), FieldElement(7, 223)
     );
+    cr_fail("Exception should be thrown.");
   } catch (const invalid_argument& ia) {
-    cerr << "p5: Invalid argument: " << ia.what() << endl;
+    cr_assert(fep == nullptr);
   }
 }
 
-
-void testFieldElementPointAddition() {
-  cout << "testFieldElementPointAddition()" << endl;
+Test(ch03_test_suite, testFieldElementPointAddition) {
   int prime = 223;
   
   FieldElement a = FieldElement(0, prime);
@@ -70,35 +78,174 @@ void testFieldElementPointAddition() {
   FieldElement x2;
   FieldElement y2;
 
+  FieldElementPoint res = FieldElementPoint(a, b);
+
   x1 = FieldElement(192, prime);
   y1 = FieldElement(105, prime);
   x2 = FieldElement(17, prime);
   y2 = FieldElement(56, prime);
   FieldElementPoint p1 = FieldElementPoint(x1, y1, a, b);
   FieldElementPoint p2 = FieldElementPoint(x2, y2, a, b);
-  cout << "Result: " << (p1 + p2).to_string() << "\n"
-       << "Expect: FieldElementPoint(170, 142)_0_7 FieldElement(223)" << endl;
+  res = p1 + p2;
+  cr_expect(res.x().num() == 170);
+  cr_expect(res.y().num() == 142);
+  cr_expect(res.a().num() == 0);
+  cr_expect(res.b().num() == 7);
+  cr_expect(res.a().prime() == prime);
+  cr_expect(res.b().prime() == prime);
+  cr_expect(res.x().prime() == prime);
+  cr_expect(res.y().prime() == prime);
+
 
   x1 = FieldElement(170, prime);
   y1 = FieldElement(142, prime);
   x2 = FieldElement(60, prime);
   y2 = FieldElement(139, prime);
-  cout << "Result: " << (FieldElementPoint(x1, y1, a, b) + FieldElementPoint(x2, y2, a, b)).to_string() << "\n"
-       << "Expect: FieldElementPoint(220, 181)_0_7 FieldElement(223)" << endl;
+  res = FieldElementPoint(x1, y1, a, b) + FieldElementPoint(x2, y2, a, b);
+  cr_expect(res.x().num() == 220);
+  cr_expect(res.y().num() == 181);
+  cr_expect(res.a().num() == 0);
+  cr_expect(res.b().num() == 7);
+  cr_expect(res.a().prime() == prime);
+  cr_expect(res.b().prime() == prime);
+  cr_expect(res.x().prime() == prime);
+  cr_expect(res.y().prime() == prime);
+
+
   x1 = FieldElement(47, prime);
   y1 = FieldElement(71, prime);
   x2 = FieldElement(17, prime);
   y2 = FieldElement(56, prime);
-  cout << "Result: " << (FieldElementPoint(x1, y1, a, b) + FieldElementPoint(x2, y2, a, b)).to_string() << "\n"
-       << "Expect: FieldElementPoint(215, 68)_0_7 FieldElement(223)" << endl;
+  res = FieldElementPoint(x1, y1, a, b) + FieldElementPoint(x2, y2, a, b);
+  cr_expect(res.x().num() == 215);
+  cr_expect(res.y().num() == 68);
+  cr_expect(res.a().num() == 0);
+  cr_expect(res.b().num() == 7);
+  cr_expect(res.a().prime() == prime);
+  cr_expect(res.b().prime() == prime);
+  cr_expect(res.x().prime() == prime);
+  cr_expect(res.y().prime() == prime);
+
+
 
   x1 = FieldElement(143, prime);
   y1 = FieldElement(98, prime);
   x2 = FieldElement(76, prime);
   y2 = FieldElement(66, prime);
-  cout << "Result: " << (FieldElementPoint(x1, y1, a, b) + FieldElementPoint(x2, y2, a, b)).to_string() << "\n"
-       << "Expect: FieldElementPoint(47, 71)_0_7 FieldElement(223)" << endl;
+  res = FieldElementPoint(x1, y1, a, b) + FieldElementPoint(x2, y2, a, b);
+  cr_expect(res.x().num() == 47);
+  cr_expect(res.y().num() == 71);
+  cr_expect(res.a().num() == 0);
+  cr_expect(res.b().num() == 7);
+  cr_expect(res.a().prime() == prime);
+  cr_expect(res.b().prime() == prime);
+  cr_expect(res.x().prime() == prime);
+  cr_expect(res.y().prime() == prime);
 
+}
+
+Test(ch03_test_suite, testFieldElementPointScalarMultiplication) {
+  int prime = 223;
+  FieldElement a = FieldElement(0, prime);
+  FieldElement b = FieldElement(7, prime);
+
+  FieldElement x1;
+  FieldElement y1;
+  FieldElement x2;
+  FieldElement y2;
+  FieldElementPoint res = FieldElementPoint(a, b);
+  x1 = FieldElement(192, prime);
+  y1 = FieldElement(105, prime);
+  FieldElementPoint p1 = FieldElementPoint(x1, y1, a, b);
+  res = p1 + p1;
+  cr_expect(res.x().num() == 49);
+  cr_expect(res.y().num() == 71);
+  cr_expect(res.a().num() == 0);
+  cr_expect(res.b().num() == 7);
+
+  res = p1 * 2;
+  cr_expect(res.x().num() == 49);
+  cr_expect(res.y().num() == 71);
+  cr_expect(res.a().num() == 0);
+  cr_expect(res.b().num() == 7);
+  
+
+  x1 = FieldElement(143, prime);
+  y1 = FieldElement(98, prime);
+  p1 = FieldElementPoint(x1, y1, a, b);
+  res = p1 + p1;
+  cr_expect(res.x().num() == 64);
+  cr_expect(res.y().num() == 168);
+  cr_expect(res.a().num() == 0);
+  cr_expect(res.b().num() == 7);
+
+  res = p1 * 2;
+  cr_expect(res.x().num() == 64);
+  cr_expect(res.y().num() == 168);
+  cr_expect(res.a().num() == 0);
+  cr_expect(res.b().num() == 7);
+
+  x1 = FieldElement(47, prime);
+  y1 = FieldElement(71, prime);
+  p1 = FieldElementPoint(x1, y1, a, b);
+  
+  res = p1 + p1;
+  cr_expect(res.x().num() == 36);
+  cr_expect(res.y().num() == 111);
+  cr_expect(res.a().num() == 0);
+  cr_expect(res.b().num() == 7);
+
+  res = p1 * 2;
+  cr_expect(res.x().num() == 36);
+  cr_expect(res.y().num() == 111);
+  cr_expect(res.a().num() == 0);
+  cr_expect(res.b().num() == 7);
+
+  res = p1 * 4;
+  cr_expect(res.x().num() == 194);
+  cr_expect(res.y().num() == 51);
+  cr_expect(res.a().num() == 0);
+  cr_expect(res.b().num() == 7);
+  res = p1 + p1 + p1 + p1;
+  cr_expect(res.x().num() == 194);
+  cr_expect(res.y().num() == 51);
+  cr_expect(res.a().num() == 0);
+  cr_expect(res.b().num() == 7);
+
+
+  res = p1 * 8;
+  cr_expect(res.x().num() == 116);
+  cr_expect(res.y().num() == 55);
+  cr_expect(res.a().num() == 0);
+  cr_expect(res.b().num() == 7);
+  res = p1 + p1 + p1 + p1 + p1 + p1 + p1 + p1;
+  cr_expect(res.x().num() == 116);
+  cr_expect(res.y().num() == 55);
+  cr_expect(res.a().num() == 0);
+  cr_expect(res.b().num() == 7);
+
+  res = p1 * 21;
+  cr_expect(res.x().num() == 194);
+  cr_expect(res.y().num() == 51);
+  cr_expect(res.a().num() == 0);
+  cr_expect(res.b().num() == 7);
+
+  cout << "Result1: " << (p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1).to_string() << "\n"
+       << "Result2: " << (p1 * 21).to_string() << "\n"
+       << "Expect:  FieldElementPoint(Infinity)_0_7 FieldElement(223)"
+       << endl;
+
+  x1 = FieldElement(15, prime);
+  y1 = FieldElement(86, prime);
+  p1 = FieldElementPoint(x1, y1, a, b);
+  cout << "Result1: " << (p1 * 7).to_string() << "\n"
+       << "Result2: " << (p1 + p1 + p1 + p1 + p1 + p1 + p1).to_string() << "\n"
+       << "Expect:  FieldElementPoint(Infinity)_0_7 FieldElement(223)"
+       << endl;
+  cout << "Result1: " << (p1 * 8).to_string() << "\n"
+       << "Result2: " << (p1 + p1 + p1 + p1 + p1 + p1 + p1 + p1).to_string() << "\n"
+       << "Expect:  FieldElementPoint(15, 86)_0_7 FieldElement(223)"
+       << endl;
 }
 
 void findOrderOfGroup() {
@@ -120,64 +267,6 @@ void findOrderOfGroup() {
        << "Expect: Order of the group generated by FieldElementPoint(15, 86)_0_7 FieldElement(223) is: 7" << endl;;
 }
 
-void testFieldElementPointScalarMultiplication() {
-  cout << "testFieldElementPointScalarMultiplication():" << endl;
-  int prime = 223;
-  FieldElement a = FieldElement(0, prime);
-  FieldElement b = FieldElement(7, prime);
-
-  FieldElement x1;
-  FieldElement y1;
-  FieldElement x2;
-  FieldElement y2;
-
-  x1 = FieldElement(192, prime);
-  y1 = FieldElement(105, prime);
-  FieldElementPoint p1 = FieldElementPoint(x1, y1, a, b);
-  cout << "Result1: " << (p1 + p1).to_string() << "\n"
-       << "Result2: " << (p1 * 2).to_string() << "\n"
-       << "Expect:  FieldElementPoint(49, 71)_0_7 FieldElement(223)" << endl;
-
-  x1 = FieldElement(143, prime);
-  y1 = FieldElement(98, prime);
-  p1 = FieldElementPoint(x1, y1, a, b);
-  cout << "Result1: " << (p1 + p1).to_string() << "\n"
-       << "Result2: " << (p1 * 2).to_string()  << "\n"
-       << "Expect:  FieldElementPoint(64, 168)_0_7 FieldElement(223)"
-       << endl;
-
-  x1 = FieldElement(47, prime);
-  y1 = FieldElement(71, prime);
-  p1 = FieldElementPoint(x1, y1, a, b);
-  cout << "Result1: " << (p1+p1).to_string() << "\n"
-       << "Result2: " << (p1 * 2).to_string() << "\n"
-       << "Expect:  FieldElementPoint(36, 111)_0_7 FieldElement(223)"
-       << endl;
-  cout << "Result1: " << (p1+p1+p1+p1).to_string() << "\n"
-       << "Result2: " << (p1 * 4).to_string() << "\n"
-       << "Expect:  FieldElementPoint(194, 51)_0_7 FieldElement(223)"
-       << endl;
-  cout << "Result1: " << (p1+p1+p1+p1+p1+p1+p1+p1).to_string() << "\n"
-       << "Result2: " << (p1 * 8).to_string() << "\n"
-       << "Expect:  FieldElementPoint(116, 55)_0_7 FieldElement(223)"
-       << endl;
-  cout << "Result1: " << (p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1+p1).to_string() << "\n"
-       << "Result2: " << (p1 * 21).to_string() << "\n"
-       << "Expect:  FieldElementPoint(Infinity)_0_7 FieldElement(223)"
-       << endl;
-
-  x1 = FieldElement(15, prime);
-  y1 = FieldElement(86, prime);
-  p1 = FieldElementPoint(x1, y1, a, b);
-  cout << "Result1: " << (p1 * 7).to_string() << "\n"
-       << "Result2: " << (p1 + p1 + p1 + p1 + p1 + p1 + p1).to_string() << "\n"
-       << "Expect:  FieldElementPoint(Infinity)_0_7 FieldElement(223)"
-       << endl;
-  cout << "Result1: " << (p1 * 8).to_string() << "\n"
-       << "Result2: " << (p1 + p1 + p1 + p1 + p1 + p1 + p1 + p1).to_string() << "\n"
-       << "Expect:  FieldElementPoint(15, 86)_0_7 FieldElement(223)"
-       << endl;
-}
 
 void testSecp256k1() {
   cout << "testSecp256k1():" << endl;
@@ -341,7 +430,7 @@ void testSignatureCreation() {
        << "Expect: Signature(8eeacac05e4c29e793b5287ed044637132ce9ead7fded533e7441d87a8dc9c23, 36674f81f10c7fb347c1224bd546813ea24ada6f642c02f2248516e3aa8cb303)"
        << endl;
 }
-
+/*
 int main() {
   testIfPointsOnCurve();
   cout << endl;
@@ -362,3 +451,4 @@ int main() {
   testSignatureCreation();
   return 0;
 }
+*/
