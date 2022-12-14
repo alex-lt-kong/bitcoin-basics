@@ -108,22 +108,30 @@ int main() {
   Point p1 = Point(-1, -1, 5, 7);
   cout << "p1: "<< p1.to_string() << endl;
   try{
-    Point p2 = Point(-1, -2, 5, 7); }
+    Point p2 = Point(-1, -2, 5, 7); 
+    printf("%s\n", p2.to_string().c_str());
+  }
   catch (const invalid_argument& ia) {
     cerr << "p2: Invalid argument: " << ia.what() << '\n';
   }
   try{
-    Point p3 = Point(2, 4, 5, 7); }
+    Point p3 = Point(2, 4, 5, 7);
+    printf("%s\n", p3.to_string().c_str());
+  }    
   catch (const invalid_argument& ia) {
     cerr << "p3: Invalid argument: " << ia.what() << '\n';
   }
   try{
-    Point p4 = Point(18, 77, 5, 7); }
+    Point p4 = Point(18, 77, 5, 7); 
+    printf("%s\n", p4.to_string().c_str());
+  }
   catch (const invalid_argument& ia) {
     cerr << "p4: Invalid argument: " << ia.what() << '\n';
   }
   try{
-    Point p5 = Point(5, 7, 5, 7); }
+    Point p5 = Point(5, 7, 5, 7);
+    printf("%s\n", p5.to_string().c_str());
+  }
   catch (const invalid_argument& ia) {
     cerr << "p5: Invalid argument: " << ia.what() << '\n';
   }

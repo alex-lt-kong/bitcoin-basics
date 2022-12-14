@@ -82,11 +82,11 @@ char* encode_bytes_to_base58_string(
   int idx = output_len - 2; // buf[idx-1] should remain \0 to make the string null-terminated.
   static const char b58_table[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
   while (num > 0) {
-    buf[idx--] = b58_table[(char)(num % 58)];
+    buf[idx--] = b58_table[(uint8_t)(num % 58)];
     num /= 58;    
   }
 
-  if (zero_count > 0) { assert (zero_count == idx); }
+  if (zero_count > 0) { assert (zero_count == (size_t)idx); }
   while (idx > 0) {
     buf[idx--] = b58_table[0];
   }
