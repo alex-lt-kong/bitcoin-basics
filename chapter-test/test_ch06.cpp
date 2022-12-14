@@ -44,7 +44,7 @@ void test_op_hash256() {
     )
   );
   free(bex_chr);
-  op_hash256(&data_stack);
+  Ops.find(0xaa)->second.func_ptr(&data_stack);
   cr_expect(data_stack.size() == 2);  
   bex_chr = bytes_to_hex_string(data_stack.top().data(), SHA256_HASH_SIZE, false);
   cr_expect(

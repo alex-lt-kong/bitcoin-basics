@@ -7,7 +7,13 @@
 
 using namespace std;
 
+
 typedef bool (*OpFunc)(stack<vector<uint8_t>>*);
+
+struct OpFuncStruct {
+   OpFunc func_ptr ;
+   char func_name[64];
+}; 
 
 bool op_dup(stack<vector<uint8_t>>* data_stack) {
   if (data_stack->empty()) {
@@ -47,9 +53,14 @@ bool op_hash160(stack<vector<uint8_t>>* data_stack) {
 }
 
 
-unordered_map<int, OpFunc> Ops = {
-    { 0x76, &op_dup },
-    { 0xa9, &op_hash160 },
-    { 0xaa, &op_hash256 }
+static const unordered_map<int, OpFuncStruct> Ops = {
+    { 0x76, (OpFuncStruct){ (&op_dup), "op_dup" } },
+    { 0xa9, (OpFuncStruct){ (&op_hash160), "op_hash160" } },
+    { 0xaa, (OpFuncStruct){ (&op_hash256), "op_hash256" } }
 };
 
+static const OpFuncStruct Ops_arr[] = {
+    { (&op_dup), "op_dup" },
+    { (&op_hash160), "op_hash160" },
+    { (&op_hash256), "op_hash256" }
+};
