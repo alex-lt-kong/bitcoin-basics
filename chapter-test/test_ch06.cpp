@@ -18,14 +18,14 @@ using namespace std;
 Test(ch06_test_suite, test_op_dup) {
   stack<vector<uint8_t>> data_stack;
   data_stack.push(vector<uint8_t>{'H','e','l','l','o',' ','w','o','r','l','d','\0'});
-  op_dup(data_stack);
+  get_opcode(118).func_ptr(data_stack);
   get_opcode(118).func_ptr(data_stack);
   cr_expect(data_stack.size() == 3);
   while (data_stack.empty() == false) {
     cr_expect(eq(str, (char*)data_stack.top().data(), "Hello world"));
     data_stack.pop();
   }
-  bool ret_val = op_dup(data_stack);
+  bool ret_val = get_opcode(118).func_ptr(data_stack);
   cr_expect(ret_val == 0);
 }
 
@@ -34,8 +34,8 @@ Test(ch06_test_suite, test_op_hash256) {
  stack<vector<uint8_t>> data_stack;
   vector<uint8_t> hw_bytes = {'H','e','l','l','o',' ','w','o','r','l','d'};
   data_stack.push(hw_bytes);
-  op_dup(data_stack);
-  op_hash256(data_stack);
+  get_opcode(118).func_ptr(data_stack);
+  get_opcode(170).func_ptr(data_stack);
   cr_expect(data_stack.size() == 2);
   char* hex_chr = bytes_to_hex_string(data_stack.top().data(), SHA256_HASH_SIZE, false);
   cr_expect(
@@ -71,8 +71,8 @@ Test(ch06_test_suite, test_op_hash160) {
   stack<vector<uint8_t>> data_stack;
   vector<uint8_t> hw_bytes = {'h','e','l','l','o',' ','w','o','r','l','d'};
   data_stack.push(hw_bytes);
-  op_dup(data_stack);
-  op_hash160(data_stack);
+  get_opcode(118).func_ptr(data_stack);
+  get_opcode(169).func_ptr(data_stack);
   cr_expect(data_stack.size() == 2);
   char* hex_chr = bytes_to_hex_string(data_stack.top().data(), RIPEMD160_HASH_SIZE, false);
   cr_expect(
@@ -83,7 +83,7 @@ Test(ch06_test_suite, test_op_hash160) {
   );
   free(hex_chr);
 
-  op_dup(data_stack);
+  get_opcode(118).func_ptr(data_stack);
   get_opcode(169).func_ptr(data_stack);
   cr_expect(data_stack.size() == 3);
   hex_chr = bytes_to_hex_string(data_stack.top().data(), RIPEMD160_HASH_SIZE, false);

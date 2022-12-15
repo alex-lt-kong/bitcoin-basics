@@ -149,8 +149,23 @@ vector<vector<uint8_t>> Script::get_cmds() {
   return this->cmds;
 }
 
+vector<bool> Script::get_is_opcode() {
+  return this->is_opcode;
+}
+
+string Script::get_asm() {
+  string script_asm = "";
+ /* for (size_t i = 0; i < this->cmds.size(); ++i) {
+    if (this->is_opcode[i]) {
+      script_asm += get_opcode(this->cmds[i][0]).func_name;
+    } 
+  }*/
+  return script_asm;
+}
+
 bool Script::is_nonstandard_script_parsed() {
   return this->is_nonstandard;
 }
+
 
 Script::~Script() {}

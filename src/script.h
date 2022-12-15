@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <vector>
 
+#include "op.h"
+
 using namespace std;
 
 
@@ -33,6 +35,14 @@ public:
   */
   vector<uint8_t> serialize();
   vector<vector<uint8_t>> get_cmds();
+  vector<bool> get_is_opcode();
+  /**
+   * @brief Convert the Script object to a human-readable string. The format will be the same as 
+   * https://blockstream.info/api/tx/ in order to facilitate testing.
+   * 
+   * @return string 
+   */
+  string get_asm();
   /**
    * @brief If the parse() method is called and a non-standard Script is parsed, a private is_nonstandard member variable
    * will be set. Callers can query the status of it by calling this method.
