@@ -5,6 +5,8 @@
 #include "../cryptographic-algorithms/src/sha256.h"
 #include "utils.h"
 
+
+// Description of Script opcodes: https://en.bitcoin.it/wiki/Script
 using namespace std;
 
 
@@ -63,15 +65,35 @@ bool op_hash160(stack<vector<uint8_t>>& data_stack) {
 
 
 OpFuncStruct get_opcode(size_t op_id) {
-  if (op_id > 185) {
-    return (OpFuncStruct){"op_notimplemented", &op_notimplemented};
+  if (op_id > 256) {
+    return (OpFuncStruct){"OP_NOTIMPLEMENTED", &op_notimplemented};
   }
-  OpFuncStruct Ops[186] = {{"op_notimplemented", &op_notimplemented}};
-
-  Ops[  0] = (OpFuncStruct){"op_0",       &op_0};
-  Ops[118] = (OpFuncStruct){"op_dup",     &op_dup};
-  Ops[169] = (OpFuncStruct){"op_hash160", &op_hash160};
-  Ops[170] = (OpFuncStruct){"op_hash256", &op_hash256};
-
+  if (op_id > 185) {
+    // Some silly/malicious clients could invoke this
+    // we follow the format used by https://blockstream.info/api/tx/
+    OpFuncStruct tmp = {"", &op_notimplemented};
+    sprintf(tmp.func_name, "OP_RETURN_%ld", op_id);
+    return tmp;
+  }
+  OpFuncStruct Ops[186];
+  for (size_t i = 0; i < sizeof(Ops) / sizeof(Ops[0]); ++i) {
+    Ops[i] = (OpFuncStruct){"OP_NOTIMPLEMENTED", &op_notimplemented};
+  }
+  Ops[  0] = (OpFuncStruct){"OP_0",                &op_0};
+  Ops[ 76] = (OpFuncStruct){"OP_PUSHDATA1",        &op_notimplemented};
+  Ops[ 77] = (OpFuncStruct){"OP_PUSHDATA2",        &op_notimplemented};
+  Ops[ 81] = (OpFuncStruct){"OP_PUSHNUM_1",        &op_notimplemented};
+  Ops[106] = (OpFuncStruct){"OP_RETURN",           &op_notimplemented};
+  Ops[109] = (OpFuncStruct){"OP_2DROP",            &op_notimplemented};
+  Ops[118] = (OpFuncStruct){"OP_DUP",              &op_dup};
+  Ops[135] = (OpFuncStruct){"OP_EQUAL",            &op_notimplemented};
+  Ops[136] = (OpFuncStruct){"OP_EQUALVERIFY",      &op_notimplemented};
+  Ops[163] = (OpFuncStruct){"OP_MIN",              &op_notimplemented};
+  Ops[169] = (OpFuncStruct){"OP_HASH160",          &op_hash160};
+  Ops[170] = (OpFuncStruct){"OP_HASH256",          &op_hash256};
+  Ops[171] = (OpFuncStruct){"OP_CODESEPARATOR",    &op_notimplemented};
+  Ops[172] = (OpFuncStruct){"OP_CHECKSIG",         &op_notimplemented};
+  Ops[173] = (OpFuncStruct){"OP_CHECKSIGVERIFY",   &op_notimplemented};
+ 
   return Ops[op_id];
 }

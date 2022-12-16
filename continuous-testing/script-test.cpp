@@ -46,30 +46,10 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  size_t space_count = 0;
-  for (size_t i = 0; i < strnlen(argv[2], PATH_MAX); ++i) {
-    if (argv[2][i] == ' ') {
-      ++space_count;
-    }
-  }
-  for (size_t i = 0; i < cmds.size(); ++i) {
-    if (is_opcode[i] == false) {
-      --space_count;
-    }
-  }
-  if (space_count + 1 != cmds.size()) {
-    if (strstr(argv[2], "<push past end>") == NULL) {
-      fprintf(stderr, "space_count + 1 != cmds.size()\n (%lu vs %lu)\n", space_count, cmds.size());
-      return 1;
-    } else {
-      if (space_count != cmds.size() + 1) {
-        fprintf(stderr, "space_count != cmds.size() + 1 (%lu vs %lu)\n", space_count, cmds.size());
-        return 1;
-      }
-    }     
-  }
-  //printf("%s\n", my_script.get_asm().c_str());
+  int ret_val = 0;
+  
   if (!my_script.is_nonstandard_script_parsed()) {
+
     vector<uint8_t> out_d = my_script.serialize();
     if (out_d.size() == 0) {
       printf("failed to serialize() Script\n");
@@ -81,6 +61,10 @@ int main(int argc, char **argv) {
       fprintf(stderr, "parse() and serialize() result in different byte string:\nActual: %s\nExpect:%s\n", serialized_chrs, argv[1]);
     }
     free(serialized_chrs);
+    if (strcmp(my_script.get_asm().c_str(), argv[2]) != 0) {
+      fprintf(stderr, "get_asm() and script_asm are different:\nActual: %s\nExpect: %s\n", my_script.get_asm().c_str(), argv[2]);
+      ++ret_val;
+    }
   } else {
     fprintf(
       stderr,
@@ -88,7 +72,10 @@ int main(int argc, char **argv) {
       "the serialize()'ed bytes array is very likely to be different\n"
     );
   }
-  
-  printf("okay\n");
-  return 0;
+  if (ret_val == 0) {
+    printf("okay\n");
+  } else {
+    printf("error\n");
+  }  
+  return ret_val;
 }

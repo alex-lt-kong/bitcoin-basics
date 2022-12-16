@@ -1,6 +1,8 @@
 #include "script.h"
 #include "utils.h"
 
+#include "../cryptographic-algorithms/src/misc.h"
+
 Script:: Script(vector<vector<uint8_t>> cmds) {
   this->cmds = cmds; // this makes a copy of cmds.
   this->is_nonstandard = false;
@@ -23,36 +25,36 @@ vector<uint8_t> Script::serialize() {
         d.push_back(this->cmds[idx][0]);
         ++idx;
         continue;
+      } else if (this->cmds[idx][0] == 76) {
+        d.push_back(this->cmds[idx][0]); // OP_PUSDATA1
+        size_t operand_len = this->cmds[++idx].size();
+        d.push_back((uint8_t)operand_len); // there should be no wrapping.
+        for (size_t j = 0; j < operand_len && j < this->cmds[idx].size(); ++j) {
+          d.push_back(this->cmds[idx][j]);
+        }
+        ++idx;
+        continue;
+      } else if (this->cmds[idx][0] == 77) {
+        d.push_back(this->cmds[idx][0]); // OP_PUSDATA2
+        size_t operand_len = this->cmds[++idx].size();
+        d.push_back((uint8_t)operand_len); // there should be wrapping, for 0x0A0B0C0D, it extracts 0D at 0
+        d.push_back((uint8_t)(operand_len >> 8)); // there should be wrapping, for 0x0A0B0C0D, it extracts 0C at 1
+        for (size_t j = 0; j < operand_len && j < this->cmds[idx].size(); ++j) {
+          d.push_back(this->cmds[idx][j]);
+        }
+        ++idx;
+        continue;
       } else {
         fprintf(stderr, "Invalid opcode: %d\n", this->cmds[idx][0]);
         return vector<uint8_t>(0);
       }
     }
     size_t operand_len = this->cmds[idx].size();
-    if (operand_len < 75) {
-      d.push_back(operand_len);
-      // data/operand does not need any extra bytes to encode, we directly push_back() operand_len
-    }  
-    else if (operand_len > 75 && operand_len < 256) {
-      // data/operand needs one byte to encode, we need to encode 76 and then encode its real length
-      d.push_back(76); // OP_PUSHDATA1
-      d.push_back((uint8_t)operand_len); // there should be no wrapping.
+    if (operand_len >= 75) {
+      fprintf(stderr, "serialize()'ing non-standard cmds\n");
     }
-    else {
-      /*
-        data/operand needs two bytes to encode, we need to encode 76 and then encode its real length.
-        In Jimmy Song's implementation, an exception will be thrown is operand_len > 520.
-        This may make the client strictly follow the Bitcoin specs, but it may cause the client fail to parse some
-        transactions on Bitcoin's main chain (such as this one:
-        d29c9c0e8e4d2a9790922af73f0b8d51f0bd4bb19940d9cf910ead8fbe85bc9b).
-        As a result, we don't enforce the rule here. Some relevant discussion:
-        https://bitcoin.stackexchange.com/questions/78572/op-return-max-bytes-clarification
-      */
-      d.push_back(77); // OP_PUSHDATA2
-      d.push_back((uint8_t)operand_len); // there should be wrapping, for 0x0A0B0C0D, it extracts 0D at 0
-      d.push_back((uint8_t)(operand_len >> 8)); // there should be wrapping, for 0x0A0B0C0D, it extracts 0C at 1      
-    }
-    for (size_t j = 0; j < operand_len; ++j) {
+    d.push_back(operand_len);
+    for (size_t j = 0; j < operand_len && j < this->cmds[idx].size(); ++j) {
       d.push_back(this->cmds[idx][j]);
     }
     ++idx;
@@ -101,6 +103,8 @@ bool Script::parse(vector<uint8_t>& d) {
       // 76 corresponds to OP_PUSHDATA1, meaning that we read the next byte, which specifies how many bytes
       // the element has.
       memcpy(&data_length, d.data(), 1);
+      this->cmds.push_back(vector<uint8_t>{ current });
+      this->is_opcode.push_back(true);
       d.erase(d.begin());
       if (data_length > d.size()) {
         fprintf(stderr, "WARNING: non-standard Script section detected: incorrect operand length\n");
@@ -118,7 +122,9 @@ bool Script::parse(vector<uint8_t>& d) {
       // which, in little endian order, specify how many bytes the element has.
       uint8_t buf[2];
       memcpy(buf, d.data(), 2);
-      d.erase(d.begin(), d.begin() + 2);
+      d.erase(d.begin(), d.begin() + 2);      
+      this->cmds.push_back(vector<uint8_t>{ current });
+      this->is_opcode.push_back(true);
       data_length = buf[0] << 0 | buf[1] << 8; // little-endian bytes to int
       if (data_length > d.size()) {
         fprintf(stderr, "WARNING: non-standard Script section detected: incorrect operand length\n");
@@ -155,11 +161,33 @@ vector<bool> Script::get_is_opcode() {
 
 string Script::get_asm() {
   string script_asm = "";
- /* for (size_t i = 0; i < this->cmds.size(); ++i) {
+  char* hex_str;
+  for (size_t i = 0; i < this->cmds.size(); ++i) {
     if (this->is_opcode[i]) {
       script_asm += get_opcode(this->cmds[i][0]).func_name;
-    } 
-  }*/
+      script_asm += " ";
+      if (this->cmds[i][0] == 76) {
+        ++i;
+        hex_str = bytes_to_hex_string(this->cmds[i].data(), this->cmds[i].size(), false);
+        script_asm += hex_str;
+        script_asm += " ";
+        free(hex_str);
+      }
+    } else {
+      if (this->cmds[i].size() <= 75) {
+        script_asm += "OP_PUSHBYTES_" + to_string(this->cmds[i].size()) + " ";
+      } else {
+        fprintf(stderr, "currently not supported\n");
+        return "";
+      }
+      hex_str = bytes_to_hex_string(this->cmds[i].data(), this->cmds[i].size(), false);
+      script_asm += hex_str;
+      script_asm += " ";
+      free(hex_str);
+    }
+    //printf("%s\n", script_asm.c_str());
+  }
+  script_asm.pop_back();
   return script_asm;
 }
 
