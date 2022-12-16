@@ -1,9 +1,11 @@
 #!/usr/bin/python3
 
+import argparse
 import json
 import logging
 import requests
 import subprocess
+import time
 import os
 
 test_program = os.path.join(os.path.dirname(__file__), 'script-test.out')
@@ -35,43 +37,56 @@ def test_script(script_hex: str, script_asm: str) -> None:
 
 
 def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument(
+        '--since-block', dest='since-block', default='',
+        help='the test script will test since this block to the latest block'       
+    )
+    args = vars(ap.parse_args())
     url_latestblock = 'https://blockchain.info/latestblock'
     lgr.info(f'Requesting latest block through [{url_latestblock}]')
     resp = requests.get(url_latestblock)
-    height = int(resp.json()['height'])
-    lgr.info(f"Latest block fetched, it's height is {height:,}")
+    latest_height = int(resp.json()['height'])
+    lgr.info(f"Latest block fetched, it's height is {latest_height:,}")
+    try:
+        since_block = int(args['since-block'])
+    except Exception:
+        since_block = latest_height
+    lgr.info(f'the test script will test since block {since_block:,} to {latest_height:,}')
+    for height in range(since_block, latest_height + 1):
 
-    url_block_by_height = f'https://blockchain.info/block-height/{height}'
-    lgr.info(f'Requesting transactions in the latest block through [{url_block_by_height}]')
-    resp = requests.get(url_block_by_height)
-    if len(resp.json()['blocks']) == 0:
-        raise ValueError(f'0 blocks are fetched from {url_block_by_height}. The content is: {resp.json()}')
-    latest_block = resp.json()['blocks'][0]
-    txes = latest_block['tx']
-    lgr.info(f"All transactions fetched, count: {len(txes):,}")
+        url_block_by_height = f'https://blockchain.info/block-height/{height}'
+        lgr.info(f'Requesting transactions in the latest block through [{url_block_by_height}]')
+        resp = requests.get(url_block_by_height)
+        if len(resp.json()['blocks']) == 0:
+            raise ValueError(f'0 blocks are fetched from {url_block_by_height}. The content is: {resp.json()}')
+        latest_block = resp.json()['blocks'][0]
+        txes = latest_block['tx']
+        lgr.info(f"All transactions fetched, count: {len(txes):,}")
 
 
-    for i in range(len(txes)):
-        lgr.info(f'[{i+1}/{len(txes)}/{height}] tx hash: {txes[i]["hash"]}')
-        try:
-            tx = requests.get(f'https://blockstream.info/api/tx/{txes[i]["hash"]}').json()
-        except Exception:
-            lgr.exception('Failed to fetch tx, this record will be skipped')
-            continue
-        for j in range(len(tx['vin'])):
-            tx_in = tx['vin'][j]
-            if tx_in['scriptsig'] == '' and tx_in['scriptsig_asm'] == '':
-                lgr.info(f'[{i+1}/{len(txes)}/{height}] {j}-th input script is empty, skipped')
+        for i in range(len(txes)):
+            lgr.info(f'[{i+1}/{len(txes)}/{height}] tx hash: {txes[i]["hash"]}')
+            try:
+                tx = requests.get(f'https://blockstream.info/api/tx/{txes[i]["hash"]}').json()
+            except Exception:
+                lgr.exception('Failed to fetch tx, this record will be skipped')
                 continue
-            lgr.info(f'[{i+1}/{len(txes)}/{height}] testing {j}-th input...')
-            test_script(str(tx_in['scriptsig']), str(tx_in['scriptsig_asm']))
-        for j in range(len(tx['vout'])):
-            tx_out = tx['vout'][j]
-            if tx_out['scriptpubkey'] == '' and tx_out['scriptpubkey_asm'] == '':
-                lgr.info(f'[{i+1}/{len(txes)}/{height}] {j+1}-th output script is empty, skipped')
-                continue
-            lgr.info(f'[{i+1}/{len(txes)}/{height}] testing {j+1}-th output...')
-            test_script(str(tx_out['scriptpubkey']), str(tx_out['scriptpubkey_asm']))
+            for j in range(len(tx['vin'])):
+                tx_in = tx['vin'][j]
+                if tx_in['scriptsig'] == '' and tx_in['scriptsig_asm'] == '':
+                    lgr.info(f'[{i+1}/{len(txes)}/{height}] {j}-th input script is empty, skipped')
+                    continue
+                lgr.info(f'[{i+1}/{len(txes)}/{height}] testing {j}-th input...')
+                test_script(str(tx_in['scriptsig']), str(tx_in['scriptsig_asm']))
+            for j in range(len(tx['vout'])):
+                tx_out = tx['vout'][j]
+                if tx_out['scriptpubkey'] == '' and tx_out['scriptpubkey_asm'] == '':
+                    lgr.info(f'[{i+1}/{len(txes)}/{height}] {j+1}-th output script is empty, skipped')
+                    continue
+                lgr.info(f'[{i+1}/{len(txes)}/{height}] testing {j+1}-th output...')
+                test_script(str(tx_out['scriptpubkey']), str(tx_out['scriptpubkey_asm']))
+            time.sleep(1)
 
     lgr.info(f'All scripts are tested by [{test_program}] and no errors are reported')
 
