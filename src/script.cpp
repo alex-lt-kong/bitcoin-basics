@@ -89,7 +89,7 @@ bool Script::parse(vector<uint8_t>& d) {
       // an ordinary element should be between 1 to 75 bytes. If current is smaller then 75, it implies this component
       // is an ordinary element (i.e., data, not opcodes)
       if (current > d.size()) {
-        fprintf(stderr, "WARNING: non-standard Script section detected: incorrect operand length\n");
+        fprintf(stderr, "Non-standard Script: incorrect operand length\n");
         current = d.size();
         this->is_nonstandard = true;
       }
@@ -107,7 +107,7 @@ bool Script::parse(vector<uint8_t>& d) {
       this->is_opcode.push_back(true);
       d.erase(d.begin());
       if (data_length > d.size()) {
-        fprintf(stderr, "WARNING: non-standard Script section detected: incorrect operand length\n");
+        fprintf(stderr, "Non-standard Script: incorrect operand length\n");
         data_length = d.size();
         this->is_nonstandard = true;
       }
@@ -127,7 +127,7 @@ bool Script::parse(vector<uint8_t>& d) {
       this->is_opcode.push_back(true);
       data_length = buf[0] << 0 | buf[1] << 8; // little-endian bytes to int
       if (data_length > d.size()) {
-        fprintf(stderr, "WARNING: non-standard Script section detected: incorrect operand length\n");
+        fprintf(stderr, "Non-standard Script: incorrect operand length\n");
         data_length = d.size();
         this->is_nonstandard = true;
       }
@@ -166,8 +166,20 @@ string Script::get_asm() {
     if (this->is_opcode[i]) {
       script_asm += get_opcode(this->cmds[i][0]).func_name;
       script_asm += " ";
-      if (this->cmds[i][0] == 76) {
+      if (this->cmds[i][0] == 76 || this->cmds[i][0] == 77) {
+        /*
+        OP_PUSDATA1 and OP_PUSDATA2, will be loaded here, instead of relying on else {}.
+        This design aims to make the output asm format consistent with:
+        https://blockstream.info/api/tx/2f0d8d829a5e447eef46abb868de57924841755147a498b85deda841fc9b7889,
+        which we rely on checking the parse(), serailize() and the get_asm()
+        */
         ++i;
+        if (
+          (this->cmds[i].size() > 255 && this->cmds[i][0] == 76) ||
+          (this->cmds[i].size() > 520 && this->cmds[i][0] == 77)
+        ) {
+          fprintf(stderr, "Non-standard Script: operand loaded by OP_PUSDATA has %lu bytes.\n", this->cmds[i].size());
+        }
         hex_str = bytes_to_hex_string(this->cmds[i].data(), this->cmds[i].size(), false);
         script_asm += hex_str;
         script_asm += " ";

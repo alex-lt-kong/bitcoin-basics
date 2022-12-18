@@ -68,14 +68,14 @@ OpFuncStruct get_opcode(size_t op_id) {
   if (op_id > 256) {
     return (OpFuncStruct){"OP_NOTIMPLEMENTED", &op_notimplemented};
   }
-  if (op_id > 185) {
+  if (op_id > 186) {
     // Some silly/malicious clients could invoke this
     // we follow the format used by https://blockstream.info/api/tx/
     OpFuncStruct tmp = {"", &op_notimplemented};
     sprintf(tmp.func_name, "OP_RETURN_%ld", op_id);
     return tmp;
   }
-  OpFuncStruct Ops[186];
+  OpFuncStruct Ops[187];
   for (size_t i = 0; i < sizeof(Ops) / sizeof(Ops[0]); ++i) {
     Ops[i] = (OpFuncStruct){"OP_NOTIMPLEMENTED", &op_notimplemented};
   }
@@ -83,17 +83,31 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[ 76] = (OpFuncStruct){"OP_PUSHDATA1",        &op_notimplemented};
   Ops[ 77] = (OpFuncStruct){"OP_PUSHDATA2",        &op_notimplemented};
   Ops[ 81] = (OpFuncStruct){"OP_PUSHNUM_1",        &op_notimplemented};
+  Ops[ 86] = (OpFuncStruct){"OP_PUSHNUM_6",        &op_notimplemented};
+  Ops[ 88] = (OpFuncStruct){"OP_PUSHNUM_8",        &op_notimplemented};
+  Ops[ 91] = (OpFuncStruct){"OP_PUSHNUM_11",       &op_notimplemented};
+  Ops[ 96] = (OpFuncStruct){"OP_PUSHNUM_16",       &op_notimplemented};
   Ops[106] = (OpFuncStruct){"OP_RETURN",           &op_notimplemented};
+  Ops[107] = (OpFuncStruct){"OP_TOALTSTACK",       &op_notimplemented};
+  Ops[108] = (OpFuncStruct){"OP_FROMALTSTACK",     &op_notimplemented};
   Ops[109] = (OpFuncStruct){"OP_2DROP",            &op_notimplemented};
-  Ops[118] = (OpFuncStruct){"OP_DUP",              &op_dup};
+  Ops[117] = (OpFuncStruct){"OP_DROP",             &op_notimplemented};
+  Ops[118] = (OpFuncStruct){"OP_DUP",              &op_dup};  
+  Ops[123] = (OpFuncStruct){"OP_ROT",              &op_notimplemented};  
+  Ops[126] = (OpFuncStruct){"OP_CAT",              &op_notimplemented};  
   Ops[135] = (OpFuncStruct){"OP_EQUAL",            &op_notimplemented};
   Ops[136] = (OpFuncStruct){"OP_EQUALVERIFY",      &op_notimplemented};
+  Ops[149] = (OpFuncStruct){"OP_MUL",              &op_notimplemented};  
+  Ops[153] = (OpFuncStruct){"OP_RSHIFT",           &op_notimplemented};    
+  Ops[158] = (OpFuncStruct){"OP_NUMNOTEQUAL",      &op_notimplemented};  
   Ops[163] = (OpFuncStruct){"OP_MIN",              &op_notimplemented};
   Ops[169] = (OpFuncStruct){"OP_HASH160",          &op_hash160};
   Ops[170] = (OpFuncStruct){"OP_HASH256",          &op_hash256};
   Ops[171] = (OpFuncStruct){"OP_CODESEPARATOR",    &op_notimplemented};
   Ops[172] = (OpFuncStruct){"OP_CHECKSIG",         &op_notimplemented};
   Ops[173] = (OpFuncStruct){"OP_CHECKSIGVERIFY",   &op_notimplemented};
+  Ops[177] = (OpFuncStruct){"OP_CLTV",             &op_notimplemented}; // a.k.a. OP_CHECKLOCKTIMEVERIFY
+  Ops[186] = (OpFuncStruct){"OP_CHECKSIGADD",      &op_notimplemented};
  
   return Ops[op_id];
 }
