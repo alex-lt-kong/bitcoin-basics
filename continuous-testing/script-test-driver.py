@@ -125,7 +125,7 @@ def main() -> None:
                     err_msg += f'height: {height}, transaction idx: {idx}: {ex}'
                     lgr.exception(err_msg)
                     raise RuntimeError(err_msg)
-            time.sleep(0.75)
+            time.sleep(0.1)
             idx += 1
         height += 1
 
