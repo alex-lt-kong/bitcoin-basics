@@ -83,6 +83,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[ 76] = (OpFuncStruct){"OP_PUSHDATA1",        &op_notimplemented};
   Ops[ 77] = (OpFuncStruct){"OP_PUSHDATA2",        &op_notimplemented};
   Ops[ 81] = (OpFuncStruct){"OP_PUSHNUM_1",        &op_notimplemented};
+  Ops[ 83] = (OpFuncStruct){"OP_PUSHNUM_3",        &op_notimplemented};
   Ops[ 86] = (OpFuncStruct){"OP_PUSHNUM_6",        &op_notimplemented};
   Ops[ 88] = (OpFuncStruct){"OP_PUSHNUM_8",        &op_notimplemented};
   Ops[ 91] = (OpFuncStruct){"OP_PUSHNUM_11",       &op_notimplemented};
@@ -106,6 +107,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[171] = (OpFuncStruct){"OP_CODESEPARATOR",    &op_notimplemented};
   Ops[172] = (OpFuncStruct){"OP_CHECKSIG",         &op_notimplemented};
   Ops[173] = (OpFuncStruct){"OP_CHECKSIGVERIFY",   &op_notimplemented};
+  Ops[174] = (OpFuncStruct){"OP_CHECKMULTISIG",    &op_notimplemented};
   Ops[177] = (OpFuncStruct){"OP_CLTV",             &op_notimplemented}; // a.k.a. OP_CHECKLOCKTIMEVERIFY
   Ops[186] = (OpFuncStruct){"OP_CHECKSIGADD",      &op_notimplemented};
  

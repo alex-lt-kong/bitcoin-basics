@@ -59,14 +59,6 @@ def main() -> None:
     height = since_block
     retry, max_retry = 0, 30
     while height < latest_height:
-        
-        lgr.handlers.clear()
-        formatter = logging.Formatter(
-            fmt=f'%(asctime)s | %(levelname)7s | {height} | %(message)s', datefmt='%Y-%m-%d %H:%M'
-        )
-        file_handler = logging.FileHandler('/var/log/bitcoin-internals/script-test.log')
-        file_handler.setFormatter(formatter)
-        lgr.addHandler(file_handler)
 
         url_block_by_height = f'https://blockchain.info/block-height/{height}'
         lgr.info(f'Requesting transactions in the latest block through [{url_block_by_height}]')
@@ -84,11 +76,17 @@ def main() -> None:
         latest_block = resp.json()['blocks'][0]
         txes = latest_block['tx']
         lgr.info(f"All transactions fetched, count: {len(txes):,}")
-
+        lgr.handlers.clear()
+        formatter = logging.Formatter(
+            fmt=f'%(asctime)s | %(levelname)7s | {height},{len(txes)} | %(message)s', datefmt='%Y-%m-%d %H:%M'
+        )
+        file_handler = logging.FileHandler('/var/log/bitcoin-internals/script-test.log')
+        file_handler.setFormatter(formatter)
+        lgr.addHandler(file_handler)
 
         idx = 0
         while idx < len(txes):
-            lgr.info(f'[{idx+1}/{len(txes)}] tx hash: {txes[idx]["hash"]}')
+            lgr.info(f'[{idx+1}] tx hash: {txes[idx]["hash"]}')
             tx_url = f'https://blockstream.info/api/tx/{txes[idx]["hash"]}'
             try:
                 tx = requests.get(tx_url).json()
@@ -102,9 +100,9 @@ def main() -> None:
             for j in range(len(tx['vin'])):
                 tx_in = tx['vin'][j]
                 if tx_in['scriptsig'] == '' and tx_in['scriptsig_asm'] == '':
-                    lgr.info(f'[{idx+1}/{len(txes)}] {j}-th input script is empty, skipped')
+                    lgr.info(f'[{idx+1}] {j}-th input script is empty, skipped')
                     continue
-                lgr.info(f'[{idx+1}/{len(txes)}] testing {j}-th input...')
+                lgr.info(f'[{idx+1}] testing {j}-th input...')
                 try:
                     test_script(str(tx_in['scriptsig']), str(tx_in['scriptsig_asm']))
                 except Exception as ex:
@@ -115,9 +113,9 @@ def main() -> None:
             for j in range(len(tx['vout'])):
                 tx_out = tx['vout'][j]
                 if tx_out['scriptpubkey'] == '' and tx_out['scriptpubkey_asm'] == '':
-                    lgr.info(f'[{idx+1}/{len(txes)}] {j+1}-th output script is empty, skipped')
+                    lgr.info(f'[{idx+1}] {j+1}-th output script is empty, skipped')
                     continue
-                lgr.info(f'[{idx+1}/{len(txes)}] testing {j+1}-th output...')
+                lgr.info(f'[{idx+1}] testing {j+1}-th output...')
                 try:
                     test_script(str(tx_out['scriptpubkey']), str(tx_out['scriptpubkey_asm']))
                 except Exception as ex:
