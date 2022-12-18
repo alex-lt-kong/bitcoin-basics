@@ -92,9 +92,13 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[107] = (OpFuncStruct){"OP_TOALTSTACK",       &op_notimplemented};
   Ops[108] = (OpFuncStruct){"OP_FROMALTSTACK",     &op_notimplemented};
   Ops[109] = (OpFuncStruct){"OP_2DROP",            &op_notimplemented};
+  Ops[112] = (OpFuncStruct){"OP_2OVER",            &op_notimplemented};
   Ops[117] = (OpFuncStruct){"OP_DROP",             &op_notimplemented};
-  Ops[118] = (OpFuncStruct){"OP_DUP",              &op_dup};  
-  Ops[123] = (OpFuncStruct){"OP_ROT",              &op_notimplemented};  
+  Ops[118] = (OpFuncStruct){"OP_DUP",              &op_dup};
+  Ops[119] = (OpFuncStruct){"OP_NIP",              &op_notimplemented};
+  Ops[123] = (OpFuncStruct){"OP_ROT",              &op_notimplemented};
+  Ops[125] = (OpFuncStruct){"OP_TUCK",             &op_notimplemented};    
+  Ops[127] = (OpFuncStruct){"OP_SUBSTR",           &op_notimplemented};
   Ops[126] = (OpFuncStruct){"OP_CAT",              &op_notimplemented};  
   Ops[135] = (OpFuncStruct){"OP_EQUAL",            &op_notimplemented};
   Ops[136] = (OpFuncStruct){"OP_EQUALVERIFY",      &op_notimplemented};
@@ -113,3 +117,4 @@ OpFuncStruct get_opcode(size_t op_id) {
  
   return Ops[op_id];
 }
+
