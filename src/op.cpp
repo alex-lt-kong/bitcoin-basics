@@ -83,7 +83,9 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[ 76] = (OpFuncStruct){"OP_PUSHDATA1",        &op_notimplemented};
   Ops[ 77] = (OpFuncStruct){"OP_PUSHDATA2",        &op_notimplemented};
   Ops[ 81] = (OpFuncStruct){"OP_PUSHNUM_1",        &op_notimplemented};
+  Ops[ 82] = (OpFuncStruct){"OP_PUSHNUM_2",        &op_notimplemented};
   Ops[ 83] = (OpFuncStruct){"OP_PUSHNUM_3",        &op_notimplemented};
+  Ops[ 84] = (OpFuncStruct){"OP_PUSHNUM_4",        &op_notimplemented};
   Ops[ 86] = (OpFuncStruct){"OP_PUSHNUM_6",        &op_notimplemented};
   Ops[ 88] = (OpFuncStruct){"OP_PUSHNUM_8",        &op_notimplemented};
   Ops[ 91] = (OpFuncStruct){"OP_PUSHNUM_11",       &op_notimplemented};
