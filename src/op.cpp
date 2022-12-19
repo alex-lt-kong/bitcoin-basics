@@ -106,6 +106,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[126] = (OpFuncStruct){"OP_CAT",              &op_notimplemented};  
   Ops[135] = (OpFuncStruct){"OP_EQUAL",            &op_notimplemented};
   Ops[136] = (OpFuncStruct){"OP_EQUALVERIFY",      &op_notimplemented};
+  Ops[137] = (OpFuncStruct){"OP_RESERVED1",        &op_notimplemented};
   Ops[149] = (OpFuncStruct){"OP_MUL",              &op_notimplemented};  
   Ops[153] = (OpFuncStruct){"OP_RSHIFT",           &op_notimplemented};    
   Ops[158] = (OpFuncStruct){"OP_NUMNOTEQUAL",      &op_notimplemented};  
