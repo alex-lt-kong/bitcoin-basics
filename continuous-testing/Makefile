@@ -30,3 +30,5 @@ utils.o: ../src/utils.cpp ../src/utils.h
 clean:
 	rm *.o
 	rm *.out
+
+
