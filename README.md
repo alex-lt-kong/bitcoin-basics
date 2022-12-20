@@ -8,7 +8,7 @@ in Jimmy Song's [Programming Bitcoin](https://www.oreilly.com/library/view/progr
     everything in "C-style" C++--thus we can get down to the nitty-gritty of Bitcoin.
   * The book implements ECDSA only--all other cryptographic algorithms are from Python's libraries. Here,
     no cryptography libraries needed--all the necessary cryptographic algorithms are either implemented in this
-    repo or in the [cryptographic-algorithms](https://github.com/alex-lt-kong/cryptographic-algorithms) 
+    repo or in the [libmycrypto](https://github.com/alex-lt-kong/libmycrypto)
 repo
 
 * The book's analogy on ECDSA makes the thing even more difficult to understand, may use this instead: https://cryptobook.nakov.com/digital-signatures/ecdsa-sign-verify-messages
@@ -21,6 +21,7 @@ repo
 * Boost for 256-bit integer support: `apt install libboost-all-dev` 
 * cURL for network communication: `apt-get install libcurl4-gnutls-dev`
 * Criterion for unit testing: `apt install libcriterion-dev libcriterion3`
+* [libmycrypto](https://github.com/alex-lt-kong/libmycrypto) for cryptographic algorithms.
 
 ## Repo structure
 
