@@ -135,10 +135,13 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[142] = (OpFuncStruct){"OP_2DIV",                &op_notimplemented};
   Ops[143] = (OpFuncStruct){"OP_NEGATE",              &op_notimplemented};
   Ops[145] = (OpFuncStruct){"OP_NOT",                 &op_notimplemented};
+  Ops[146] = (OpFuncStruct){"OP_0NOTEQUAL",           &op_notimplemented};
   Ops[147] = (OpFuncStruct){"OP_ADD",                 &op_notimplemented};
+  Ops[148] = (OpFuncStruct){"OP_SUB",                 &op_notimplemented};
   Ops[149] = (OpFuncStruct){"OP_MUL",                 &op_notimplemented};
   Ops[151] = (OpFuncStruct){"OP_MOD",                 &op_disabled};
   Ops[153] = (OpFuncStruct){"OP_RSHIFT",              &op_notimplemented};
+  Ops[157] = (OpFuncStruct){"OP_NUMEQUALVERIFY",      &op_notimplemented};
   Ops[158] = (OpFuncStruct){"OP_NUMNOTEQUAL",         &op_notimplemented};
   Ops[161] = (OpFuncStruct){"OP_LESSTHANOREQUAL",     &op_notimplemented};
   Ops[162] = (OpFuncStruct){"OP_GREATERTHANOREQUAL",  &op_notimplemented};
@@ -156,7 +159,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[179] = (OpFuncStruct){"OP_NOP4",                &op_notimplemented};
   Ops[180] = (OpFuncStruct){"OP_NOP5",                &op_notimplemented};
   Ops[181] = (OpFuncStruct){"OP_NOP6",                &op_notimplemented};
-  Ops[182] = (OpFuncStruct){"OP_NOP7",                &op_notimplemented};
+  Ops[182] = (OpFuncStruct){"OP_NOP7",                &op_notimplemented};  
   Ops[183] = (OpFuncStruct){"OP_NOP8",                &op_notimplemented};
   Ops[186] = (OpFuncStruct){"OP_CHECKSIGADD",         &op_notimplemented};
 
