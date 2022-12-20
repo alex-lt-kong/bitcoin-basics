@@ -97,6 +97,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[ 84] = (OpFuncStruct){"OP_PUSHNUM_4",           &op_notimplemented};
   Ops[ 86] = (OpFuncStruct){"OP_PUSHNUM_6",           &op_notimplemented};
   Ops[ 88] = (OpFuncStruct){"OP_PUSHNUM_8",           &op_notimplemented};
+  Ops[ 90] = (OpFuncStruct){"OP_PUSHNUM_10",          &op_notimplemented};
   Ops[ 91] = (OpFuncStruct){"OP_PUSHNUM_11",          &op_notimplemented};
   Ops[ 96] = (OpFuncStruct){"OP_PUSHNUM_16",          &op_notimplemented};
   // Flow control
@@ -109,6 +110,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[109] = (OpFuncStruct){"OP_2DROP",               &op_notimplemented};
   Ops[112] = (OpFuncStruct){"OP_2OVER",               &op_notimplemented};
   Ops[113] = (OpFuncStruct){"OP_2ROT",                &op_notimplemented};
+  Ops[114] = (OpFuncStruct){"OP_2SWAP",               &op_notimplemented};
   Ops[116] = (OpFuncStruct){"OP_DEPTH",               &op_notimplemented};
   Ops[117] = (OpFuncStruct){"OP_DROP",                &op_notimplemented};
   Ops[118] = (OpFuncStruct){"OP_DUP",                 &op_dup};
@@ -146,6 +148,8 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[161] = (OpFuncStruct){"OP_LESSTHANOREQUAL",     &op_notimplemented};
   Ops[162] = (OpFuncStruct){"OP_GREATERTHANOREQUAL",  &op_notimplemented};
   Ops[163] = (OpFuncStruct){"OP_MIN",                 &op_notimplemented};
+  Ops[165] = (OpFuncStruct){"OP_WITHIN",              &op_notimplemented};
+  
   // Crypto operation
   Ops[169] = (OpFuncStruct){"OP_HASH160",             &op_hash160};
   Ops[170] = (OpFuncStruct){"OP_HASH256",             &op_hash256};
