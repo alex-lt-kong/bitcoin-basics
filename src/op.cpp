@@ -103,7 +103,9 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[123] = (OpFuncStruct){"OP_ROT",              &op_notimplemented};
   Ops[125] = (OpFuncStruct){"OP_TUCK",             &op_notimplemented};    
   Ops[127] = (OpFuncStruct){"OP_SUBSTR",           &op_notimplemented};
-  Ops[126] = (OpFuncStruct){"OP_CAT",              &op_notimplemented};  
+  Ops[126] = (OpFuncStruct){"OP_CAT",              &op_notimplemented}; 
+  Ops[131] = (OpFuncStruct){"OP_INVERT",           &op_notimplemented};
+  Ops[132] = (OpFuncStruct){"OP_AND",              &op_notimplemented};
   Ops[135] = (OpFuncStruct){"OP_EQUAL",            &op_notimplemented};
   Ops[136] = (OpFuncStruct){"OP_EQUALVERIFY",      &op_notimplemented};
   Ops[137] = (OpFuncStruct){"OP_RESERVED1",        &op_notimplemented};
