@@ -19,6 +19,10 @@ struct OpFuncStruct {
 
 bool op_notimplemented(stack<vector<uint8_t>>& data_stack) {
   return false;
+} 
+
+bool op_disabled(stack<vector<uint8_t>>& data_stack) {
+  return false;
 }
 
 bool op_invalid(stack<vector<uint8_t>>& data_stack) {
@@ -123,13 +127,16 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[137] = (OpFuncStruct){"OP_RESERVED1",        &op_notimplemented};
   // Arithmetic operation
   Ops[140] = (OpFuncStruct){"OP_1SUB",             &op_notimplemented};
+  Ops[141] = (OpFuncStruct){"OP_2MUL",             &op_disabled};
   Ops[142] = (OpFuncStruct){"OP_2DIV",             &op_notimplemented};
   Ops[143] = (OpFuncStruct){"OP_NEGATE",           &op_notimplemented};
   Ops[145] = (OpFuncStruct){"OP_NOT",              &op_notimplemented};
   Ops[147] = (OpFuncStruct){"OP_ADD",              &op_notimplemented};
   Ops[149] = (OpFuncStruct){"OP_MUL",              &op_notimplemented};
-  Ops[153] = (OpFuncStruct){"OP_RSHIFT",           &op_notimplemented};    
-  Ops[158] = (OpFuncStruct){"OP_NUMNOTEQUAL",      &op_notimplemented};  
+  Ops[151] = (OpFuncStruct){"OP_MOD",              &op_disabled};
+  Ops[153] = (OpFuncStruct){"OP_RSHIFT",           &op_notimplemented};
+  Ops[158] = (OpFuncStruct){"OP_NUMNOTEQUAL",      &op_notimplemented};
+  Ops[161] = (OpFuncStruct){"OP_LESSTHANOREQUAL",  &op_notimplemented};
   Ops[163] = (OpFuncStruct){"OP_MIN",              &op_notimplemented};
   Ops[169] = (OpFuncStruct){"OP_HASH160",          &op_hash160};
   Ops[170] = (OpFuncStruct){"OP_HASH256",          &op_hash256};
@@ -142,6 +149,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[180] = (OpFuncStruct){"OP_NOP5",             &op_notimplemented};
   Ops[181] = (OpFuncStruct){"OP_NOP6",             &op_notimplemented};
   Ops[182] = (OpFuncStruct){"OP_NOP7",             &op_notimplemented};
+  Ops[183] = (OpFuncStruct){"OP_NOP8",             &op_notimplemented};
   Ops[186] = (OpFuncStruct){"OP_CHECKSIGADD",      &op_notimplemented};
  
   return Ops[op_id];
