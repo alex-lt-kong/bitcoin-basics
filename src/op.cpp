@@ -21,6 +21,10 @@ bool op_notimplemented(stack<vector<uint8_t>>& data_stack) {
   return false;
 }
 
+bool op_invalid(stack<vector<uint8_t>>& data_stack) {
+  return false;
+}
+
 bool op_0(stack<vector<uint8_t>>& data_stack) {
   return false;
 }
@@ -90,7 +94,8 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[ 88] = (OpFuncStruct){"OP_PUSHNUM_8",        &op_notimplemented};
   Ops[ 91] = (OpFuncStruct){"OP_PUSHNUM_11",       &op_notimplemented};
   Ops[ 96] = (OpFuncStruct){"OP_PUSHNUM_16",       &op_notimplemented};
-  Ops[102] = (OpFuncStruct){"OP_VERNOTIF",         &op_notimplemented};
+  Ops[ 98] = (OpFuncStruct){"OP_VER",              &op_invalid};
+  Ops[102] = (OpFuncStruct){"OP_VERNOTIF",         &op_invalid};
   Ops[106] = (OpFuncStruct){"OP_RETURN",           &op_notimplemented};
   Ops[107] = (OpFuncStruct){"OP_TOALTSTACK",       &op_notimplemented};
   Ops[108] = (OpFuncStruct){"OP_FROMALTSTACK",     &op_notimplemented};
