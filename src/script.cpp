@@ -1,7 +1,9 @@
+#include <mycrypto/misc.h>
+
 #include "script.h"
 #include "utils.h"
 
-#include "../cryptographic-algorithms/src/misc.h"
+
 
 Script:: Script(vector<vector<uint8_t>> cmds) {
   this->cmds = cmds; // this makes a copy of cmds.

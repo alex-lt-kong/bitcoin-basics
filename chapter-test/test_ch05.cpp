@@ -3,10 +3,11 @@
 #include <stdlib.h>
 #include <criterion/criterion.h>
 #include <criterion/new/assert.h>
+#include <mycrypto/misc.h>
 
 #include "../src/tx.h"
 #include "../src/utils.h"
-#include "../cryptographic-algorithms/src/misc.h"
+
 
 using namespace std;
 

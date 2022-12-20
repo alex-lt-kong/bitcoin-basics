@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 
-#include "../cryptographic-algorithms/src/sha256.h"
+#include "mycrypto/sha256.h"
 #include "utils.h"
 
 
@@ -101,8 +101,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[ 96] = (OpFuncStruct){"OP_PUSHNUM_16",          &op_notimplemented};
   // Flow control
   Ops[ 98] = (OpFuncStruct){"OP_VER",                 &op_invalid};
-  Ops[102] = (OpFuncStruct){"OP_VERNOTIF",            &op_invalid};
-  Ops[105] = (OpFuncStruct){"OP_VERIFY",              &op_invalid};
+  Ops[100] = (OpFuncStruct){"OP_NOTIF",               &op_notimplemented};
   Ops[106] = (OpFuncStruct){"OP_RETURN",              &op_notimplemented};
   // Stack operation
   Ops[107] = (OpFuncStruct){"OP_TOALTSTACK",          &op_notimplemented};
@@ -160,6 +159,9 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[182] = (OpFuncStruct){"OP_NOP7",                &op_notimplemented};
   Ops[183] = (OpFuncStruct){"OP_NOP8",                &op_notimplemented};
   Ops[186] = (OpFuncStruct){"OP_CHECKSIGADD",         &op_notimplemented};
- 
+
+  // Reserved words
+  Ops[102] = (OpFuncStruct){"OP_VERNOTIF",            &op_invalid};
+  Ops[105] = (OpFuncStruct){"OP_VERIFY",              &op_invalid};
   return Ops[op_id];
 }

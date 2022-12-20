@@ -4,13 +4,13 @@
 #include <stdlib.h>
 #include <criterion/criterion.h>
 #include <criterion/new/assert.h>
+#include <mycrypto/misc.h>
+#include <mycrypto/sha256.h>
 
 #include "../src/tx.h"
 #include "../src/utils.h"
 #include "../src/script.h"
 #include "../src/op.h"
-#include "../cryptographic-algorithms/src/misc.h"
-#include "../cryptographic-algorithms/src/sha256.h"
 
 
 using namespace std;

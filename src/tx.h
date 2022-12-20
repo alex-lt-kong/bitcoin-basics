@@ -5,8 +5,8 @@
 #include <sstream>
 #include <stdio.h>
 #include <stdlib.h>
+#include <mycrypto/sha256.h>
 
-#include "../cryptographic-algorithms/src/sha256.h"
 #include "utils.h"
 
 using namespace std;
