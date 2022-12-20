@@ -139,6 +139,26 @@ bool Script::parse(vector<uint8_t>& d) {
       this->cmds.push_back(cmd);
       this->is_opcode.push_back(false);
       count += data_length + 2;
+    } else if (current == 78) {
+      // 77 corresponds to OP_PUSHDATA4, meaning that we read the next 4 bytes
+      // which, in little endian order, specify how many bytes the element has.
+      uint8_t buf[4];
+      memcpy(buf, d.data(), 4);
+      d.erase(d.begin(), d.begin() + 4);      
+      this->cmds.push_back(vector<uint8_t>{ current });
+      this->is_opcode.push_back(true);
+      data_length = buf[0] << 0 | buf[1] << 8 | buf[2] << 16 | buf[3] << 24; // little-endian bytes to int
+      if (data_length > d.size()) {
+        fprintf(stderr, "Non-standard Script: incorrect operand length\n");
+        data_length = d.size();
+        this->is_nonstandard = true;
+      }
+      vector<uint8_t> cmd(data_length);
+      memcpy(cmd.data(), d.data(), data_length);
+      d.erase(d.begin(), d.begin() + data_length);
+      this->cmds.push_back(cmd);
+      this->is_opcode.push_back(false);
+      count += data_length + 4;
     } else {
       // otherwise it is an opcode
       vector<uint8_t> cmd{ current };
