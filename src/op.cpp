@@ -116,9 +116,11 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[119] = (OpFuncStruct){"OP_NIP",                 &op_notimplemented};  
   Ops[122] = (OpFuncStruct){"OP_ROLL",                &op_notimplemented};
   Ops[123] = (OpFuncStruct){"OP_ROT",                 &op_notimplemented};
-  Ops[125] = (OpFuncStruct){"OP_TUCK",                &op_notimplemented};    
-  Ops[127] = (OpFuncStruct){"OP_SUBSTR",              &op_notimplemented};
-  Ops[126] = (OpFuncStruct){"OP_CAT",                 &op_notimplemented}; 
+  Ops[125] = (OpFuncStruct){"OP_TUCK",                &op_notimplemented};
+  // Splice operation
+  Ops[126] = (OpFuncStruct){"OP_CAT",                 &op_notimplemented};     
+  Ops[127] = (OpFuncStruct){"OP_SUBSTR",              &op_disabled};
+  Ops[129] = (OpFuncStruct){"OP_RIGHT",               &op_disabled};
   Ops[131] = (OpFuncStruct){"OP_INVERT",              &op_notimplemented};
   Ops[132] = (OpFuncStruct){"OP_AND",                 &op_notimplemented};
   Ops[133] = (OpFuncStruct){"OP_OR",                  &op_notimplemented};
