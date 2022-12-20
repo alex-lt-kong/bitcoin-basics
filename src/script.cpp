@@ -142,6 +142,7 @@ bool Script::parse(vector<uint8_t>& d) {
     } else if (current == 78) {
       // 77 corresponds to OP_PUSHDATA4, meaning that we read the next 4 bytes
       // which, in little endian order, specify how many bytes the element has.
+      fprintf(stderr, "This branch has not been properly tested.\n");
       uint8_t buf[4];
       memcpy(buf, d.data(), 4);
       d.erase(d.begin(), d.begin() + 4);      
