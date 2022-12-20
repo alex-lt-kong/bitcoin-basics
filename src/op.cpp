@@ -90,6 +90,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[  0] = (OpFuncStruct){"OP_0",                   &op_0};
   Ops[ 76] = (OpFuncStruct){"OP_PUSHDATA1",           &op_notimplemented};
   Ops[ 77] = (OpFuncStruct){"OP_PUSHDATA2",           &op_notimplemented};
+  Ops[ 80] = (OpFuncStruct){"OP_RESERVED",            &op_notimplemented};
   Ops[ 81] = (OpFuncStruct){"OP_PUSHNUM_1",           &op_notimplemented};
   Ops[ 82] = (OpFuncStruct){"OP_PUSHNUM_2",           &op_notimplemented};
   Ops[ 83] = (OpFuncStruct){"OP_PUSHNUM_3",           &op_notimplemented};
@@ -125,7 +126,9 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[135] = (OpFuncStruct){"OP_EQUAL",               &op_notimplemented};
   Ops[136] = (OpFuncStruct){"OP_EQUALVERIFY",         &op_notimplemented};
   Ops[137] = (OpFuncStruct){"OP_RESERVED1",           &op_notimplemented};
+  
   // Arithmetic operation
+  Ops[139] = (OpFuncStruct){"OP_1ADD",                &op_notimplemented};
   Ops[140] = (OpFuncStruct){"OP_1SUB",                &op_notimplemented};
   Ops[141] = (OpFuncStruct){"OP_2MUL",                &op_disabled};
   Ops[142] = (OpFuncStruct){"OP_2DIV",                &op_notimplemented};
@@ -137,6 +140,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[153] = (OpFuncStruct){"OP_RSHIFT",              &op_notimplemented};
   Ops[158] = (OpFuncStruct){"OP_NUMNOTEQUAL",         &op_notimplemented};
   Ops[161] = (OpFuncStruct){"OP_LESSTHANOREQUAL",     &op_notimplemented};
+  Ops[162] = (OpFuncStruct){"OP_GREATERTHANOREQUAL",  &op_notimplemented};
   Ops[163] = (OpFuncStruct){"OP_MIN",                 &op_notimplemented};
   // Crypto operation
   Ops[169] = (OpFuncStruct){"OP_HASH160",             &op_hash160};
@@ -146,6 +150,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[173] = (OpFuncStruct){"OP_CHECKSIGVERIFY",      &op_notimplemented};
   Ops[174] = (OpFuncStruct){"OP_CHECKMULTISIG",       &op_notimplemented};
   Ops[175] = (OpFuncStruct){"OP_CHECKMULTISIGVERIFY", &op_notimplemented};
+  Ops[176] = (OpFuncStruct){"OP_NOP1",                &op_notimplemented};
   Ops[177] = (OpFuncStruct){"OP_CLTV",                &op_notimplemented}; // a.k.a. OP_CHECKLOCKTIMEVERIFY
   Ops[179] = (OpFuncStruct){"OP_NOP4",                &op_notimplemented};
   Ops[180] = (OpFuncStruct){"OP_NOP5",                &op_notimplemented};
