@@ -97,11 +97,13 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[ 98] = (OpFuncStruct){"OP_VER",              &op_invalid};
   Ops[102] = (OpFuncStruct){"OP_VERNOTIF",         &op_invalid};
   Ops[106] = (OpFuncStruct){"OP_RETURN",           &op_notimplemented};
+  // Stack operation
   Ops[107] = (OpFuncStruct){"OP_TOALTSTACK",       &op_notimplemented};
   Ops[108] = (OpFuncStruct){"OP_FROMALTSTACK",     &op_notimplemented};
   Ops[109] = (OpFuncStruct){"OP_2DROP",            &op_notimplemented};
   Ops[112] = (OpFuncStruct){"OP_2OVER",            &op_notimplemented};
   Ops[113] = (OpFuncStruct){"OP_2ROT",             &op_notimplemented};
+  Ops[116] = (OpFuncStruct){"OP_DEPTH",            &op_notimplemented};
   Ops[117] = (OpFuncStruct){"OP_DROP",             &op_notimplemented};
   Ops[118] = (OpFuncStruct){"OP_DUP",              &op_dup};
   Ops[119] = (OpFuncStruct){"OP_NIP",              &op_notimplemented};  
@@ -117,7 +119,10 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[135] = (OpFuncStruct){"OP_EQUAL",            &op_notimplemented};
   Ops[136] = (OpFuncStruct){"OP_EQUALVERIFY",      &op_notimplemented};
   Ops[137] = (OpFuncStruct){"OP_RESERVED1",        &op_notimplemented};
-  Ops[149] = (OpFuncStruct){"OP_MUL",              &op_notimplemented};  
+  // Arithmetic operation
+  Ops[142] = (OpFuncStruct){"OP_2DIV",             &op_notimplemented};
+  Ops[145] = (OpFuncStruct){"OP_NOT",              &op_notimplemented};
+  Ops[149] = (OpFuncStruct){"OP_MUL",              &op_notimplemented};
   Ops[153] = (OpFuncStruct){"OP_RSHIFT",           &op_notimplemented};    
   Ops[158] = (OpFuncStruct){"OP_NUMNOTEQUAL",      &op_notimplemented};  
   Ops[163] = (OpFuncStruct){"OP_MIN",              &op_notimplemented};
