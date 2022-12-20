@@ -1,3 +1,0 @@
-[submodule "cryptographic-algorithms"]
-	path = cryptographic-algorithms
-	url = https://github.com/alex-lt-kong/cryptographic-algorithms.git
