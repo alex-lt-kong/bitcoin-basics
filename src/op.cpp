@@ -122,8 +122,11 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[136] = (OpFuncStruct){"OP_EQUALVERIFY",      &op_notimplemented};
   Ops[137] = (OpFuncStruct){"OP_RESERVED1",        &op_notimplemented};
   // Arithmetic operation
+  Ops[140] = (OpFuncStruct){"OP_1SUB",             &op_notimplemented};
   Ops[142] = (OpFuncStruct){"OP_2DIV",             &op_notimplemented};
+  Ops[143] = (OpFuncStruct){"OP_NEGATE",           &op_notimplemented};
   Ops[145] = (OpFuncStruct){"OP_NOT",              &op_notimplemented};
+  Ops[147] = (OpFuncStruct){"OP_ADD",              &op_notimplemented};
   Ops[149] = (OpFuncStruct){"OP_MUL",              &op_notimplemented};
   Ops[153] = (OpFuncStruct){"OP_RSHIFT",           &op_notimplemented};    
   Ops[158] = (OpFuncStruct){"OP_NUMNOTEQUAL",      &op_notimplemented};  
