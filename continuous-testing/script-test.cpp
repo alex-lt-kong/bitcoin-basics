@@ -6,6 +6,7 @@
 #include "../src/tx.h"
 #include "../src/script.h"
 #include "../src/utils.h"
+#include "script-test.h"
 
 
 using namespace std;
@@ -47,6 +48,13 @@ int main(int argc, char **argv) {
     return 1;
   }
 
+  /*
+  if (exception_dict.find(argv[1]) != exception_dict.end()) {
+    fprintf(stderr, "%s\n", exception_dict.find(argv[1])->second.c_str());
+  } else {
+    fprintf(stderr, "Not found\n");
+  }
+  */
   int ret_val = 0;
   
   if (!my_script.is_nonstandard_script_parsed()) {
@@ -67,6 +75,7 @@ int main(int argc, char **argv) {
       ++ret_val;
     }
   } else {
+    fprintf(stderr, "get_asm(): %s\n", my_script.get_asm().c_str());
     fprintf(
       stderr,
       "the Script is non-standard, the serialize() check will be skipped and "

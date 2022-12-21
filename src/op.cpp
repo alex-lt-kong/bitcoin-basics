@@ -74,6 +74,7 @@ bool op_hash160(stack<vector<uint8_t>>& data_stack) {
 
 
 OpFuncStruct get_opcode(size_t op_id) {
+
   if (op_id > 256) {
     return (OpFuncStruct){"OP_NOTIMPLEMENTED", &op_notimplemented};
   }
@@ -91,6 +92,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[  0] = (OpFuncStruct){"OP_0",                   &op_0};
   Ops[ 76] = (OpFuncStruct){"OP_PUSHDATA1",           &op_notimplemented};
   Ops[ 77] = (OpFuncStruct){"OP_PUSHDATA2",           &op_notimplemented};
+  Ops[ 78] = (OpFuncStruct){"OP_PUSHDATA4",           &op_notimplemented};
   Ops[ 79] = (OpFuncStruct){"OP_PUSHNUM_NEG1",        &op_notimplemented}; // a.k.a. OP_1NEGATE
   Ops[ 80] = (OpFuncStruct){"OP_RESERVED",            &op_notimplemented};
   Ops[ 81] = (OpFuncStruct){"OP_PUSHNUM_1",           &op_notimplemented};
@@ -157,6 +159,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[151] = (OpFuncStruct){"OP_MOD",                 &op_disabled};
   Ops[152] = (OpFuncStruct){"OP_LSHIFT",              &op_disabled};
   Ops[153] = (OpFuncStruct){"OP_RSHIFT",              &op_notimplemented};
+  Ops[155] = (OpFuncStruct){"OP_BOOLOR",              &op_notimplemented};
   Ops[156] = (OpFuncStruct){"OP_NUMEQUAL",            &op_notimplemented};
   Ops[157] = (OpFuncStruct){"OP_NUMEQUALVERIFY",      &op_notimplemented};
   Ops[158] = (OpFuncStruct){"OP_NUMNOTEQUAL",         &op_notimplemented};
@@ -192,3 +195,8 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[105] = (OpFuncStruct){"OP_VERIFY",              &op_invalid};
   return Ops[op_id];
 }
+
+// d186a542c01754f6c0294966a54830bc139c038c658c43c99f8a96b9f66a4b02 00   00   00   00   00   00   00   9b        8c      00   00   a3     4e 0000
+// d186a542c01754f6c0294966a54830bc139c038c658c43c99f8a96b9f66a4b02 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0 OP_BOOLOR OP_1SUB OP_0 OP_0 OP_MIN <unexpected end>
+// d186a542c01754f6c0294966a54830bc139c038c658c43c99f8a96b9f66a4b02 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0 OP_BOOLOR OP_1SUB OP_0 OP_0 OP_MIN OP_NOTIMPLEMENTED OP_PUSHBYTES_0 
+// d186a542c01754f6c0294966a54830bc139c038c658c43c99f8a96b9f66a4b02 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0 OP_BOOLOR OP_1SUB OP_0 OP_0 OP_MIN<unexpected end>"
