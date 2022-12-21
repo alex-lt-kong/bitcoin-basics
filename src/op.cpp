@@ -105,6 +105,7 @@ OpFuncStruct get_opcode(size_t op_id) {
 
   // Flow control
   Ops[ 98] = (OpFuncStruct){"OP_VER",                 &op_invalid};
+  Ops[ 99] = (OpFuncStruct){"OP_IF",                  &op_notimplemented};
   Ops[100] = (OpFuncStruct){"OP_NOTIF",               &op_notimplemented};
   Ops[103] = (OpFuncStruct){"OP_ELSE",                &op_notimplemented};
   Ops[106] = (OpFuncStruct){"OP_RETURN",              &op_notimplemented};
@@ -144,6 +145,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[141] = (OpFuncStruct){"OP_2MUL",                &op_disabled};
   Ops[142] = (OpFuncStruct){"OP_2DIV",                &op_notimplemented};
   Ops[143] = (OpFuncStruct){"OP_NEGATE",              &op_notimplemented};
+  Ops[144] = (OpFuncStruct){"OP_ABS",                 &op_notimplemented};
   Ops[145] = (OpFuncStruct){"OP_NOT",                 &op_notimplemented};
   Ops[146] = (OpFuncStruct){"OP_0NOTEQUAL",           &op_notimplemented};
   Ops[147] = (OpFuncStruct){"OP_ADD",                 &op_notimplemented};
@@ -154,6 +156,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[153] = (OpFuncStruct){"OP_RSHIFT",              &op_notimplemented};
   Ops[157] = (OpFuncStruct){"OP_NUMEQUALVERIFY",      &op_notimplemented};
   Ops[158] = (OpFuncStruct){"OP_NUMNOTEQUAL",         &op_notimplemented};
+  Ops[159] = (OpFuncStruct){"OP_LESSTHAN",            &op_notimplemented};
   Ops[161] = (OpFuncStruct){"OP_LESSTHANOREQUAL",     &op_notimplemented};
   Ops[162] = (OpFuncStruct){"OP_GREATERTHANOREQUAL",  &op_notimplemented};
   Ops[163] = (OpFuncStruct){"OP_MIN",                 &op_notimplemented};
