@@ -116,6 +116,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[112] = (OpFuncStruct){"OP_2OVER",               &op_notimplemented};
   Ops[113] = (OpFuncStruct){"OP_2ROT",                &op_notimplemented};
   Ops[114] = (OpFuncStruct){"OP_2SWAP",               &op_notimplemented};
+  Ops[115] = (OpFuncStruct){"OP_IFDUP",               &op_notimplemented};
   Ops[116] = (OpFuncStruct){"OP_DEPTH",               &op_notimplemented};
   Ops[117] = (OpFuncStruct){"OP_DROP",                &op_notimplemented};
   Ops[118] = (OpFuncStruct){"OP_DUP",                 &op_dup};
