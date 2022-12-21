@@ -90,6 +90,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[  0] = (OpFuncStruct){"OP_0",                   &op_0};
   Ops[ 76] = (OpFuncStruct){"OP_PUSHDATA1",           &op_notimplemented};
   Ops[ 77] = (OpFuncStruct){"OP_PUSHDATA2",           &op_notimplemented};
+  Ops[ 79] = (OpFuncStruct){"OP_PUSHNUM_NEG1",        &op_notimplemented}; // a.k.a. OP_1NEGATE
   Ops[ 80] = (OpFuncStruct){"OP_RESERVED",            &op_notimplemented};
   Ops[ 81] = (OpFuncStruct){"OP_PUSHNUM_1",           &op_notimplemented};
   Ops[ 82] = (OpFuncStruct){"OP_PUSHNUM_2",           &op_notimplemented};
@@ -171,6 +172,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[181] = (OpFuncStruct){"OP_NOP6",                &op_notimplemented};
   Ops[182] = (OpFuncStruct){"OP_NOP7",                &op_notimplemented};  
   Ops[183] = (OpFuncStruct){"OP_NOP8",                &op_notimplemented};
+  Ops[185] = (OpFuncStruct){"OP_NOP10",               &op_notimplemented};
   Ops[186] = (OpFuncStruct){"OP_CHECKSIGADD",         &op_notimplemented};
 
   // Reserved words
