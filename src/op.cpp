@@ -108,6 +108,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[107] = (OpFuncStruct){"OP_TOALTSTACK",          &op_notimplemented};
   Ops[108] = (OpFuncStruct){"OP_FROMALTSTACK",        &op_notimplemented};
   Ops[109] = (OpFuncStruct){"OP_2DROP",               &op_notimplemented};
+  Ops[111] = (OpFuncStruct){"OP_3DUP",                &op_notimplemented};
   Ops[112] = (OpFuncStruct){"OP_2OVER",               &op_notimplemented};
   Ops[113] = (OpFuncStruct){"OP_2ROT",                &op_notimplemented};
   Ops[114] = (OpFuncStruct){"OP_2SWAP",               &op_notimplemented};
@@ -160,6 +161,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[175] = (OpFuncStruct){"OP_CHECKMULTISIGVERIFY", &op_notimplemented};
   Ops[176] = (OpFuncStruct){"OP_NOP1",                &op_notimplemented};
   Ops[177] = (OpFuncStruct){"OP_CLTV",                &op_notimplemented}; // a.k.a. OP_CHECKLOCKTIMEVERIFY
+  Ops[178] = (OpFuncStruct){"OP_CSV",                 &op_notimplemented}; // a.k.a. OP_CHECKSEQUENCEVERIFY
   Ops[179] = (OpFuncStruct){"OP_NOP4",                &op_notimplemented};
   Ops[180] = (OpFuncStruct){"OP_NOP5",                &op_notimplemented};
   Ops[181] = (OpFuncStruct){"OP_NOP6",                &op_notimplemented};
@@ -172,3 +174,4 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[105] = (OpFuncStruct){"OP_VERIFY",              &op_invalid};
   return Ops[op_id];
 }
+
