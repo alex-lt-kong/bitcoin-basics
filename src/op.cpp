@@ -127,6 +127,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[117] = (OpFuncStruct){"OP_DROP",                &op_notimplemented};
   Ops[118] = (OpFuncStruct){"OP_DUP",                 &op_dup};
   Ops[119] = (OpFuncStruct){"OP_NIP",                 &op_notimplemented};  
+  Ops[120] = (OpFuncStruct){"OP_OVER",                &op_notimplemented};
   Ops[121] = (OpFuncStruct){"OP_PICK",                &op_notimplemented};
   Ops[122] = (OpFuncStruct){"OP_ROLL",                &op_notimplemented};  
   Ops[123] = (OpFuncStruct){"OP_ROT",                 &op_notimplemented};
@@ -195,8 +196,3 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[105] = (OpFuncStruct){"OP_VERIFY",              &op_invalid};
   return Ops[op_id];
 }
-
-// d186a542c01754f6c0294966a54830bc139c038c658c43c99f8a96b9f66a4b02 00   00   00   00   00   00   00   9b        8c      00   00   a3     4e 0000
-// d186a542c01754f6c0294966a54830bc139c038c658c43c99f8a96b9f66a4b02 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0 OP_BOOLOR OP_1SUB OP_0 OP_0 OP_MIN <unexpected end>
-// d186a542c01754f6c0294966a54830bc139c038c658c43c99f8a96b9f66a4b02 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0 OP_BOOLOR OP_1SUB OP_0 OP_0 OP_MIN OP_NOTIMPLEMENTED OP_PUSHBYTES_0 
-// d186a542c01754f6c0294966a54830bc139c038c658c43c99f8a96b9f66a4b02 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0 OP_BOOLOR OP_1SUB OP_0 OP_0 OP_MIN<unexpected end>"
