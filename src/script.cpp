@@ -205,7 +205,7 @@ string Script::get_asm() {
         }
         hex_str = bytes_to_hex_string(this->cmds[i].data(), this->cmds[i].size(), false);
         script_asm += hex_str;
-        script_asm += " ";
+        // script_asm += " ";
         free(hex_str);
       }
     } else {
@@ -222,7 +222,9 @@ string Script::get_asm() {
     }
     //printf("%s\n", script_asm.c_str());
   }
-  script_asm.pop_back();
+  if (script_asm.size() > 0 && script_asm[script_asm.size() - 1] == ' ') {
+    script_asm.pop_back();
+  }
   return script_asm;
 }
 
