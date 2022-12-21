@@ -22,6 +22,7 @@ bool op_notimplemented(stack<vector<uint8_t>>& data_stack) {
 } 
 
 bool op_disabled(stack<vector<uint8_t>>& data_stack) {
+  fprintf(stderr, "Disabled function called\n");
   return false;
 }
 
@@ -124,6 +125,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[122] = (OpFuncStruct){"OP_ROLL",                &op_notimplemented};
   Ops[123] = (OpFuncStruct){"OP_ROT",                 &op_notimplemented};
   Ops[125] = (OpFuncStruct){"OP_TUCK",                &op_notimplemented};
+
   // Splice operation
   Ops[126] = (OpFuncStruct){"OP_CAT",                 &op_notimplemented};     
   Ops[127] = (OpFuncStruct){"OP_SUBSTR",              &op_disabled};
@@ -148,6 +150,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[148] = (OpFuncStruct){"OP_SUB",                 &op_notimplemented};
   Ops[149] = (OpFuncStruct){"OP_MUL",                 &op_notimplemented};
   Ops[151] = (OpFuncStruct){"OP_MOD",                 &op_disabled};
+  Ops[152] = (OpFuncStruct){"OP_LSHIFT",              &op_disabled};
   Ops[153] = (OpFuncStruct){"OP_RSHIFT",              &op_notimplemented};
   Ops[157] = (OpFuncStruct){"OP_NUMEQUALVERIFY",      &op_notimplemented};
   Ops[158] = (OpFuncStruct){"OP_NUMNOTEQUAL",         &op_notimplemented};
