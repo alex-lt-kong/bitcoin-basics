@@ -100,10 +100,13 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[ 90] = (OpFuncStruct){"OP_PUSHNUM_10",          &op_notimplemented};
   Ops[ 91] = (OpFuncStruct){"OP_PUSHNUM_11",          &op_notimplemented};
   Ops[ 96] = (OpFuncStruct){"OP_PUSHNUM_16",          &op_notimplemented};
+
   // Flow control
   Ops[ 98] = (OpFuncStruct){"OP_VER",                 &op_invalid};
   Ops[100] = (OpFuncStruct){"OP_NOTIF",               &op_notimplemented};
+  Ops[103] = (OpFuncStruct){"OP_ELSE",                &op_notimplemented};
   Ops[106] = (OpFuncStruct){"OP_RETURN",              &op_notimplemented};
+  
   // Stack operation
   Ops[107] = (OpFuncStruct){"OP_TOALTSTACK",          &op_notimplemented};
   Ops[108] = (OpFuncStruct){"OP_FROMALTSTACK",        &op_notimplemented};
@@ -151,7 +154,8 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[163] = (OpFuncStruct){"OP_MIN",                 &op_notimplemented};
   Ops[165] = (OpFuncStruct){"OP_WITHIN",              &op_notimplemented};
   
-  // Crypto operation
+  // Crypto operation  
+  Ops[166] = (OpFuncStruct){"OP_RIPEMD160",           &op_notimplemented};
   Ops[169] = (OpFuncStruct){"OP_HASH160",             &op_hash160};
   Ops[170] = (OpFuncStruct){"OP_HASH256",             &op_hash256};
   Ops[171] = (OpFuncStruct){"OP_CODESEPARATOR",       &op_notimplemented};
@@ -174,4 +178,3 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[105] = (OpFuncStruct){"OP_VERIFY",              &op_invalid};
   return Ops[op_id];
 }
-
