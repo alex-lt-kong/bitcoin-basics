@@ -1,11 +1,12 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <mycrypto/misc.h>
 
 #include "../src/tx.h"
 #include "../src/script.h"
 #include "../src/utils.h"
-#include "../cryptographic-algorithms/src/misc.h"
+
 
 using namespace std;
 
