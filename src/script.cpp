@@ -101,70 +101,32 @@ bool Script::parse(vector<uint8_t>& d) {
       this->cmds.push_back(cmd);
       this->is_opcode.push_back(false);
       count += current;
-    } else if (current == 76) {
-      // 76 corresponds to OP_PUSHDATA1, meaning that we read the next byte, which specifies how many bytes
-      // the element has.
-      memcpy(&data_length, d.data(), 1);
-      this->cmds.push_back(vector<uint8_t>{ current });
-      this->is_opcode.push_back(true);
-      d.erase(d.begin());
-      if (data_length > d.size()) {
-        fprintf(stderr, "Non-standard Script: incorrect operand length\n");
-        data_length = d.size();
-        this->is_nonstandard = true;
-      }
-      vector<uint8_t> cmd(data_length);
-      memcpy(cmd.data(), d.data(), data_length);
-      d.erase(d.begin(), d.begin() + data_length);
-      this->cmds.push_back(cmd);
-      this->is_opcode.push_back(false);
-      count += data_length + 1;
-    } else if (current == 77) {
-      // 77 corresponds to OP_PUSHDATA2, meaning that we read the next 2 bytes
+    } else if (current >= 76 && current <= 78) {
+      // 76,77,78 corresponds to OP_PUSHDATA1/OP_PUSHDATA2/OP_PUSHDATA4,
+      // meaning that we read the next 1,2,4 bytes
       // which, in little endian order, specify how many bytes the element has.
-      if (d.size() < 2) {
-        fprintf(stderr, "Non-standard Script: OP_PUSHDATA2 too short\n");
-        this->is_nonstandard = true;
-      }
-      uint8_t buf[2] = {0};
-      size_t OP_PUSHDATA2_size = d.size() > 2 ? 2 : d.size();
-      memcpy(buf, d.data(), OP_PUSHDATA2_size);
-      d.erase(d.begin(), d.begin() + OP_PUSHDATA2_size);      
-      this->cmds.push_back(vector<uint8_t>{ current });
-      this->is_opcode.push_back(true);
-      data_length = buf[0] << 0 | buf[1] << 8; // little-endian bytes to int
-      if (data_length > d.size()) {
-        fprintf(stderr, "Non-standard Script: incorrect operand length\n");
-        data_length = d.size();
-        this->is_nonstandard = true;
-      }
-      if (data_length > 0) {
-        vector<uint8_t> cmd(data_length);
-        memcpy(cmd.data(), d.data(), data_length);
-        d.erase(d.begin(), d.begin() + data_length);
-        this->cmds.push_back(cmd);
-        this->is_opcode.push_back(false);
-      }
-      count += data_length + OP_PUSHDATA2_size;
-    } else if (current == 78) {
-      // 78 corresponds to OP_PUSHDATA4, meaning that we read the next 4 bytes
-      // which, in little endian order, specify how many bytes the element has.
-      if (d.size() < 4) {
-        fprintf(stderr, "Non-standard Script: OP_PUSHDATA4 too short\n");
+      const size_t expected_cmd_sizes[] = {1, 2, 4};
+      const char cmd_names[][13] = {"OP_PUSHDATA1", "OP_PUSHDATA2", "OP_PUSHDATA4"};
+      if (d.size() < expected_cmd_sizes[current - 76]) {
+        fprintf(stderr, "Non-standard Script: %s too short\n", cmd_names[current-76]);
         this->is_nonstandard = true;
       }
       uint8_t buf[4] = {0};
-      size_t OP_PUSHDATA4_size = d.size() > 4 ? 4 : d.size();
-      memcpy(buf, d.data(), OP_PUSHDATA4_size);
-      d.erase(d.begin(), d.begin() + OP_PUSHDATA4_size);
+      size_t OP_PUSHDATA_size = d.size() > expected_cmd_sizes[current - 76] ? expected_cmd_sizes[current - 76] : d.size();
+      memcpy(buf, d.data(), OP_PUSHDATA_size);
+      d.erase(d.begin(), d.begin() + OP_PUSHDATA_size);      
       this->cmds.push_back(vector<uint8_t>{ current });
       this->is_opcode.push_back(true);
-      data_length = buf[0] << 0 | buf[1] << 8 | buf[2] << 16 | buf[3] << 24; // little-endian bytes to int      
-      fprintf(stderr, "This branch has not been properly tested.\n");
+      data_length = buf[0] << 0 | buf[1] << 8 | buf[2] << 16 | buf[3] << 24;
+      // little-endian bytes to int, this can be shared by three commands
       if (data_length > d.size()) {
         fprintf(stderr, "Non-standard Script: incorrect operand length\n");
         data_length = d.size();
         this->is_nonstandard = true;
+      }
+      if (data_length > 520) {
+        fprintf(stderr, "Non-standard Script: data_length > 520, this is considered fatal\n");
+        return false;
       }
       if (data_length > 0) {
         vector<uint8_t> cmd(data_length);
@@ -173,7 +135,7 @@ bool Script::parse(vector<uint8_t>& d) {
         this->cmds.push_back(cmd);
         this->is_opcode.push_back(false);
       }
-      count += data_length + OP_PUSHDATA4_size;
+      count += data_length + OP_PUSHDATA_size;
     } else {
       // otherwise it is an opcode
       vector<uint8_t> cmd{ current };
