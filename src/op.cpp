@@ -164,6 +164,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[161] = (OpFuncStruct){"OP_LESSTHANOREQUAL",     &op_notimplemented};
   Ops[162] = (OpFuncStruct){"OP_GREATERTHANOREQUAL",  &op_notimplemented};
   Ops[163] = (OpFuncStruct){"OP_MIN",                 &op_notimplemented};
+  Ops[164] = (OpFuncStruct){"OP_MAX",                 &op_notimplemented};
   Ops[165] = (OpFuncStruct){"OP_WITHIN",              &op_notimplemented};
   
   // Crypto operation  
