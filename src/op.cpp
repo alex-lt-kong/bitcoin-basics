@@ -98,6 +98,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[ 83] = (OpFuncStruct){"OP_PUSHNUM_3",           &op_notimplemented};
   Ops[ 84] = (OpFuncStruct){"OP_PUSHNUM_4",           &op_notimplemented};
   Ops[ 86] = (OpFuncStruct){"OP_PUSHNUM_6",           &op_notimplemented};
+  Ops[ 87] = (OpFuncStruct){"OP_PUSHNUM_7",           &op_notimplemented};
   Ops[ 88] = (OpFuncStruct){"OP_PUSHNUM_8",           &op_notimplemented};
   Ops[ 90] = (OpFuncStruct){"OP_PUSHNUM_10",          &op_notimplemented};
   Ops[ 91] = (OpFuncStruct){"OP_PUSHNUM_11",          &op_notimplemented};
@@ -124,7 +125,8 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[117] = (OpFuncStruct){"OP_DROP",                &op_notimplemented};
   Ops[118] = (OpFuncStruct){"OP_DUP",                 &op_dup};
   Ops[119] = (OpFuncStruct){"OP_NIP",                 &op_notimplemented};  
-  Ops[122] = (OpFuncStruct){"OP_ROLL",                &op_notimplemented};
+  Ops[121] = (OpFuncStruct){"OP_PICK",                &op_notimplemented};
+  Ops[122] = (OpFuncStruct){"OP_ROLL",                &op_notimplemented};  
   Ops[123] = (OpFuncStruct){"OP_ROT",                 &op_notimplemented};
   Ops[125] = (OpFuncStruct){"OP_TUCK",                &op_notimplemented};
 
