@@ -78,6 +78,13 @@ OpFuncStruct get_opcode(size_t op_id) {
   if (op_id > 256) {
     return (OpFuncStruct){"OP_NOTIMPLEMENTED", &op_notimplemented};
   }
+  if (op_id > 251) {
+    // Some silly/malicious clients could invoke this
+    // we follow the format used by https://blockstream.info/api/tx/
+    OpFuncStruct tmp = {"", &op_invalid};
+    sprintf(tmp.func_name, "OP_INVALIDOPCODE");
+    return tmp;
+  }
   if (op_id > 186) {
     // Some silly/malicious clients could invoke this
     // we follow the format used by https://blockstream.info/api/tx/
@@ -173,6 +180,8 @@ OpFuncStruct get_opcode(size_t op_id) {
   
   // Crypto operation  
   Ops[166] = (OpFuncStruct){"OP_RIPEMD160",           &op_notimplemented};
+  Ops[167] = (OpFuncStruct){"OP_SHA1",                &op_notimplemented};
+  Ops[168] = (OpFuncStruct){"OP_SHA256",              &op_notimplemented};
   Ops[169] = (OpFuncStruct){"OP_HASH160",             &op_hash160};
   Ops[170] = (OpFuncStruct){"OP_HASH256",             &op_hash256};
   Ops[171] = (OpFuncStruct){"OP_CODESEPARATOR",       &op_notimplemented};
