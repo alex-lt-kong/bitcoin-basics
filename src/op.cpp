@@ -78,7 +78,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   if (op_id > 256) {
     return (OpFuncStruct){"OP_NOTIMPLEMENTED", &op_notimplemented};
   }
-  if (op_id > 251) {
+  if (op_id > 254) {
     // Some silly/malicious clients could invoke this
     // we follow the format used by https://blockstream.info/api/tx/
     OpFuncStruct tmp = {"", &op_invalid};
