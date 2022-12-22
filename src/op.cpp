@@ -164,6 +164,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[147] = (OpFuncStruct){"OP_ADD",                 &op_notimplemented};
   Ops[148] = (OpFuncStruct){"OP_SUB",                 &op_notimplemented};
   Ops[149] = (OpFuncStruct){"OP_MUL",                 &op_notimplemented};
+  Ops[150] = (OpFuncStruct){"OP_DIV",                 &op_disabled};
   Ops[151] = (OpFuncStruct){"OP_MOD",                 &op_disabled};
   Ops[152] = (OpFuncStruct){"OP_LSHIFT",              &op_disabled};
   Ops[153] = (OpFuncStruct){"OP_RSHIFT",              &op_notimplemented};
