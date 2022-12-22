@@ -114,6 +114,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[ 96] = (OpFuncStruct){"OP_PUSHNUM_16",          &op_notimplemented};
 
   // Flow control
+  Ops[ 97] = (OpFuncStruct){"OP_NOP",                 &op_notimplemented};
   Ops[ 98] = (OpFuncStruct){"OP_VER",                 &op_invalid};
   Ops[ 99] = (OpFuncStruct){"OP_IF",                  &op_notimplemented};
   Ops[100] = (OpFuncStruct){"OP_NOTIF",               &op_notimplemented};
@@ -206,3 +207,4 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[105] = (OpFuncStruct){"OP_VERIFY",              &op_invalid};
   return Ops[op_id];
 }
+
