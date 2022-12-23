@@ -145,6 +145,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[121] = (OpFuncStruct){"OP_PICK",                &op_notimplemented};
   Ops[122] = (OpFuncStruct){"OP_ROLL",                &op_notimplemented};  
   Ops[123] = (OpFuncStruct){"OP_ROT",                 &op_notimplemented};
+  Ops[124] = (OpFuncStruct){"OP_SWAP",                &op_notimplemented};  
   Ops[125] = (OpFuncStruct){"OP_TUCK",                &op_notimplemented};
 
   // Splice operation
@@ -215,4 +216,3 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[105] = (OpFuncStruct){"OP_VERIFY",              &op_invalid};
   return Ops[op_id];
 }
-
