@@ -171,6 +171,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[151] = (OpFuncStruct){"OP_MOD",                 &op_disabled};
   Ops[152] = (OpFuncStruct){"OP_LSHIFT",              &op_disabled};
   Ops[153] = (OpFuncStruct){"OP_RSHIFT",              &op_notimplemented};
+  Ops[154] = (OpFuncStruct){"OP_BOOLAND",             &op_notimplemented};
   Ops[155] = (OpFuncStruct){"OP_BOOLOR",              &op_notimplemented};
   Ops[156] = (OpFuncStruct){"OP_NUMEQUAL",            &op_notimplemented};
   Ops[157] = (OpFuncStruct){"OP_NUMEQUALVERIFY",      &op_notimplemented};
