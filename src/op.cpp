@@ -183,6 +183,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[157] = (OpFuncStruct){"OP_NUMEQUALVERIFY",      &op_notimplemented};
   Ops[158] = (OpFuncStruct){"OP_NUMNOTEQUAL",         &op_notimplemented};
   Ops[159] = (OpFuncStruct){"OP_LESSTHAN",            &op_notimplemented};
+  Ops[160] = (OpFuncStruct){"OP_GREATERTHAN",         &op_notimplemented};
   Ops[161] = (OpFuncStruct){"OP_LESSTHANOREQUAL",     &op_notimplemented};
   Ops[162] = (OpFuncStruct){"OP_GREATERTHANOREQUAL",  &op_notimplemented};
   Ops[163] = (OpFuncStruct){"OP_MIN",                 &op_notimplemented};
