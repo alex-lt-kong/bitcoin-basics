@@ -160,8 +160,9 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[134] = (OpFuncStruct){"OP_XOR",                 &op_notimplemented};
   Ops[135] = (OpFuncStruct){"OP_EQUAL",               &op_notimplemented};
   Ops[136] = (OpFuncStruct){"OP_EQUALVERIFY",         &op_notimplemented};
-  Ops[137] = (OpFuncStruct){"OP_RESERVED1",           &op_notimplemented};
-  
+  Ops[137] = (OpFuncStruct){"OP_RESERVED1",           &op_invalid};
+  Ops[138] = (OpFuncStruct){"OP_RESERVED2",           &op_invalid};
+    
   // Arithmetic operation
   Ops[139] = (OpFuncStruct){"OP_1ADD",                &op_notimplemented};
   Ops[140] = (OpFuncStruct){"OP_1SUB",                &op_notimplemented};
