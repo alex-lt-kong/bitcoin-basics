@@ -98,8 +98,9 @@ def main() -> None:
             paged_tx_url = f'https://blockstream.info/api/block/{block_id}/txs/{total_idx}'
             try:                
                 lgr.info(f'HTTP GETing tx [{total_idx}, {total_idx+25}]through {paged_tx_url}')
-                resp = requests.get(paged_tx_url)
+                resp = requests.get(paged_tx_url, timeout=600)
                 paged_txes = resp.json()
+                lgr.info(f"tx GET'ed")
                 retry = 0
             except Exception:
                 if retry > max_retry:
