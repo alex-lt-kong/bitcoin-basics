@@ -165,7 +165,7 @@ string Script::get_asm() {
     if (this->is_opcode[i]) {
       script_asm += get_opcode(this->cmds[i][0]).func_name;
       script_asm += " ";
-      if (this->cmds[i][0] == 76 || this->cmds[i][0] == 77) {
+      if (this->cmds[i][0] == 76 || this->cmds[i][0] == 77 || this->cmds[i][0] == 78) {
         /*
         OP_PUSDATA1 and OP_PUSDATA2, will be loaded here, instead of relying on else {}.
         This design aims to make the output asm format consistent with:
@@ -173,15 +173,19 @@ string Script::get_asm() {
         which we rely on checking the parse(), serailize() and the get_asm()
         */
         ++i;
+        if (i >= this->cmds.size()) {
+          fprintf(stderr, "Non-standard Script: OP_PUSHDATA followed by no data\n");
+          continue;
+        }
         if (
           (this->cmds[i].size() > 255 && this->cmds[i][0] == 76) ||
           (this->cmds[i].size() > 520 && this->cmds[i][0] == 77)
         ) {
-          fprintf(stderr, "Non-standard Script: operand loaded by OP_PUSDATA has %lu bytes.\n", this->cmds[i].size());
+          fprintf(stderr, "Non-standard Script: operand loaded by OP_PUSHDATA has %lu bytes.\n", this->cmds[i].size());
         }
         hex_str = bytes_to_hex_string(this->cmds[i].data(), this->cmds[i].size(), false);
         script_asm += hex_str;
-        // script_asm += " ";
+        if (i != cmds.size() - 1) {  script_asm += " "; }
         free(hex_str);
       }
     } else {
