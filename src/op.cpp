@@ -124,6 +124,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[ 98] = (OpFuncStruct){"OP_VER",                 &op_invalid};
   Ops[ 99] = (OpFuncStruct){"OP_IF",                  &op_notimplemented};
   Ops[100] = (OpFuncStruct){"OP_NOTIF",               &op_notimplemented};
+  Ops[101] = (OpFuncStruct){"OP_VERIF",               &op_invalid};
   Ops[103] = (OpFuncStruct){"OP_ELSE",                &op_notimplemented};
   Ops[106] = (OpFuncStruct){"OP_RETURN",              &op_notimplemented};
   
