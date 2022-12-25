@@ -126,6 +126,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[100] = (OpFuncStruct){"OP_NOTIF",               &op_notimplemented};
   Ops[101] = (OpFuncStruct){"OP_VERIF",               &op_invalid};
   Ops[103] = (OpFuncStruct){"OP_ELSE",                &op_notimplemented};
+  Ops[104] = (OpFuncStruct){"OP_ENDIF",               &op_notimplemented};  
   Ops[106] = (OpFuncStruct){"OP_RETURN",              &op_notimplemented};
   
   // Stack operation
