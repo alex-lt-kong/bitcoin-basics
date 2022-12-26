@@ -78,6 +78,9 @@ bool Script::parse(vector<uint8_t>& d) {
     this->cmds.clear();
     this->is_opcode.clear();
     this->is_nonstandard = false;
+
+    const size_t expected_cmd_sizes[] = {1, 2, 4};
+    const char cmd_names[][13] = {"OP_PUSHDATA1", "OP_PUSHDATA2", "OP_PUSHDATA4"};
     while (count < script_len) {
         if (d.size() == 0) {
             fprintf(stderr, "cbytes vector empty already\n");
@@ -142,10 +145,6 @@ bool Script::parse(vector<uint8_t>& d) {
             this->is_opcode.push_back(true);
         }
     }
-    /*if (count != script_len) {
-        this->cmds.clear();
-         this->is_opcode.clear();
-    }*/
     return true;
 }
 
@@ -215,3 +214,7 @@ bool Script::is_nonstandard_script_parsed() {
 
 
 Script::~Script() {}
+
+// "00                47 3044022075e23e723c002befb0896febadffb1fd6b2165aa3bdfbeee73dfa6b486060d7a02201239d627b1544c6a70b841e6897f5b5d86dc4a1ff4b7961f8a8f522f160a25a301              47 304402200fb7a752fdc28123d4dfe3a45e086b6f6636377c717bd517e2f8d64cdabcb43c02206edf8c7e538d408f12dc1a848b011f6b33795084c042882f21e7b82af442a0d301           4c 69 522103d7d7694a778021566c5b7f16fff1f31348b47616ad06ca6e4e7a25885cdce83d2102fb48de8e0074ca155e95a10b14548a3569eabf8f8385738c1b42bca87f3f85012103826cf4d69642696d4795d30ca4aa41fb77f3136faa2c42b505b89f7d57a112ca53ae"
+// "OP_0 OP_PUSHBYTES_71 3044022075e23e723c002befb0896febadffb1fd6b2165aa3bdfbeee73dfa6b486060d7a02201239d627b1544c6a70b841e6897f5b5d86dc4a1ff4b7961f8a8f522f160a25a301 OP_PUSHBYTES_71 304402200fb7a752fdc28123d4dfe3a45e086b6f6636377c717bd517e2f8d64cdabcb43c02206edf8c7e538d408f12dc1a848b011f6b33795084c042882f21e7b82af442a0d301 OP_PUSHDATA1    522103d7d7694a778021566c5b7f16fff1f31348b47616ad06ca6e4e7a25885cdce83d2102fb48de8e0074ca155e95a10b14548a3569eabf8f8385738c1b42bca87f3f85012103826cf4d69642696d4795d30ca4aa41fb77f3136faa2c42b505b89f7d57a112ca53ae"
+// ff0000             47 3044022075e23e723c002befb0896febadffb1fd6b2165aa3bdfbeee73dfa6b486060d7a02201239d627b1544c6a70b841e6897f5b5d86dc4a1ff4b7961f8a8f522f160a25a30147304402200fb7a752fdc28123d4dfe3a45e086b6f6636377c717bd517e2f8d64cdabcb43c02206edf8c7e538d408f12dc1a848b011f6b33795084c042882f21e7b82af442a0d3014c69000000522103d7d7694a778021566c5b7f16fff1f31348b47616ad06ca6e4e7a25885cdce83d2102fb48de8e0074ca155e95a10b14548a3569eabf8f8385738c1b42bca87f3f85012103826cf4d69642696d4795d30ca4aa41fb77f3136faa2c42b505b89f7d57a112ca53ae

@@ -13,7 +13,7 @@ op.o: ../src/op.cpp ../src/op.h
 	g++ -c ../src/op.cpp $(OPT)
 
 script.o: ../src/script.cpp ../src/script.h
-	g++ -c ../src/script.cpp $(OPT) -std=c++17
+	g++ -c ../src/script.cpp $(OPT)
 
 utils.o: ../src/utils.cpp ../src/utils.h
 	g++ -c ../src/utils.cpp $(OPT)
