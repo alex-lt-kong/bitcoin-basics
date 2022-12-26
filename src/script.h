@@ -17,6 +17,8 @@ private:
   vector<vector<uint8_t>> cmds;
   vector<bool> is_opcode;
   bool is_nonstandard;
+  inline static size_t expected_cmd_sizes[] = {1, 2, 4};
+  inline static char cmd_names[][13] = {"OP_PUSHDATA1", "OP_PUSHDATA2", "OP_PUSHDATA4"};
 protected:
 public:
   
