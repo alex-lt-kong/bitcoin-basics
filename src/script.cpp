@@ -243,9 +243,3 @@ string Script::get_asm() {
 }
 
 Script::~Script() {}
-
-/*
-OP_PUSHBYTES_3 34a60b OP_PUSHBYTES_27 4d696e656420627920416e74506f6f6c383036830047007062af7c OP_RETURN_250 OP_RETURN_190 OP_2DROP OP_2DROP OP_RETURN_215 OP_DIV OP_SWAP OP_RETURN_237 OP_PUSHBYTES_37 ac59fb3dcbc57c0d67549ac3b917ce667857a67a9686010641f4c202000000000000000000 OP_RETURN_216 OP_RETURN_218 OP_PUSHBYTES_57 <push past end>
-            03 34a60b              1b 4d696e656420627920416e74506f6f6c383036830047007062af7c            fa            be       6d       6d       d7967ced25                                           ac59fb3dcbc57c0d67549ac3b917ce667857a67a9686010641f4c202000000000000000000            d8            da        0701000000000000
-            03 34a60b              1b 4d696e656420627920416e74506f6f6c383036830047007062af7c            fa            be       6d       6dd7967ced25                                                  ac59fb3dcbc57c0d67549ac3b917ce667857a67a9686010641f4c202000000000000000000            d8            da         3901000000000000
-*/
