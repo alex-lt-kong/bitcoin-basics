@@ -49,54 +49,25 @@ int main(int argc, char **argv) {
     }
  
     int ret_val = 0;
-    /*
-    if (!my_script.is_nonstandard_script_parsed()) {
 
-        vector<uint8_t> out_d = my_script.serialize();
-        if (out_d.size() == 0) {
-            printf("failed to serialize() Script\n");
-            return 1;
-        }
-        char* serialized_chrs = bytes_to_hex_string(out_d.data() + varint_len, out_d.size() - varint_len, false);
+    vector<uint8_t> out_d = my_script.serialize();
+    if (out_d.size() == 0) {
+        printf("failed to serialize() Script\n");
+        return 1;
+    }
+    char* serialized_chrs = bytes_to_hex_string(out_d.data() + varint_len, out_d.size() - varint_len, false);
 
-        if (strcmp(serialized_chrs, argv[1]) != 0) {
-            // We only print this, but does not consider it to be a failure.
-            fprintf(
-                stderr,
-                "parse() and serialize() result in different byte string:\nActual: %s\nExpect: %s\n",
-                serialized_chrs, argv[1]
-            );
-        }
-        free(serialized_chrs);
-
-
-        if (exception_dict.find(argv[1]) != exception_dict.end() && 0) {
-            if (strcmp(my_script.get_asm().c_str(), exception_dict.find(argv[1])->second.c_str()) != 0) {
-                fprintf(
-                    stderr,
-                    "get_asm() and exception_dict()->second are different:\nActual: %s\nExpect: %s\n",
-                    my_script.get_asm().c_str(), exception_dict.find(argv[1])->second.c_str()
-                );
-            }
-        } else {
-            if (strcmp(my_script.get_asm().c_str(), argv[2]) != 0) {
-                fprintf(
-                    stderr,
-                    "get_asm() and script_asm are different:\nActual: %s\nExpect: %s\n",
-                    my_script.get_asm().c_str(), argv[2]
-                );
-                ++ret_val;
-            }
-        }
-        
-    } else {
-        fprintf(stderr, "get_asm(): %s\n", my_script.get_asm().c_str());
+    if (strcmp(serialized_chrs, argv[1]) != 0) {
         fprintf(
             stderr,
-            "the Script is non-standard, the serialize() check will be skipped and "
-            "the serialize()'ed bytes array is very likely to be different\n"
+            "parse() and serialize() result in different byte string:\nActual: %s\nExpect: %s\n",
+            serialized_chrs, argv[1]
         );
-    }*/
+        ++ret_val;
+    }
+    free(serialized_chrs);
+        
+
     if (exception_dict.find(argv[1]) != exception_dict.end() && 0) {
         if (strcmp(my_script.get_asm().c_str(), exception_dict.find(argv[1])->second.c_str()) != 0) {
             fprintf(
@@ -104,6 +75,7 @@ int main(int argc, char **argv) {
                 "get_asm() and exception_dict()->second are different:\nActual: %s\nExpect: %s\n",
                 my_script.get_asm().c_str(), exception_dict.find(argv[1])->second.c_str()
             );
+            ++ret_val;
         }
     } else {
         if (strcmp(my_script.get_asm().c_str(), argv[2]) != 0) {
