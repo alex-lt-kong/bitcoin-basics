@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
     }
  
     int ret_val = 0;
-    
+    /*
     if (!my_script.is_nonstandard_script_parsed()) {
 
         vector<uint8_t> out_d = my_script.serialize();
@@ -96,6 +96,24 @@ int main(int argc, char **argv) {
             "the Script is non-standard, the serialize() check will be skipped and "
             "the serialize()'ed bytes array is very likely to be different\n"
         );
+    }*/
+    if (exception_dict.find(argv[1]) != exception_dict.end() && 0) {
+        if (strcmp(my_script.get_asm().c_str(), exception_dict.find(argv[1])->second.c_str()) != 0) {
+            fprintf(
+                stderr,
+                "get_asm() and exception_dict()->second are different:\nActual: %s\nExpect: %s\n",
+                my_script.get_asm().c_str(), exception_dict.find(argv[1])->second.c_str()
+            );
+        }
+    } else {
+        if (strcmp(my_script.get_asm().c_str(), argv[2]) != 0) {
+            fprintf(
+                stderr,
+                "get_asm() and script_asm are different:\nActual: %s\nExpect: %s\n",
+                my_script.get_asm().c_str(), argv[2]
+            );
+            ++ret_val;
+        }
     }
     if (ret_val == 0) {
         printf("okay\n");
