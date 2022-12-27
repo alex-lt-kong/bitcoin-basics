@@ -205,17 +205,17 @@ string Script::get_asm() {
                 ++i;
                 if (
                     (this->cmds[i].size() > 255 && this->cmds[i-1][0] == 76) ||
-                    (this->cmds[i].size() > 520 && this->cmds[i-1][0] == 77)
+                    (this->cmds[i].size() > 520 && this->cmds[i-1][0] >= 77)
                 ) {
                     fprintf(stderr, "Non-standard Script: operand loaded by OP_PUSHDATA has %lu bytes.\n", this->cmds[i].size());
                 }
-                if (this->cmds[i].size() == (size_t)this->last_operand_nominal_len || i != this->cmds.size() - 1) {
+                if (this->cmds[i].size() != (size_t)this->last_operand_nominal_len && i == this->cmds.size() - 1) {
+                    script_asm += "<push past end>";
+                } else {
                     hex_str = bytes_to_hex_string(this->cmds[i].data(), this->cmds[i].size(), false);
                     script_asm += hex_str;
                     script_asm += " ";
                     free(hex_str);
-                } else {
-                    script_asm += "<push past end>";
                 }
             }
         } else {
@@ -246,11 +246,3 @@ bool Script::is_nonstandard_script_parsed() {
 }
 
 Script::~Script() {}
-
-/*
-                    03 34a60b              1b 4d696e656420627920416e74506f6f6c383036830047007062af7c            fa            be       6d       6d            d7     96      7c            ed              25 ac59fb3dcbc57c0d67549ac3b917ce667857a67a9686010641f4c202000000000000000000            d8            da              39 01000000000000
-Actual: OP_PUSHBYTES_3 34a60b OP_PUSHBYTES_27 4d696e656420627920416e74506f6f6c383036830047007062af7c OP_RETURN_250 OP_RETURN_190 OP_2DROP OP_2DROP OP_RETURN_215 OP_DIV OP_SWAP OP_RETURN_237 OP_PUSHBYTES_37 ac59fb3dcbc57c0d67549ac3b917ce667857a67a9686010641f4c202000000000000000000 OP_RETURN_216 OP_RETURN_218  OP_PUSHBYTES_7 01000000000000
-Expect: OP_PUSHBYTES_3 34a60b OP_PUSHBYTES_27 4d696e656420627920416e74506f6f6c383036830047007062af7c OP_RETURN_250 OP_RETURN_190 OP_2DROP OP_2DROP OP_RETURN_215 OP_DIV OP_SWAP OP_RETURN_237 OP_PUSHBYTES_37 ac59fb3dcbc57c0d67549ac3b917ce667857a67a9686010641f4c202000000000000000000 OP_RETURN_216 OP_RETURN_218 OP_PUSHBYTES_57 <push past end>
-
-
-*/
