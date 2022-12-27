@@ -6,6 +6,7 @@
 Script:: Script(vector<vector<uint8_t>> cmds) {
     this->cmds = cmds; // this makes a copy of cmds.
     this->is_nonstandard = false;
+    this->last_operand_nominal_len = -1;
 }
 
 Script::Script() {
@@ -15,7 +16,7 @@ Script::Script() {
 vector<uint8_t> Script::serialize() {
     vector<uint8_t> d(0);
     if (this->cmds.size() == 0) {
-        fprintf(stderr, "Non-standard Script: this->cmds is empty, serialize() is not supposed to be called!\n");
+        fprintf(stderr, "cmds is empty, serialize() is not supposed to be called!\n");
         return vector<uint8_t>(0);
     }
     size_t idx = 0;
@@ -69,11 +70,11 @@ vector<uint8_t> Script::serialize() {
     return d;
 }
 
-bool Script::parse(vector<uint8_t>& d) {
+bool Script::parse(vector<uint8_t>& byte_stream) { // TODO: should not pass a reference as the vector will be modified.
     // https://en.bitcoin.it/wiki/Script
-    uint64_t script_len = read_variable_int(d);
+    uint64_t script_len = read_variable_int(byte_stream);
     size_t count = 0;
-    uint8_t current = 0;
+    uint8_t cb = 0; // current byte
     size_t data_length = 0;
     this->cmds.clear();
     this->is_opcode.clear();
@@ -82,47 +83,69 @@ bool Script::parse(vector<uint8_t>& d) {
     const size_t expected_cmd_sizes[] = {1, 2, 4};
     const char cmd_names[][13] = {"OP_PUSHDATA1", "OP_PUSHDATA2", "OP_PUSHDATA4"};
     while (count < script_len) {
-        if (d.size() == 0) {
+        if (byte_stream.size() == 0) {
             fprintf(stderr, "cbytes vector empty already\n");
             return false;
         }
-        current = d[0];
-        d.erase(d.begin());
+        cb = byte_stream[0];
+        byte_stream.erase(byte_stream.begin());
         ++ count;
-        if (current >= 1 && current <= 75) {
-            // an ordinary element should be between 1 to 75 bytes. If current is smaller then 75, it implies this component
-            // is an ordinary element (i.e., data, not opcodes)
-            if (current > d.size()) {
-                fprintf(stderr, "Non-standard Script: incorrect operand length\n");
-                current = d.size();
-                this->is_nonstandard = true;
+        if (cb >= 1 && cb <= 75) {
+            // an ordinary element should be between 1 to 75 bytes. If cb is smaller then 75, it implies this component
+            // is an ordinary element (i.e., an operand, not an opcode)
+            this->last_operand_nominal_len = cb;
+            if (cb > byte_stream.size()) {
+                // Will only enter this branch if the current operand is the last one.
+                fprintf(stderr, "Non-standard Script: push past end\n");
+                cb = byte_stream.size();
             }
-            vector<uint8_t> cmd(current);
-            memcpy(cmd.data(), d.data(), current);
-            d.erase(d.begin(), d.begin() + current);
+            vector<uint8_t> cmd(cb);
+            memcpy(cmd.data(), byte_stream.data(), cb);
+            byte_stream.erase(byte_stream.begin(), byte_stream.begin() + cb);
+            /*
+                What if cb == 0?
+                According to: https://en.cppreference.com/w/cpp/container/vector/erase
+                If last == end() prior to removal, then the updated end() iterator is returned.
+                If [first, last) is an empty range, then last is returned. 
+
+                end() returns an iterator referring to the past-the-end element in the vector container. The
+                past-the-end element is the theoretical element that would follow the last element in the vector.
+                It does not point to any element, and thus shall not be dereferenced. 
+
+                Therefore, it seems that cb == 0 and d.begin() == end() are both valid.
+            */
             this->cmds.push_back(cmd);
             this->is_opcode.push_back(false);
-            count += current;
-        } else if (current >= 76 && current <= 78) {
+            count += cb; // curr_byte stores the size of the operand
+        } else if (cb >= 76 && cb <= 78) {
             // 76,77,78 corresponds to OP_PUSHDATA1/OP_PUSHDATA2/OP_PUSHDATA4,
             // meaning that we read the next 1,2,4 bytes
             // which, in little endian order, specify how many bytes the element has.
-            if (d.size() < expected_cmd_sizes[current - 76]) {
-                fprintf(stderr, "Non-standard Script: %s too short\n", cmd_names[current-76]);
+            size_t OP_PUSHDATA_size = (
+                byte_stream.size() > expected_cmd_sizes[cb - 76] ? expected_cmd_sizes[cb - 76] : byte_stream.size()
+            );
+            if (OP_PUSHDATA_size < expected_cmd_sizes[cb - 76]) {
+                // Will only enter this branch if the coming operand is the last one.
+                // It also implies that OP_PUSHDATA pushes nothing at all! (as it has already reached the end of d.)
+                fprintf(
+                    stderr, "Non-standard Script: %lu too short for %s and OP_PUSHDATA pushes no data at all\n",
+                    byte_stream.size(), cmd_names[cb-76]
+                );
                 this->is_nonstandard = true;
             }
             uint8_t buf[4] = {0};
-            size_t OP_PUSHDATA_size = d.size() > expected_cmd_sizes[current - 76] ? expected_cmd_sizes[current - 76] : d.size();
-            memcpy(buf, d.data(), OP_PUSHDATA_size);
-            d.erase(d.begin(), d.begin() + OP_PUSHDATA_size);            
-            this->cmds.push_back(vector<uint8_t>{ current });
+            memcpy(buf, byte_stream.data(), OP_PUSHDATA_size);
+            byte_stream.erase(byte_stream.begin(), byte_stream.begin() + OP_PUSHDATA_size);
+            // As documented above, OP_PUSHDATA_size == 0 and byte_stream.begin() == end() are both valid.
+            this->cmds.push_back(vector<uint8_t>{ cb });
             this->is_opcode.push_back(true);
             data_length = buf[0] << 0 | buf[1] << 8 | buf[2] << 16 | buf[3] << 24;
-            // little-endian bytes to int, this can be shared by three commands
-            if (data_length > d.size()) {
-                fprintf(stderr, "Non-standard Script: incorrect operand length\n");
-                data_length = d.size();
-                this->is_nonstandard = true;
+            this->last_operand_nominal_len = data_length;
+            // little-endian bytes to int, this can be shared by three OP_PUSHDATAs
+            if (data_length > byte_stream.size()) {
+                // Will only enter this branch if the coming operand is the last one.
+                fprintf(stderr, "Non-standard Script: push past end\n");
+                data_length = byte_stream.size();
             }
             if (data_length > 520) {
                 fprintf(stderr, "Non-standard Script: data_length > 520, this is considered fatal\n");
@@ -130,8 +153,8 @@ bool Script::parse(vector<uint8_t>& d) {
             }
             if (data_length > 0) {
                 vector<uint8_t> cmd(data_length);
-                memcpy(cmd.data(), d.data(), data_length);
-                d.erase(d.begin(), d.begin() + data_length);
+                memcpy(cmd.data(), byte_stream.data(), data_length);
+                byte_stream.erase(byte_stream.begin(), byte_stream.begin() + data_length);
                 this->cmds.push_back(cmd);
                 this->is_opcode.push_back(false);
             } else {
@@ -140,7 +163,7 @@ bool Script::parse(vector<uint8_t>& d) {
             count += data_length + OP_PUSHDATA_size;
         } else {
             // otherwise it is an opcode
-            vector<uint8_t> cmd{ current };
+            vector<uint8_t> cmd{ cb };
             this->cmds.push_back(cmd);
             this->is_opcode.push_back(true);
         }
@@ -159,6 +182,9 @@ vector<bool> Script::get_is_opcode() {
 string Script::get_asm() {
     string script_asm = "";
     char* hex_str;
+    if (this->cmds.size() == 0) {
+        fprintf(stderr, "cmds is empty, get_asm() is not supposed to be called!\n");
+    }
     for (size_t i = 0; i < this->cmds.size(); ++i) {
         if (this->is_opcode[i]) {
             script_asm += get_opcode(this->cmds[i][0]).func_name;
@@ -178,21 +204,25 @@ string Script::get_asm() {
                 }
                 ++i;
                 if (
-                    (this->cmds[i].size() > 255 && this->cmds[i][0] == 76) ||
-                    (this->cmds[i].size() > 520 && this->cmds[i][0] == 77)
+                    (this->cmds[i].size() > 255 && this->cmds[i-1][0] == 76) ||
+                    (this->cmds[i].size() > 520 && this->cmds[i-1][0] == 77)
                 ) {
                     fprintf(stderr, "Non-standard Script: operand loaded by OP_PUSHDATA has %lu bytes.\n", this->cmds[i].size());
                 }
-                hex_str = bytes_to_hex_string(this->cmds[i].data(), this->cmds[i].size(), false);
-                script_asm += hex_str;
-                if (i != cmds.size() - 1) {    script_asm += " "; }
-                free(hex_str);
+                if (this->cmds[i].size() == (size_t)this->last_operand_nominal_len) {
+                    hex_str = bytes_to_hex_string(this->cmds[i].data(), this->cmds[i].size(), false);
+                    script_asm += hex_str;
+                    if (i != cmds.size() - 1) {    script_asm += " "; }
+                    free(hex_str);
+                } else {
+                    script_asm += "<push past end>";
+                }
             }
         } else {
             if (this->cmds[i].size() <= 75) {
                 script_asm += "OP_PUSHBYTES_" + to_string(this->cmds[i].size()) + " ";
             } else {
-                fprintf(stderr, "currently not supported\n");
+                fprintf(stderr, "This should never happen\n");
                 return "";
             }
             hex_str = bytes_to_hex_string(this->cmds[i].data(), this->cmds[i].size(), false);
@@ -200,7 +230,6 @@ string Script::get_asm() {
             script_asm += " ";
             free(hex_str);
         }
-        //printf("%s\n", script_asm.c_str());
     }
     if (script_asm.size() > 0 && script_asm[script_asm.size() - 1] == ' ') {
         script_asm.pop_back();
@@ -212,9 +241,4 @@ bool Script::is_nonstandard_script_parsed() {
     return this->is_nonstandard;
 }
 
-
 Script::~Script() {}
-
-// "00                47 3044022075e23e723c002befb0896febadffb1fd6b2165aa3bdfbeee73dfa6b486060d7a02201239d627b1544c6a70b841e6897f5b5d86dc4a1ff4b7961f8a8f522f160a25a301              47 304402200fb7a752fdc28123d4dfe3a45e086b6f6636377c717bd517e2f8d64cdabcb43c02206edf8c7e538d408f12dc1a848b011f6b33795084c042882f21e7b82af442a0d301           4c 69 522103d7d7694a778021566c5b7f16fff1f31348b47616ad06ca6e4e7a25885cdce83d2102fb48de8e0074ca155e95a10b14548a3569eabf8f8385738c1b42bca87f3f85012103826cf4d69642696d4795d30ca4aa41fb77f3136faa2c42b505b89f7d57a112ca53ae"
-// "OP_0 OP_PUSHBYTES_71 3044022075e23e723c002befb0896febadffb1fd6b2165aa3bdfbeee73dfa6b486060d7a02201239d627b1544c6a70b841e6897f5b5d86dc4a1ff4b7961f8a8f522f160a25a301 OP_PUSHBYTES_71 304402200fb7a752fdc28123d4dfe3a45e086b6f6636377c717bd517e2f8d64cdabcb43c02206edf8c7e538d408f12dc1a848b011f6b33795084c042882f21e7b82af442a0d301 OP_PUSHDATA1    522103d7d7694a778021566c5b7f16fff1f31348b47616ad06ca6e4e7a25885cdce83d2102fb48de8e0074ca155e95a10b14548a3569eabf8f8385738c1b42bca87f3f85012103826cf4d69642696d4795d30ca4aa41fb77f3136faa2c42b505b89f7d57a112ca53ae"
-// ff0000             47 3044022075e23e723c002befb0896febadffb1fd6b2165aa3bdfbeee73dfa6b486060d7a02201239d627b1544c6a70b841e6897f5b5d86dc4a1ff4b7961f8a8f522f160a25a30147304402200fb7a752fdc28123d4dfe3a45e086b6f6636377c717bd517e2f8d64cdabcb43c02206edf8c7e538d408f12dc1a848b011f6b33795084c042882f21e7b82af442a0d3014c69000000522103d7d7694a778021566c5b7f16fff1f31348b47616ad06ca6e4e7a25885cdce83d2102fb48de8e0074ca155e95a10b14548a3569eabf8f8385738c1b42bca87f3f85012103826cf4d69642696d4795d30ca4aa41fb77f3136faa2c42b505b89f7d57a112ca53ae
