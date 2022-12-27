@@ -33,7 +33,9 @@ vector<uint8_t> Script::serialize() {
                     fprintf(stderr, "Non-standard script: OP_PUSHDATA pushes nothing\n");
                 } else {
                     ++idx;
-                    size_t operand_len = this->cmds[idx].size();
+                    size_t operand_len = (
+                        idx == this->cmds.size() - 1 ? this->last_operand_nominal_len : this->cmds[idx].size()
+                    );
                     d.push_back((uint8_t)operand_len);                  // for 0x0A0B0C0D, it extracts 0D at 0
                     if (this->cmds[idx-1][0] >= 77) {
                         d.push_back((uint8_t)(operand_len >> 8));      // for 0x0A0B0C0D, it extracts 0C at 1
@@ -43,7 +45,7 @@ vector<uint8_t> Script::serialize() {
                         }
                     }
                     if (operand_len != this->cmds[idx].size()) {
-                        fprintf(stderr, "Non-standard Script: operand_len is different from its actual size");
+                        fprintf(stderr, "Non-standard Script: operand_len is different from operand.size()\n");
                     }
                     for (size_t j = 0; j < operand_len && j < this->cmds[idx].size(); ++j) {
                         d.push_back(this->cmds[idx][j]);
@@ -208,7 +210,10 @@ string Script::get_asm() {
                     (this->cmds[i].size() > 255 && this->cmds[i-1][0] == 76) ||
                     (this->cmds[i].size() > 520 && this->cmds[i-1][0] >= 77)
                 ) {
-                    fprintf(stderr, "Non-standard Script: operand loaded by OP_PUSHDATA has %lu bytes.\n", this->cmds[i].size());
+                    fprintf(
+                        stderr,
+                        "Non-standard Script: operand loaded by OP_PUSHDATA has %lu bytes.\n", this->cmds[i].size()
+                    );
                 }
                 if (this->cmds[i].size() != (size_t)this->last_operand_nominal_len && i == this->cmds.size() - 1) {
                     script_asm += "<push past end>";
@@ -243,3 +248,10 @@ string Script::get_asm() {
 }
 
 Script::~Script() {}
+
+/*
+OP_PUSHBYTES_3 36a60b OP_PUSHBYTES_19 62696e616e63652f383234930033017c1560ac OP_RETURN_250 OP_RETURN_190 OP_2DROP OP_2DROP OP_PUSHNUM_3 OP_PUSHNUM_16 OP_PUSHDATA4 <push past end>
+Actual: 0336a60b13                    62696e616e63652f383234930033017c1560ac            fa            be       6d       6d           53            60           4e 29000000 8c8274438f332827dc2a8679dff5c309786dac29542dfe69620400000000000000abad00005b210000
+Expect: 0336a60b13                    62696e616e63652f383234930033017c1560ac            fa            be       6d       6d           53            60           4e 518d9382 8c8274438f332827dc2a8679dff5c309786dac29542dfe69620400000000000000abad00005b210000
+
+*/
