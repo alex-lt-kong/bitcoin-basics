@@ -3,16 +3,20 @@
 #include "script.h"
 #include "utils.h"
 
-Script:: Script(vector<vector<uint8_t>> cmds) {
+Script::Script(vector<vector<uint8_t>> cmds) {
     this->cmds = cmds; // this makes a copy of cmds.
-    this->is_nonstandard = false;
     this->last_operand_nominal_len = -1;
 }
 
-Script::Script() {
-    this->is_nonstandard = false;
-}
+Script::Script() {}
 
+
+/*
+actual    -"1b     76   01               a9              14 cebb2851a9c7cfe2582c12ecaf7f3ff4383d1dc08801ac"
+expect:   +"19     76                    a9              14 cebb2851a9c7cfe2582c12ecaf7f3ff4383d1dc088  ac"
+               OP_DUP            OP_HASH160 OP_PUSHBYTES_20 cebb2851a9c7cfe2582c12ecaf7f3ff4383d1dc0 OP_EQUALVERIFY OP_CHECKSIG
+
+*/
 vector<uint8_t> Script::serialize() {
     vector<uint8_t> d(0);
     if (this->cmds.size() == 0) {
@@ -22,42 +26,48 @@ vector<uint8_t> Script::serialize() {
     size_t idx = 0;
     while (idx < this->cmds.size()) {
         if (this->is_opcode[idx] == true) {
+            if (this->cmds[idx].size() != 1) {
+                fprintf(stderr, "Fatal error: opcode occupied more than one byte, which is supposed to be impossible\n");
+                return vector<uint8_t>(0);
+            }
             if (this->cmds[idx][0] > 78 || this->cmds[idx][0] == 0) {
                 d.push_back(this->cmds[idx][0]);
-                ++idx;
-                continue;
             } else if (this->cmds[idx][0] >= 76 && this->cmds[idx][0] <= 78) {
+                // raw bytes: 4c 01 0a
                 d.push_back(this->cmds[idx][0]);
-                size_t operand_len = this->is_opcode[idx+1] ? 0 : this->cmds[++idx].size();
-                d.push_back((uint8_t)operand_len);                  // for 0x0A0B0C0D, it extracts 0D at 0
-                if (this->cmds[idx][0] >= 77) {
-                    d.push_back((uint8_t)(operand_len >> 8));      // for 0x0A0B0C0D, it extracts 0C at 1
-                    if (this->cmds[idx][0] >= 78) {
-                        d.push_back((uint8_t)(operand_len >> 16)); // for 0x0A0B0C0D, it extracts 0B at 2
-                        d.push_back((uint8_t)(operand_len >> 24)); // for 0x0A0B0C0D, it extracts 0A at 3
+                if (idx == this->cmds.size() - 1) {
+                    fprintf(stderr, "Non-standard script: OP_PUSHDATA pushes nothing\n");
+                } else {
+                    ++idx;
+                    size_t operand_len = this->cmds[idx].size();
+                    d.push_back((uint8_t)operand_len);                  // for 0x0A0B0C0D, it extracts 0D at 0
+                    if (this->cmds[idx-1][0] >= 77) {
+                        d.push_back((uint8_t)(operand_len >> 8));      // for 0x0A0B0C0D, it extracts 0C at 1
+                        if (this->cmds[idx-1][0] >= 78) {
+                            d.push_back((uint8_t)(operand_len >> 16)); // for 0x0A0B0C0D, it extracts 0B at 2
+                            d.push_back((uint8_t)(operand_len >> 24)); // for 0x0A0B0C0D, it extracts 0A at 3
+                        }
+                    }
+                    if (operand_len != this->cmds[idx].size()) {
+                        fprintf(stderr, "Non-standard Script: operand_len is different from its actual size");
+                    }
+                    for (size_t j = 0; j < operand_len && j < this->cmds[idx].size(); ++j) {
+                        d.push_back(this->cmds[idx][j]);
                     }
                 }
-                if (operand_len != this->cmds[idx].size()) {
-                    fprintf(stderr, "Non-standard Script: operand_len is different from its actual size");
-                }
-                for (size_t j = 0; j < operand_len && j < this->cmds[idx].size(); ++j) {
-                    d.push_back(this->cmds[idx][j]);
-                }
-                
-                ++idx;
-                continue;
             } else {
                 fprintf(stderr, "Invalid opcode: %d\n", this->cmds[idx][0]);
                 return vector<uint8_t>(0);
             }
-        }
-        size_t operand_len = this->cmds[idx].size();
-        if (operand_len >= 75) {
-            fprintf(stderr, "Non-standard Script.\n");
-        }
-        d.push_back(operand_len);
-        for (size_t j = 0; j < operand_len && j < this->cmds[idx].size(); ++j) {
-            d.push_back(this->cmds[idx][j]);
+        } else {
+            size_t operand_len = this->cmds[idx].size();
+            if (operand_len >= 75) {
+                fprintf(stderr, "Non-standard Script.\n");
+            }
+            d.push_back(operand_len);
+            for (size_t j = 0; j < operand_len && j < this->cmds[idx].size(); ++j) {
+                d.push_back(this->cmds[idx][j]);
+            }            
         }
         ++idx;
     }
@@ -70,7 +80,7 @@ vector<uint8_t> Script::serialize() {
     return d;
 }
 
-bool Script::parse(vector<uint8_t>& byte_stream) { // TODO: should not pass a reference as the vector will be modified.
+bool Script::parse(vector<uint8_t> byte_stream) {
     // https://en.bitcoin.it/wiki/Script
     uint64_t script_len = read_variable_int(byte_stream);
     size_t count = 0;
@@ -78,7 +88,6 @@ bool Script::parse(vector<uint8_t>& byte_stream) { // TODO: should not pass a re
     size_t data_length = 0;
     this->cmds.clear();
     this->is_opcode.clear();
-    this->is_nonstandard = false;
 
     const size_t expected_cmd_sizes[] = {1, 2, 4};
     const char cmd_names[][13] = {"OP_PUSHDATA1", "OP_PUSHDATA2", "OP_PUSHDATA4"};
@@ -131,7 +140,6 @@ bool Script::parse(vector<uint8_t>& byte_stream) { // TODO: should not pass a re
                     stderr, "Non-standard Script: %lu too short for %s and OP_PUSHDATA pushes no data at all\n",
                     byte_stream.size(), cmd_names[cb-76]
                 );
-                this->is_nonstandard = true;
             }
             uint8_t buf[4] = {0};
             memcpy(buf, byte_stream.data(), OP_PUSHDATA_size);
@@ -148,8 +156,7 @@ bool Script::parse(vector<uint8_t>& byte_stream) { // TODO: should not pass a re
                 data_length = byte_stream.size();
             }
             if (data_length > 520) {
-                fprintf(stderr, "Non-standard Script: data_length > 520, this is considered fatal\n");
-                return false;
+                fprintf(stderr, "Non-standard Script: data_length > 520\n");
             }
             if (data_length > 0) {
                 vector<uint8_t> cmd(data_length);
@@ -239,10 +246,6 @@ string Script::get_asm() {
         script_asm.pop_back();
     }
     return script_asm;
-}
-
-bool Script::is_nonstandard_script_parsed() {
-    return this->is_nonstandard;
 }
 
 Script::~Script() {}
