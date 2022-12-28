@@ -29,7 +29,8 @@ def test_script(script_hex: str, script_asm: str) -> None:
         lgr.info(f'test program reports okay.')    
     else:
         err_msg = (
-            f'Test program [{test_program}] reports error. stdout: {stdout}, stderr: {stderr}, retval: {retval}. '
+            f'Test program [{test_program}] reports error. stdout: '
+            f'{stdout.decode("utf8")}, stderr: {stderr.decode("utf8")}, retval: {retval}. '
             f'To re-run: {test_program} "{script_hex}" "{script_asm}"'
         )
         lgr.error(err_msg)
