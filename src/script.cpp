@@ -25,11 +25,6 @@ vector<uint8_t> Script::serialize() {
                 return vector<uint8_t>(0);
             }
 
-/*
-OP_PUSHBYTES_3 36a60b OP_PUSHBYTES_19 62696e616e63652f383234930033017c1560ac OP_RETURN_250 OP_RETURN_190 OP_2DROP OP_2DROP OP_PUSHNUM_3 OP_PUSHNUM_16 OP_PUSHDATA4 <push past end>
-0336a60b13                            62696e616e63652f383234930033017c1560acfabe6d6d536                                                                        04e 290000008c8274438f332827dc2a8679dff5c309786dac29542dfe69620400000000000000abad00005b210000
-0336a60b13                            62696e616e63652f383234930033017c1560acfabe6d6d536                                                                        04e 518d93828c8274438f332827dc2a8679dff5c309786dac29542dfe69620400000000000000abad00005b210000
-*/
             if (this->cmds[idx][0] > 78 || this->cmds[idx][0] == 0) {
                 d.push_back(this->cmds[idx][0]);
             } else if (this->cmds[idx][0] >= 76 && this->cmds[idx][0] <= 78) {
