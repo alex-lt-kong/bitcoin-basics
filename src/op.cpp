@@ -211,7 +211,7 @@ OpFuncStruct get_opcode(size_t op_id) {
   Ops[179] = (OpFuncStruct){"OP_NOP4",                &op_notimplemented};
   Ops[180] = (OpFuncStruct){"OP_NOP5",                &op_notimplemented};
   Ops[181] = (OpFuncStruct){"OP_NOP6",                &op_notimplemented};
-  Ops[182] = (OpFuncStruct){"OP_NOP7",                &op_notimplemented};  
+  Ops[182] = (OpFuncStruct){"OP_NOP7",                &op_notimplemented};
   Ops[183] = (OpFuncStruct){"OP_NOP8",                &op_notimplemented};
   Ops[184] = (OpFuncStruct){"OP_NOP9",                &op_notimplemented};
   Ops[185] = (OpFuncStruct){"OP_NOP10",               &op_notimplemented};

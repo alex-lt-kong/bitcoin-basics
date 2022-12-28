@@ -25,6 +25,7 @@ vector<uint8_t> Script::serialize() {
                 return vector<uint8_t>(0);
             }
             if (this->cmds[idx][0] > 78 || this->cmds[idx][0] == 0) {
+                
                 d.push_back(this->cmds[idx][0]);
             } else if (this->cmds[idx][0] >= 76 && this->cmds[idx][0] <= 78) {
                 // raw bytes: 4c 01 0a
@@ -33,10 +34,22 @@ vector<uint8_t> Script::serialize() {
                     fprintf(stderr, "Non-standard script: OP_PUSHDATA pushes nothing\n");
                 } else {
                     ++idx;
-                    size_t operand_len = (
-                        idx == this->cmds.size() - 1 ? this->last_operand_nominal_len : this->cmds[idx].size()
-                    );
-                    d.push_back((uint8_t)operand_len);                  // for 0x0A0B0C0D, it extracts 0D at 0
+                    size_t operand_len = 0;
+                    if (idx == this->cmds.size() - 1) {
+                        operand_len = this->last_operand_nominal_len;
+                    } 
+                    if (this->is_opcode[idx] == true) {
+                        /* Use to handle this scenario:
+                            ASM:      OP_BOOLOR OP_PUSHDATA1    OP_0 OP_CODESEPARATOR
+                            Actual:          9b           4c 01   00               ab
+                            Expect:          9b           4c 00   00               ab
+                            */
+                        operand_len = 0;
+                    } else {
+                        operand_len = this->cmds[idx].size();
+                    }
+                                     
+                    d.push_back((uint8_t)operand_len);                 // for 0x0A0B0C0D, it extracts 0D at 0
                     if (this->cmds[idx-1][0] >= 77) {
                         d.push_back((uint8_t)(operand_len >> 8));      // for 0x0A0B0C0D, it extracts 0C at 1
                         if (this->cmds[idx-1][0] >= 78) {
@@ -49,6 +62,15 @@ vector<uint8_t> Script::serialize() {
                     }
                     for (size_t j = 0; j < operand_len && j < this->cmds[idx].size(); ++j) {
                         d.push_back(this->cmds[idx][j]);
+                    }
+                    if (this->is_opcode[idx] == true) {
+                        /*
+                        It is a bit difficult to explain the case succinctly,
+                        it is needed to parse the following test case:
+                        "03cf760b1b4d696e656420627920416e74506f6f6c383738be00010045bd3903fabe6d6d8dee9c6ded1bbc251c0bdf56784cd8e32dc6c6448186a124ffdda854c54ff1eb02000000000000009b4c0000abc8000000000000"
+                        "OP_PUSHBYTES_3 cf760b OP_PUSHBYTES_27 4d696e656420627920416e74506f6f6c383738be00010045bd3903 OP_RETURN_250 OP_RETURN_190 OP_2DROP OP_2DROP OP_2MUL OP_RETURN_238 OP_NUMEQUAL OP_2DROP OP_RETURN_237 OP_PUSHBYTES_27 bc251c0bdf56784cd8e32dc6c6448186a124ffdda854c54ff1eb02 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0 OP_BOOLOR OP_PUSHDATA1 OP_0 OP_CODESEPARATOR OP_RETURN_200 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0"
+                        */
+                        --idx;
                     }
                 }
             } else {
@@ -250,8 +272,7 @@ string Script::get_asm() {
 Script::~Script() {}
 
 /*
-OP_PUSHBYTES_3 36a60b OP_PUSHBYTES_19 62696e616e63652f383234930033017c1560ac OP_RETURN_250 OP_RETURN_190 OP_2DROP OP_2DROP OP_PUSHNUM_3 OP_PUSHNUM_16 OP_PUSHDATA4 <push past end>
-Actual: 0336a60b13                    62696e616e63652f383234930033017c1560ac            fa            be       6d       6d           53            60           4e 29000000 8c8274438f332827dc2a8679dff5c309786dac29542dfe69620400000000000000abad00005b210000
-Expect: 0336a60b13                    62696e616e63652f383234930033017c1560ac            fa            be       6d       6d           53            60           4e 518d9382 8c8274438f332827dc2a8679dff5c309786dac29542dfe69620400000000000000abad00005b210000
+03cf760b1b4d696e656420627920416e74506f6f6c383738be00010045bd3903fabe6d6d8dee9c6ded1bbc251c0bdf56784cd8e32dc6c6448186a124ffdda854c54ff1eb02000000000000009b4c00abc8000000000000
+03cf760b1b4d696e656420627920416e74506f6f6c383738be00010045bd3903fabe6d6d8dee9c6ded1bbc251c0bdf56784cd8e32dc6c6448186a124ffdda854c54ff1eb02000000000000009b4c0000abc8000000000000
 
 */
