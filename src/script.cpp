@@ -24,8 +24,13 @@ vector<uint8_t> Script::serialize() {
                 fprintf(stderr, "Fatal error: opcode occupied more than one byte, which is supposed to be impossible\n");
                 return vector<uint8_t>(0);
             }
+
+/*
+OP_PUSHBYTES_3 36a60b OP_PUSHBYTES_19 62696e616e63652f383234930033017c1560ac OP_RETURN_250 OP_RETURN_190 OP_2DROP OP_2DROP OP_PUSHNUM_3 OP_PUSHNUM_16 OP_PUSHDATA4 <push past end>
+0336a60b13                            62696e616e63652f383234930033017c1560acfabe6d6d536                                                                        04e 290000008c8274438f332827dc2a8679dff5c309786dac29542dfe69620400000000000000abad00005b210000
+0336a60b13                            62696e616e63652f383234930033017c1560acfabe6d6d536                                                                        04e 518d93828c8274438f332827dc2a8679dff5c309786dac29542dfe69620400000000000000abad00005b210000
+*/
             if (this->cmds[idx][0] > 78 || this->cmds[idx][0] == 0) {
-                
                 d.push_back(this->cmds[idx][0]);
             } else if (this->cmds[idx][0] >= 76 && this->cmds[idx][0] <= 78) {
                 // raw bytes: 4c 01 0a
@@ -37,7 +42,9 @@ vector<uint8_t> Script::serialize() {
                     size_t operand_len = 0;
                     if (idx == this->cmds.size() - 1) {
                         operand_len = this->last_operand_nominal_len;
-                    } 
+                    } else {
+                        operand_len = this->cmds[idx].size();
+                    }
                     if (this->is_opcode[idx] == true) {
                         /* Use to handle this scenario:
                             ASM:      OP_BOOLOR OP_PUSHDATA1    OP_0 OP_CODESEPARATOR
@@ -45,9 +52,7 @@ vector<uint8_t> Script::serialize() {
                             Expect:          9b           4c 00   00               ab
                             */
                         operand_len = 0;
-                    } else {
-                        operand_len = this->cmds[idx].size();
-                    }
+                    } 
                                      
                     d.push_back((uint8_t)operand_len);                 // for 0x0A0B0C0D, it extracts 0D at 0
                     if (this->cmds[idx-1][0] >= 77) {
