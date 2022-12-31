@@ -14,7 +14,7 @@
 using namespace std;
 
 
-int test_parsing_and_serialization(const char* hex_str_in, const size_t expected_cmds_size, char expected_str_outs[][4096]) {
+int test_parsing_and_serialization_and_get_asm(const char* hex_str_in, const size_t expected_cmds_size, char expected_str_outs[][4096], const char* expected_asm) {
     int64_t input_len;
     
     char* hex_input = (char*)hex_string_to_bytes(hex_str_in, &input_len);
@@ -28,6 +28,7 @@ int test_parsing_and_serialization(const char* hex_str_in, const size_t expected
         return 1;
     }
     if (my_script.get_cmds().size() != expected_cmds_size) {
+        fprintf(stderr, "Actual: %lu\nExpect: %lu", my_script.get_cmds().size(), expected_cmds_size);
         return 1;
     }
     vector<vector<uint8_t>> cmds = my_script.get_cmds();
@@ -45,10 +46,19 @@ int test_parsing_and_serialization(const char* hex_str_in, const size_t expected
     vector<uint8_t> out_bytes = my_script.serialize();
     hex_str_out = bytes_to_hex_string(out_bytes.data(), out_bytes.size(), false);
     if (strcmp(hex_str_out, hex_str_in) != 0) {
+        fprintf(stderr, "Actual: %s\nExpect: %s\n", hex_str_out, hex_str_in);
         free(hex_str_out);
         return 1;
     }
     free(hex_str_out);
+
+    if (expected_asm != NULL) {
+        char* actual_asm = (char*)my_script.get_asm().c_str();
+        if (strcmp(actual_asm, expected_asm) != 0) {
+            fprintf(stderr, "Expect: %s\nActual: %s\n", expected_asm, actual_asm);
+        }
+        // free(actual_asm); Don't free() it! It belongs to my_script!
+    }
     return 0;
 }
 
@@ -164,7 +174,7 @@ int test_script_parsing_and_serialization1() {
         "304402207899531a52d59a6de200179928ca900254a36b8dff8bb75f5f5d71b1cdc26125022008b422690b8461cb52c3cc30330b23d574351872b7c361e9aae3649071c1a71601",
         "035d5c93d9ac96881f19ba1f686f15f009ded7c62efe85a872e6a19b43c15a2937"
     };
-    return test_parsing_and_serialization(hex_str_in, expected_cmds_size, expected_str_outs);
+    return test_parsing_and_serialization_and_get_asm(hex_str_in, expected_cmds_size, expected_str_outs, NULL);
 }
 
 
@@ -176,7 +186,7 @@ int test_script_parsing_and_serialization2() {
     char expected_str_outs[expected_cmds_size][4096] = {
         "76", "a9", "cebb2851a9c7cfe2582c12ecaf7f3ff4383d1dc0", "88", "ac"
     };
-    return test_parsing_and_serialization(hex_str_in, expected_cmds_size, expected_str_outs);
+    return test_parsing_and_serialization_and_get_asm(hex_str_in, expected_cmds_size, expected_str_outs, NULL);
 }
 
 int test_script_parsing_and_serialization3_OP_PUSHDATA1() {
@@ -196,7 +206,7 @@ int test_script_parsing_and_serialization3_OP_PUSHDATA1() {
         "4c",
         "5221020561ef602a5d29c9aa1007772c1799b3802df9a1995ea7aae06d3cc81ba254ad21026b29b39135808c8480cf17b1e0b383588e9301f5c6242f77ca6276a4345f5c8e2102f8b708a979928d301cbb697217385a287f1dcae6f7f0b51321e58e0f8e04cc1c21032c6023144a138c31b3b5f4aec7a84d9b71a4c6ceaa7abe3f9311071407541be554ae"
     };
-    return test_parsing_and_serialization(hex_str_in, expected_cmds_size, expected_str_outs);
+    return test_parsing_and_serialization_and_get_asm(hex_str_in, expected_cmds_size, expected_str_outs, NULL);
 }
 
 int test_script_parsing_and_serialization4_OP_PUSHDATA2() {
@@ -227,7 +237,7 @@ int test_script_parsing_and_serialization4_OP_PUSHDATA2() {
         "4d",
         "5765277265206e6f20737472616e6765727320746f206c6f76650a596f75206b6e6f77207468652072756c657320616e6420736f20646f20490a412066756c6c20636f6d6d69746d656e74277320776861742049276d207468696e6b696e67206f660a596f7520776f756c646e27742067657420746869732066726f6d20616e79206f74686572206775790a49206a7573742077616e6e612074656c6c20796f7520686f772049276d206665656c696e670a476f747461206d616b6520796f7520756e6465727374616e640a0a43484f5255530a4e6576657220676f6e6e61206769766520796f752075702c0a4e6576657220676f6e6e61206c657420796f7520646f776e0a4e6576657220676f6e6e612072756e2061726f756e6420616e642064657365727420796f750a4e6576657220676f6e6e61206d616b6520796f75206372792c0a4e6576657220676f6e6e612073617920676f6f646279650a4e6576657220676f6e6e612074656c6c2061206c696520616e64206875727420796f750a0a5765277665206b6e6f776e2065616368206f7468657220666f7220736f206c6f6e670a596f75722068656172742773206265656e20616368696e672062757420796f7527726520746f6f2073687920746f207361792069740a496e7369646520776520626f7468206b6e6f7720776861742773206265656e20676f696e67206f6e0a5765206b6e6f77207468652067616d6520616e6420776527726520676f6e6e6120706c61792069740a416e6420696620796f752061736b206d6520686f772049276d206665656c696e670a446f6e27742074656c6c206d6520796f7527726520746f6f20626c696e6420746f20736565202843484f525553290a0a43484f52555343484f5255530a284f6f68206769766520796f75207570290a284f6f68206769766520796f75207570290a284f6f6829206e6576657220676f6e6e6120676976652c206e6576657220676f6e6e6120676976650a286769766520796f75207570290a284f6f6829206e6576657220676f6e6e6120676976652c206e6576657220676f6e6e6120676976650a286769766520796f75207570290a0a5765277665206b6e6f776e2065616368206f7468657220666f7220736f206c6f6e670a596f75722068656172742773206265656e20616368696e672062757420796f7527726520746f6f2073687920746f207361792069740a496e7369646520776520626f7468206b6e6f7720776861742773206265656e20676f696e67206f6e0a5765206b6e6f77207468652067616d6520616e6420776527726520676f6e6e6120706c61792069742028544f2046524f4e54290a0a"
     };
-    return test_parsing_and_serialization(hex_str_in, expected_cmds_size, expected_str_outs);
+    return test_parsing_and_serialization_and_get_asm(hex_str_in, expected_cmds_size, expected_str_outs, NULL);
 }
 
 int test_script_parsing_and_serialization5_OP_PUSH() {
@@ -236,63 +246,47 @@ int test_script_parsing_and_serialization5_OP_PUSH() {
     char hex_str_in[] = "055556935b87";
     const size_t expected_cmds_size = 5;
     char expected_str_outs[expected_cmds_size][4096] = {"55", "56", "93", "5b", "87"};
-    return test_parsing_and_serialization(hex_str_in, expected_cmds_size, expected_str_outs);
+    return test_parsing_and_serialization_and_get_asm(hex_str_in, expected_cmds_size, expected_str_outs, NULL);
+}
+
+int test_script_parsing_and_serialization6_OP_PUSHDATA_end() {
+    char hex_str_in[] = "034d0000";
+    char expect_asm[] = "OP_PUSHDATA2";
+    const size_t expected_cmds_size = 2;
+    char expected_str_outs[expected_cmds_size][4096] = {"4d", ""};
+    return test_parsing_and_serialization_and_get_asm(hex_str_in, expected_cmds_size, expected_str_outs, expect_asm);
 }
 
 int main() {
     int retval = 0;
 
-    printf("test_op_dup()\n");
-    if (test_op_dup() != 0) {
-        fprintf(stderr, "FAILED!!!\n");
-        ++retval;
+    struct Test_Suite {
+        char test_name[128];
+        int (*test_func)(void);
+    };
+    
+    struct Test_Suite test_suites[] = {
+        {"test_op_dup()", &test_op_dup},
+        {"test_op_hash256()", &test_op_hash256},
+        {"test_op_hash160()", &test_op_hash160},
+        {"test_script_parsing_and_serialization1()", &test_script_parsing_and_serialization1},
+        {"test_script_parsing_and_serialization2()", &test_script_parsing_and_serialization2},
+        {"test_script_parsing_and_serialization3_OP_PUSHDATA1()", &test_script_parsing_and_serialization3_OP_PUSHDATA1},
+        {"test_script_parsing_and_serialization4_OP_PUSHDATA2()", &test_script_parsing_and_serialization4_OP_PUSHDATA2},
+        {"test_script_parsing_and_serialization5_OP_PUSH()", &test_script_parsing_and_serialization5_OP_PUSH},
+        {"test_script_parsing_and_serialization6_OP_PUSHDATA_end()", &test_script_parsing_and_serialization6_OP_PUSHDATA_end}
+    };
+
+    for (uint32_t i = 0; i < sizeof(test_suites)/sizeof(test_suites[0]); ++i) {
+        printf("testing %s...\n", test_suites[i].test_name);
+        if (test_suites[i].test_func() != 0) {
+            ++retval;
+            fprintf(stderr, "FAILED!!!\n");
+        }
     }
 
-    printf("test_op_hash256()\n");
-    if (test_op_hash256() != 0) {
-        fprintf(stderr, "FAILED!!!\n");
-        ++retval;
-    }
-
-    printf("test_op_hash160()\n");
-    if (test_op_hash160() != 0) {
-        fprintf(stderr, "FAILED!!!\n");
-        ++retval;
-    }
-
-    printf("test_script_parsing_and_serialization1()\n");
-    if (test_script_parsing_and_serialization1() != 0) {
-        fprintf(stderr, "FAILED!!!\n");
-        ++retval;
-    }
-
-    printf("test_script_parsing_and_serialization2()\n");
-    if (test_script_parsing_and_serialization2() != 0) {
-        fprintf(stderr, "FAILED!!!\n");
-        ++retval;
-    }
-
-
-    printf("test_script_parsing_and_serialization3_OP_PUSHDATA1()\n");
-    if (test_script_parsing_and_serialization3_OP_PUSHDATA1() != 0) {
-        fprintf(stderr, "FAILED!!!\n");
-        ++retval;
-    }
-
-
-    printf("test_script_parsing_and_serialization4_OP_PUSHDATA2()\n");
-    if (test_script_parsing_and_serialization4_OP_PUSHDATA2() != 0) {
-        fprintf(stderr, "FAILED!!!\n");
-        ++retval;
-    }
-
-    printf("test_script_parsing_and_serialization5_OP_PUSH()\n");
-    if (test_script_parsing_and_serialization5_OP_PUSH() != 0) {
-        fprintf(stderr, "FAILED!!!\n");
-        ++retval;
-    }
     if (retval != 0) {
-        fprintf(stderr, "===== %d test(s) FAILED!!! =====\n", retval);
+        fprintf(stderr, "===== %d TEST(s) FAILED!!! =====\n", retval);
     } else {
         printf("All tests passed\n");
     }
