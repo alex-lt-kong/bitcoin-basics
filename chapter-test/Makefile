@@ -8,7 +8,7 @@ main.out: test_ch01.o test_ch02.o test_ch03.o test_ch04.o test_ch05.o test_ch06.
 	g++ test_ch03.o               utils.o ecc.o      -o test_ch03.out -lboost_random $(OPT)        -lcriterion -lmycrypto
 	g++ test_ch04.o               utils.o ecc.o      -o test_ch04.out -lboost_random $(OPT) -lcurl -lcriterion -lmycrypto
 	g++ test_ch05.o script.o tx.o utils.o       op.o -o test_ch05.out -lboost_random $(OPT) -lcurl -lcriterion -lmycrypto
-	g++ test_ch06.o script.o tx.o utils.o       op.o -o test_ch06.out -lboost_random $(OPT) -lcurl -lcriterion -lmycrypto
+	g++ test_ch06.o script.o tx.o utils.o       op.o -o test_ch06.out -lboost_random $(OPT) -lcurl -lmycrypto
 	
 
 test_ch01.o: test_ch01.cpp

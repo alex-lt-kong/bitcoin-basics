@@ -17,8 +17,13 @@ int main(int argc, char **argv) {
         fprintf(stderr, "Usage script-test.out <script hex> <script asm>\n");
         return 1;
     }
-    size_t input_bytes_len, varint_len;
-    uint8_t* input_bytes = hex_string_to_bytes(argv[1], &input_bytes_len); 
+    int64_t input_bytes_len;
+    size_t varint_len;
+    uint8_t* input_bytes = hex_string_to_bytes(argv[1], &input_bytes_len);
+    if (input_bytes == NULL) {
+        fprintf(stderr, "invalid script_hex: %s\n", argv[1]);
+        return 1;
+    }
 
     vector<uint8_t> d(input_bytes_len);
     memcpy(d.data(), input_bytes, input_bytes_len);

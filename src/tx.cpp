@@ -190,7 +190,7 @@ uint64_t TxIn::get_value(const bool testnet) {
     fprintf(stderr, " Failed to fetch() tx_id\n");
     return 0;
   }
-  size_t hex_len;
+  int64_t hex_len;
   uint8_t* hex_input = hex_string_to_bytes((char*)d.data(), &hex_len);
   d.resize(hex_len); // let's re-use the same vector...
   memcpy(d.data(), hex_input, hex_len);

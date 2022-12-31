@@ -30,48 +30,44 @@ vector<uint8_t> Script::serialize() {
             } else if (this->cmds[idx][0] >= 76 && this->cmds[idx][0] <= 78) {
                 // raw bytes: 4c 01 0a
                 d.push_back(this->cmds[idx][0]);
+
+                ++idx;
+                size_t operand_len = 0;
                 if (idx == this->cmds.size() - 1) {
-                    fprintf(stderr, "Non-standard script: OP_PUSHDATA pushes nothing\n");
+                    operand_len = this->last_operand_nominal_len;
                 } else {
-                    ++idx;
-                    size_t operand_len = 0;
-                    if (idx == this->cmds.size() - 1) {
-                        operand_len = this->last_operand_nominal_len;
-                    } else {
-                        operand_len = this->cmds[idx].size();
-                    }
-                    if (this->is_opcode[idx] == true) {
-                        /* Use to handle this scenario:
-                            ASM:      OP_BOOLOR OP_PUSHDATA1    OP_0 OP_CODESEPARATOR
-                            Actual:          9b           4c 01   00               ab
-                            Expect:          9b           4c 00   00               ab
-                            */
-                        operand_len = 0;
-                    } 
-                                     
-                    d.push_back((uint8_t)operand_len);                 // for 0x0A0B0C0D, it extracts 0D at 0
-                    if (this->cmds[idx-1][0] >= 77) {
-                        d.push_back((uint8_t)(operand_len >> 8));      // for 0x0A0B0C0D, it extracts 0C at 1
-                        if (this->cmds[idx-1][0] >= 78) {
-                            d.push_back((uint8_t)(operand_len >> 16)); // for 0x0A0B0C0D, it extracts 0B at 2
-                            d.push_back((uint8_t)(operand_len >> 24)); // for 0x0A0B0C0D, it extracts 0A at 3
-                        }
-                    }
-                    if (operand_len != this->cmds[idx].size()) {
-                        fprintf(stderr, "Non-standard Script: operand_len is different from operand.size()\n");
-                    }
-                    for (size_t j = 0; j < operand_len && j < this->cmds[idx].size(); ++j) {
-                        d.push_back(this->cmds[idx][j]);
-                    }
-                    if (this->is_opcode[idx] == true) {
-                        /*
-                        It is a bit difficult to explain the case succinctly,
-                        it is needed to parse the following test case:
-                        "03cf760b1b4d696e656420627920416e74506f6f6c383738be00010045bd3903fabe6d6d8dee9c6ded1bbc251c0bdf56784cd8e32dc6c6448186a124ffdda854c54ff1eb02000000000000009b4c0000abc8000000000000"
-                        "OP_PUSHBYTES_3 cf760b OP_PUSHBYTES_27 4d696e656420627920416e74506f6f6c383738be00010045bd3903 OP_RETURN_250 OP_RETURN_190 OP_2DROP OP_2DROP OP_2MUL OP_RETURN_238 OP_NUMEQUAL OP_2DROP OP_RETURN_237 OP_PUSHBYTES_27 bc251c0bdf56784cd8e32dc6c6448186a124ffdda854c54ff1eb02 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0 OP_BOOLOR OP_PUSHDATA1 OP_0 OP_CODESEPARATOR OP_RETURN_200 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0"
+                    operand_len = this->cmds[idx].size();
+                }
+                if (this->is_opcode[idx] == true) {
+                    /* Use to handle this scenario:
+                        ASM:      OP_BOOLOR OP_PUSHDATA1    OP_0 OP_CODESEPARATOR
+                        Actual:          9b           4c 01   00               ab
+                        Expect:          9b           4c 00   00               ab
                         */
-                        --idx;
+                    operand_len = 0;
+                }
+                d.push_back((uint8_t)operand_len);                 // for 0x0A0B0C0D, it extracts 0D at 0
+                if (this->cmds[idx-1][0] >= 77) {
+                    d.push_back((uint8_t)(operand_len >> 8));      // for 0x0A0B0C0D, it extracts 0C at 1
+                    if (this->cmds[idx-1][0] >= 78) {
+                        d.push_back((uint8_t)(operand_len >> 16)); // for 0x0A0B0C0D, it extracts 0B at 2
+                        d.push_back((uint8_t)(operand_len >> 24)); // for 0x0A0B0C0D, it extracts 0A at 3
                     }
+                }
+                if (operand_len != this->cmds[idx].size()) {
+                    fprintf(stderr, "Non-standard Script: operand_len is different from operand.size()\n");
+                }
+                for (size_t j = 0; j < operand_len && j < this->cmds[idx].size(); ++j) {
+                    d.push_back(this->cmds[idx][j]);
+                }
+                if (this->is_opcode[idx] == true) {
+                    /*
+                    It is a bit difficult to explain the case succinctly,
+                    it is needed to parse the following test case:
+                    "03cf760b1b4d696e656420627920416e74506f6f6c383738be00010045bd3903fabe6d6d8dee9c6ded1bbc251c0bdf56784cd8e32dc6c6448186a124ffdda854c54ff1eb02000000000000009b4c0000abc8000000000000"
+                    "OP_PUSHBYTES_3 cf760b OP_PUSHBYTES_27 4d696e656420627920416e74506f6f6c383738be00010045bd3903 OP_RETURN_250 OP_RETURN_190 OP_2DROP OP_2DROP OP_2MUL OP_RETURN_238 OP_NUMEQUAL OP_2DROP OP_RETURN_237 OP_PUSHBYTES_27 bc251c0bdf56784cd8e32dc6c6448186a124ffdda854c54ff1eb02 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0 OP_BOOLOR OP_PUSHDATA1 OP_0 OP_CODESEPARATOR OP_RETURN_200 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0"
+                    */
+                    --idx;
                 }
             } else {
                 fprintf(stderr, "Invalid opcode: %d\n", this->cmds[idx][0]);
@@ -106,7 +102,6 @@ bool Script::parse(vector<uint8_t> byte_stream) {
     size_t data_length = 0;
     this->cmds.clear();
     this->is_opcode.clear();
-
     const size_t expected_cmd_sizes[] = {1, 2, 4};
     const char cmd_names[][13] = {"OP_PUSHDATA1", "OP_PUSHDATA2", "OP_PUSHDATA4"};
     while (count < script_len) {
@@ -155,7 +150,7 @@ bool Script::parse(vector<uint8_t> byte_stream) {
                 // Will only enter this branch if the coming operand is the last one.
                 // It also implies that OP_PUSHDATA pushes nothing at all! (as it has already reached the end of d.)
                 fprintf(
-                    stderr, "Non-standard Script: %lu too short for %s and OP_PUSHDATA pushes no data at all\n",
+                    stderr, "Non-standard Script: %lu too short for %s and it pushes no data at all\n",
                     byte_stream.size(), cmd_names[cb-76]
                 );
             }
@@ -176,15 +171,12 @@ bool Script::parse(vector<uint8_t> byte_stream) {
             if (data_length > 520) {
                 fprintf(stderr, "Non-standard Script: data_length > 520\n");
             }
-            if (data_length > 0) {
-                vector<uint8_t> cmd(data_length);
-                memcpy(cmd.data(), byte_stream.data(), data_length);
-                byte_stream.erase(byte_stream.begin(), byte_stream.begin() + data_length);
-                this->cmds.push_back(cmd);
-                this->is_opcode.push_back(false);
-            } else {
-                fprintf(stderr, "Non-standard Script: OP_PUSHDATA pushes 0 bytes\n");
-            }
+            vector<uint8_t> cmd(data_length);
+            memcpy(cmd.data(), byte_stream.data(), data_length);
+            byte_stream.erase(byte_stream.begin(), byte_stream.begin() + data_length);
+            this->cmds.push_back(cmd);
+            this->is_opcode.push_back(false);
+            
             count += data_length + OP_PUSHDATA_size;
         } else {
             // otherwise it is an opcode
@@ -263,7 +255,7 @@ string Script::get_asm() {
             }            
         }
     }
-    if (script_asm.size() > 0 && script_asm[script_asm.size() - 1] == ' ') {
+    while (script_asm.size() > 0 && script_asm[script_asm.size() - 1] == ' ') {
         script_asm.pop_back();
     }
     return script_asm;
@@ -272,7 +264,5 @@ string Script::get_asm() {
 Script::~Script() {}
 
 /*
-03cf760b1b4d696e656420627920416e74506f6f6c383738be00010045bd3903fabe6d6d8dee9c6ded1bbc251c0bdf56784cd8e32dc6c6448186a124ffdda854c54ff1eb02000000000000009b4c00abc8000000000000
-03cf760b1b4d696e656420627920416e74506f6f6c383738be00010045bd3903fabe6d6d8dee9c6ded1bbc251c0bdf56784cd8e32dc6c6448186a124ffdda854c54ff1eb02000000000000009b4c0000abc8000000000000
-
+/root/repos/bitcoin-internals/continuous-testing/script-test.out "4d0000" "OP_PUSHDATA2"
 */

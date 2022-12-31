@@ -135,7 +135,7 @@ Test(ch05_test_suite, test_varint_encoding_decoding8) {
 }
 
 Test(ch05_test_suite, test_parse1) {
-  size_t input_len;
+  int64_t input_len;
   // The input hex string is from the book
   uint8_t* hex_input = hex_string_to_bytes(
     "0100000001813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1000000006b483045022100ed81ff192e75a3fd2"
@@ -170,7 +170,7 @@ Test(ch05_test_suite, test_parse1) {
 }
 
 Test(ch05_test_suite, test_parse2) {
-  size_t input_len;
+  int64_t input_len;
   uint8_t* hex_input = hex_string_to_bytes(
     "010000000456919960ac691763688d3d3bcea9ad6ecaf875df5339e148a1fc61c6ed7a069e010000006a47304402204585bcdef85e6b1c6af"
     "5c2669d4830ff86e42dd205c0e089bc2a821657e951c002201024a10366077f87d6bce1f7100ad8cfa8a064b39d4e8fe4ea13a7b71aa8180f"
@@ -229,7 +229,7 @@ Test(ch05_test_suite, test_curl_fetch_testnet) {
 
 
 Test(ch05_test_suite, test_parse_fee1) {
-  size_t input_len;
+  int64_t input_len;
   uint8_t* hex_input = hex_string_to_bytes(
     "0100000001813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1000000006b483045022100ed81ff192e75a3fd2"
     "304004dcadb746fa5e24c5031ccfcf21320b0277457c98f02207a986d955c6e0cb35d446a89d3f56100f4d7f67801c31967743a9c8e10615b"
@@ -247,7 +247,7 @@ Test(ch05_test_suite, test_parse_fee1) {
 
 Test(ch05_test_suite, test_parse_fee2) {
   
-  size_t input_len;
+  int64_t input_len;
   uint8_t* hex_input = hex_string_to_bytes(
     "010000000456919960ac691763688d3d3bcea9ad6ecaf875df5339e148a1fc61c6ed7a069e010000006a47304402204585bcdef85e6b1c6a"
     "f5c2669d4830ff86e42dd205c0e089bc2a821657e951c002201024a10366077f87d6bce1f7100ad8cfa8a064b39d4e8fe4ea13a7b71aa818"
