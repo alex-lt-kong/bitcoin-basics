@@ -144,7 +144,8 @@ bool Script::parse(vector<uint8_t> byte_stream) {
             // meaning that we read the next 1,2,4 bytes
             // which, in little endian order, specify how many bytes the element has.
             size_t OP_PUSHDATA_size = (
-                byte_stream.size() > expected_cmd_sizes[cb - 76] ? expected_cmd_sizes[cb - 76] : byte_stream.size()
+                byte_stream.size() > expected_cmd_sizes[cb - 76] ?
+                expected_cmd_sizes[cb - 76] : byte_stream.size()
             );
             if (OP_PUSHDATA_size < expected_cmd_sizes[cb - 76]) {
                 // Will only enter this branch if the coming operand is the last one.
@@ -156,7 +157,9 @@ bool Script::parse(vector<uint8_t> byte_stream) {
             }
             uint8_t buf[4] = {0};
             memcpy(buf, byte_stream.data(), OP_PUSHDATA_size);
-            byte_stream.erase(byte_stream.begin(), byte_stream.begin() + OP_PUSHDATA_size);
+            byte_stream.erase(
+                byte_stream.begin(), byte_stream.begin() + OP_PUSHDATA_size
+            );
             // As documented above, OP_PUSHDATA_size == 0 and byte_stream.begin() == end() are both valid.
             this->cmds.push_back(vector<uint8_t>{ cb });
             this->is_opcode.push_back(true);
@@ -173,7 +176,9 @@ bool Script::parse(vector<uint8_t> byte_stream) {
             }
             vector<uint8_t> cmd(data_length);
             memcpy(cmd.data(), byte_stream.data(), data_length);
-            byte_stream.erase(byte_stream.begin(), byte_stream.begin() + data_length);
+            byte_stream.erase(
+                byte_stream.begin(), byte_stream.begin() + data_length
+            );
             this->cmds.push_back(cmd);
             this->is_opcode.push_back(false);
             
@@ -206,7 +211,7 @@ string Script::get_asm() {
         if (this->is_opcode[i]) {
             script_asm += get_opcode(this->cmds[i][0]).func_name;
             script_asm += " ";
-            if (this->cmds[i][0] == 76 || this->cmds[i][0] == 77 || this->cmds[i][0] == 78) {
+            if (this->cmds[i][0] >= 76 && this->cmds[i][0] <= 78) {
                 /*
                 OP_PUSDATA1, OP_PUSDATA2 and OP_PUSHDATA4, will be loaded here, instead of relying on else {}.
                 This design aims to make the output asm format consistent with:
@@ -229,12 +234,18 @@ string Script::get_asm() {
                         "Non-standard Script: operand loaded by OP_PUSHDATA has %lu bytes.\n", this->cmds[i].size()
                     );
                 }
-                if (this->cmds[i].size() != (size_t)this->last_operand_nominal_len && i == this->cmds.size() - 1) {
+                if (
+                    this->cmds[i].size() != (size_t)this->last_operand_nominal_len &&
+                    i == this->cmds.size() - 1
+                ) {
                     script_asm += "<push past end>";
                 } else {
                     hex_str = bytes_to_hex_string(this->cmds[i].data(), this->cmds[i].size(), false);
                     script_asm += hex_str;
-                    script_asm += " ";
+                    script_asm += this->cmds[i].size() > 0 ? " ": "";
+                    // this else block can handle size() == 0, except this
+                    // formatting issue--it results in two consecutive
+                    // 0's if not specially handled.
                     free(hex_str);
                 }
             }
@@ -264,5 +275,9 @@ string Script::get_asm() {
 Script::~Script() {}
 
 /*
-/root/repos/bitcoin-internals/continuous-testing/script-test.out "4d0000" "OP_PUSHDATA2"
+03eeb20b1362696e616e63652f383232b100010088314f85fabe6d6d6fefe54c0076a788e4b490881f75dcc63a0ff477383bc86a16ce6635206a5bf30200000000000000979d00003358000000000000"
+"OP_PUSHBYTES_3 eeb20b OP_PUSHBYTES_19 62696e616e63652f383232b100010088314f85 OP_RETURN_250 OP_RETURN_190 OP_2DROP OP_2DROP OP_3DUP OP_RETURN_239 OP_RETURN_229 OP_PUSHDATA1 OP_DUP OP_SHA1 OP_EQUALVERIFY OP_RETURN_228 OP_NOP5 OP_ABS OP_EQUALVERIFY OP_PUSHBYTES_31 75dcc63a0ff477383bc86a16ce6635206a5bf30200000000000000979d0000 OP_PUSHBYTES_51 <push past end>"
+Actual: OP_PUSHBYTES_3 eeb20b OP_PUSHBYTES_19 62696e616e63652f383232b100010088314f85 OP_RETURN_250 OP_RETURN_190 OP_2DROP OP_2DROP OP_3DUP OP_RETURN_239 OP_RETURN_229 OP_PUSHDATA1  OP_DUP OP_SHA1 OP_EQUALVERIFY OP_RETURN_228 OP_NOP5 OP_ABS OP_EQUALVERIFY OP_PUSHBYTES_31 75dcc63a0ff477383bc86a16ce6635206a5bf30200000000000000979d0000 OP_PUSHBYTES_51 <push past end>
+Expect: OP_PUSHBYTES_3 eeb20b OP_PUSHBYTES_19 62696e616e63652f383232b100010088314f85 OP_RETURN_250 OP_RETURN_190 OP_2DROP OP_2DROP OP_3DUP OP_RETURN_239 OP_RETURN_229 OP_PUSHDATA1 OP_DUP OP_SHA1 OP_EQUALVERIFY OP_RETURN_228 OP_NOP5 OP_ABS OP_EQUALVERIFY OP_PUSHBYTES_31 75dcc63a0ff477383bc86a16ce6635206a5bf30200000000000000979d0000 OP_PUSHBYTES_51 <push past end>
+
 */

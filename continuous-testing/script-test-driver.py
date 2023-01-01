@@ -24,6 +24,7 @@ lgr.setLevel(logging.INFO)
 
 assert os.getenv('BITCOIN_INTERNALS_KAFKA_BROKERS') is not None
 assert os.getenv('BITCOIN_INTERNALS_KAFKA_TOPIC') is not None
+
 producer = Producer({
     'bootstrap.servers': os.getenv('BITCOIN_INTERNALS_KAFKA_BROKERS'),
     'client.id': socket.getfqdn()
