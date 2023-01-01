@@ -1,9 +1,12 @@
 #!/usr/bin/python3
 
+from confluent_kafka import Producer
+
 import argparse
 import json
 import logging
 import requests
+import socket
 import subprocess
 import time
 import os
@@ -18,6 +21,29 @@ file_handler.setFormatter(
 ))
 lgr.addHandler(file_handler)
 lgr.setLevel(logging.INFO)
+
+
+conf = {
+    'bootstrap.servers': "infra.sz.lan:9092", 'client.id': socket.gethostname()
+}
+
+topic = 'test-topic'
+
+producer = Producer(conf)
+
+def acked(err, msg):
+    if err is not None:
+        print("Failed to deliver message: %s: %s" % (str(msg), str(err)))
+    else:
+        print("Message produced: %s" % (str(msg)))
+
+def send_to_kafka(msg: str) -> None:
+    producer.produce(topic, key="key", value=msg, callback=acked)
+
+    # Wait up to 1 second for events. Callbacks will be invoked during
+    # this method call if the message is acknowledged.
+    producer.poll(1)
+
 
 def test_script(script_hex: str, script_asm: str) -> None:
     test_cmd = [test_program, script_hex, script_asm]
@@ -63,6 +89,7 @@ def main() -> None:
     while height < latest_height:
 
         url_block_by_height = f'https://blockstream.info/api/block-height/{height}'
+        send_to_kafka(url_block_by_height)
         block_metadata = None
         lgr.info(f'Requesting transactions in the block {height} through [{url_block_by_height}]')
         block_id = ''
@@ -97,6 +124,7 @@ def main() -> None:
         while total_idx < tx_count:
             paged_txes = None
             paged_tx_url = f'https://blockstream.info/api/block/{block_id}/txs/{total_idx}'
+
             try:                
                 lgr.info(f'HTTP GETing tx [{total_idx}, {total_idx+25}]through {paged_tx_url}')
                 resp = requests.get(paged_tx_url, timeout=600)
