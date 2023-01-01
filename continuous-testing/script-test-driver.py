@@ -22,32 +22,32 @@ file_handler.setFormatter(
 lgr.addHandler(file_handler)
 lgr.setLevel(logging.INFO)
 
+assert os.getenv('BITCOIN_INTERNALS_KAFKA_BROKERS') is not None
+assert os.getenv('BITCOIN_INTERNALS_KAFKA_TOPIC') is not None
+producer = Producer({
+    'bootstrap.servers': os.getenv('BITCOIN_INTERNALS_KAFKA_BROKERS'),
+    'client.id': socket.getfqdn()
+})
 
-conf = {
-    'bootstrap.servers': "infra.sz.lan:9092", 'client.id': socket.gethostname()
-}
-
-topic = 'test-topic'
-
-producer = Producer(conf)
-
-def acked(err, msg):
+def kafka_cb(err, msg):
     if err is not None:
-        print("Failed to deliver message: %s: %s" % (str(msg), str(err)))
-    else:
-        print("Message produced: %s" % (str(msg)))
+        lgr.error(f'Failed to deliver message [{msg}], reason: {err}')
+
 
 def send_to_kafka(msg: str) -> None:
-    producer.produce(topic, key="key", value=msg, callback=acked)
-
-    # Wait up to 1 second for events. Callbacks will be invoked during
-    # this method call if the message is acknowledged.
-    producer.poll(1)
+    producer.produce(
+        os.getenv('BITCOIN_INTERNALS_KAFKA_TOPIC'),
+        value=json.dumps({'host': socket.getfqdn(), 'msg': msg}),
+        callback=kafka_cb
+    )
+    producer.poll(timeout=1)
 
 
 def test_script(script_hex: str, script_asm: str) -> None:
     test_cmd = [test_program, script_hex, script_asm]
-    p = subprocess.Popen(test_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(
+        test_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
     stdout, stderr = p.communicate()
     # stderr could contain some warning info, we will ignore them.
     retval = p.wait()
