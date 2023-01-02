@@ -39,9 +39,10 @@ def send_to_kafka(block_height: int, status: str) -> None:
     producer.produce(
         os.getenv('BITCOIN_INTERNALS_KAFKA_TOPIC'),
         value=json.dumps({
-                'host': socket.getfqdn(),
-                'block_height': block_height,
-                'status': status
+            'host': socket.getfqdn(),
+            'unix_ts': time.time(),
+            'block_height': block_height,
+            'status': status
         }),
         callback=kafka_cb
     )
