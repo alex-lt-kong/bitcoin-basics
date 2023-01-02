@@ -25,7 +25,6 @@ in Jimmy Song's [Programming Bitcoin](https://www.oreilly.com/library/view/progr
 
 * Boost for 256-bit integer support: `apt install libboost-all-dev` 
 * cURL for network communication: `apt-get install libcurl4-gnutls-dev`
-* Criterion for unit testing: `apt install libcriterion-dev libcriterion3`
 * [libmycrypto](https://github.com/alex-lt-kong/libmycrypto) for cryptographic algorithms.
 
 ## Repo structure
@@ -36,8 +35,11 @@ for each chapter in Jimmy's book
   * `ecc.h`/`ecc.cpp`: implementation of the ECDSA algorithm from scratch.
   * `script.cpp`/`script.h`: parser and serializer of Bitcoin's Script language.
   * `tx.h`/`tx.cpp`: transaction parser and serializer.
-  * `op.h`: define operations of Bitcoin's Script virtual machine.
+  * `op.h`/`op.cpp`: define operations of Bitcoin's Script virtual machine.
   * `utils.h`/`utils.cpp`: utility functions
-* `continuous-testing`: driver functions that test some critical functionalities against Bitcoin blockchain explorer's result.
-The Python driver is designed to fetch the transactions from the latest block, so adding them to `crontab` and run it every
-~10 minutes means that each new block is throughly tested.
+* `continuous-testing`: driver functions that test some critical functionalities
+against the result from a Bitcoin blockchain explorer called
+[Blockstream explorer](https://blockstream.info)'s.
+  * `script-test-driver.py`: Parse all Script components of Bitcoin blocks
+  against Blockstream exlporer.
+
