@@ -39,7 +39,7 @@ for each chapter in Jimmy's book
   * `utils.h`/`utils.cpp`: utility functions
 * `continuous-testing`: driver functions that test some critical functionalities
 against the result from a Bitcoin blockchain explorer called
-[Blockstream explorer](https://blockstream.info)'s.
+[Blockstream explorer](https://blockstream.info).
   * `script-test-driver.py`: Parse all Script components of Bitcoin blocks
   against Blockstream exlporer.
 
