@@ -35,10 +35,14 @@ def kafka_cb(err, msg):
         lgr.error(f'Failed to deliver message [{msg}], reason: {err}')
 
 
-def send_to_kafka(msg: str) -> None:
+def send_to_kafka(block_height: int, status: str) -> None:
     producer.produce(
         os.getenv('BITCOIN_INTERNALS_KAFKA_TOPIC'),
-        value=json.dumps({'host': socket.getfqdn(), 'msg': msg}),
+        value=json.dumps({
+                'host': socket.getfqdn(),
+                'block_height': block_height,
+                'status': status
+        }),
         callback=kafka_cb
     )
     producer.poll(timeout=1)
@@ -57,7 +61,8 @@ def test_script(script_hex: str, script_asm: str) -> None:
     else:
         err_msg = (
             f'Test program [{test_program}] reports error. stdout: '
-            f'{stdout.decode("utf8")}, stderr: {stderr.decode("utf8")}, retval: {retval}. '
+            f'{stdout.decode("utf8")}, stderr: {stderr.decode("utf8")}, '
+            f'retval: {retval}. '
             f'To re-run: {test_program} "{script_hex}" "{script_asm}"'
         )
         lgr.error(err_msg)
@@ -83,16 +88,21 @@ def main() -> None:
         since_block_height = int(args['since-block'])
     except Exception:
         since_block_height = latest_height
-    lgr.info(f'the test script will test since block {since_block_height:,} to {latest_height:,}')
+    lgr.info(
+        f'the test script will test since block {since_block_height:,} '
+        f'to {latest_height:,}'
+    )
 
     height = since_block_height
     retry, max_retry = 0, 30
     while height < latest_height:
 
-        url_block_by_height = f'https://blockstream.info/api/block-height/{height}'
-        send_to_kafka(url_block_by_height)
+        url_block_by_height = f'https://blockstream.info/api/block-height/{height}'        
         block_metadata = None
-        lgr.info(f'Requesting transactions in the block {height} through [{url_block_by_height}]')
+        lgr.info(
+            f'Requesting transactions in the block {height} '
+            f'through [{url_block_by_height}]'
+        )
         block_id = ''
         try:
             resp = requests.get(url_block_by_height)
@@ -105,7 +115,9 @@ def main() -> None:
             retry = 0
         except Exception:
             if retry > max_retry:
-                raise RuntimeError(f'HTTP GETing {url_block_by_height} failed and max_retry exceeded')
+                err_msg = f'HTTP GETing {url_block_by_height} failed and max_retry ({max_retry}) exceeded'
+                send_to_kafka(height, err_msg)
+                raise RuntimeError(err_msg)
             lgr.warning(f'0 blocks are fetched from {url_block_by_height}, will sleep() then retry...')
             time.sleep(30)
             retry += 1
@@ -134,7 +146,9 @@ def main() -> None:
                 retry = 0
             except Exception:
                 if retry > max_retry:
-                    raise RuntimeError(f'HTTP GETing {paged_tx_url} failed and max_retry exceeded')
+                    err_msg = f'HTTP GETing {paged_tx_url} failed and max_retry exceeded'
+                    send_to_kafka(height, err_msg)
+                    raise RuntimeError()
                 lgr.warning('Failed to fetch paged_txes, will sleep() then retry...')
                 time.sleep(30)
                 continue
@@ -151,6 +165,7 @@ def main() -> None:
                     except Exception as ex:
                         err_msg = f'testing {str(tx_in["scriptsig"])} (ASM: {str(tx_in["scriptsig_asm"])}),'
                         err_msg += f'height: {height}, transaction idx: {total_idx+i}: {ex}'
+                        send_to_kafka(height, err_msg)
                         lgr.exception(err_msg)
                         raise RuntimeError(err_msg)
                 for j in range(len(tx['vout'])):
@@ -164,9 +179,12 @@ def main() -> None:
                     except Exception as ex:
                         err_msg = f'testing {str(tx_out["scriptpubkey"])} (ASM: {str(tx_out["scriptpubkey_asm"])}),'
                         err_msg += f'height: {height}, transaction idx: {total_idx+i}: {ex}'
+                        send_to_kafka(height, err_msg)
                         lgr.exception(err_msg)
                         raise RuntimeError(err_msg)
+                
             total_idx += 25
+        send_to_kafka(height, 'okay')            
         height += 1
 
     lgr.info(f'All scripts are tested by [{test_program}] and no errors are reported')
