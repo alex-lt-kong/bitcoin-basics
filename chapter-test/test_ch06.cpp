@@ -14,7 +14,7 @@
 using namespace std;
 
 
-int test_parsing_and_serialization_and_get_asm(const char* hex_str_in, const size_t expected_cmds_size, char expected_str_outs[][4096], const char* expected_asm) {
+int test_parsing_and_serialization_and_get_asm(const char* hex_str_in, const size_t expected_cmds_size, char expected_str_outs[][2048], const char* expected_asm) {
     int64_t input_len;
     
     char* hex_input = (char*)hex_string_to_bytes(hex_str_in, &input_len);
@@ -173,7 +173,7 @@ int test_script_parsing_and_serialization1() {
     // The input hex string is from Jimmy's book
     char hex_str_in[] = "6a47304402207899531a52d59a6de200179928ca900254a36b8dff8bb75f5f5d71b1cdc26125022008b422690b8461cb52c3cc30330b23d574351872b7c361e9aae3649071c1a7160121035d5c93d9ac96881f19ba1f686f15f009ded7c62efe85a872e6a19b43c15a2937";
     const size_t expected_cmds_size = 2;
-    char expected_str_outs[expected_cmds_size][4096] = {
+    char expected_str_outs[expected_cmds_size][2048] = {
         "304402207899531a52d59a6de200179928ca900254a36b8dff8bb75f5f5d71b1cdc26125022008b422690b8461cb52c3cc30330b23d574351872b7c361e9aae3649071c1a71601",
         "035d5c93d9ac96881f19ba1f686f15f009ded7c62efe85a872e6a19b43c15a2937"
     };
@@ -186,7 +186,7 @@ int test_script_parsing_and_serialization2() {
     // d21736be48b88d15591b101ecadcba8f65713876ffb2b29d60de01dfaef8b120
     char hex_str_in[] = "1976a914cebb2851a9c7cfe2582c12ecaf7f3ff4383d1dc088ac";
     const size_t expected_cmds_size = 5;
-    char expected_str_outs[expected_cmds_size][4096] = {
+    char expected_str_outs[expected_cmds_size][2048] = {
         "76", "a9", "cebb2851a9c7cfe2582c12ecaf7f3ff4383d1dc0", "88", "ac"
     };
     return test_parsing_and_serialization_and_get_asm(hex_str_in, expected_cmds_size, expected_str_outs, NULL);
@@ -202,7 +202,7 @@ int test_script_parsing_and_serialization3_OP_PUSHDATA1() {
         "a979928d301cbb697217385a287f1dcae6f7f0b51321e58e0f8e04cc1c21032c6023144a138c31b3b5f4aec7a84d9b71a4c6ceaa7abe3f9"
         "311071407541be554ae";
     const size_t expected_cmds_size = 5;
-    char expected_str_outs[expected_cmds_size][4096] = {
+    char expected_str_outs[expected_cmds_size][2048] = {
         "00",
         "3045022100990eabdb96bbcdb961864c781a6868dee3d0dada85e0a4d818c61fe16e885d8c02200ae8744e2833b46194fbe5e54aa9b9bbc9c6f773d23dbf373446b975dac6efd601",
         "30440220166ee94db70f2dbf654f388d2719433f0ebaf909f11cba1dad31a3e076ec8b1902204cf972f21b07403d3f8f1259ce4af0c81fd39d1425f09f2fbed97eaa125ccccf01",
@@ -235,7 +235,7 @@ int test_script_parsing_and_serialization4_OP_PUSHDATA2() {
         "792069740a496e7369646520776520626f7468206b6e6f7720776861742773206265656e20676f696e67206f6e0a5765206b6e6f7720746"
         "8652067616d6520616e6420776527726520676f6e6e6120706c61792069742028544f2046524f4e54290a0a";
     const size_t expected_cmds_size = 3;
-    char expected_str_outs[expected_cmds_size][4096] = {
+    char expected_str_outs[expected_cmds_size][2048] = {
         "6a",
         "4d",
         "5765277265206e6f20737472616e6765727320746f206c6f76650a596f75206b6e6f77207468652072756c657320616e6420736f20646f20490a412066756c6c20636f6d6d69746d656e74277320776861742049276d207468696e6b696e67206f660a596f7520776f756c646e27742067657420746869732066726f6d20616e79206f74686572206775790a49206a7573742077616e6e612074656c6c20796f7520686f772049276d206665656c696e670a476f747461206d616b6520796f7520756e6465727374616e640a0a43484f5255530a4e6576657220676f6e6e61206769766520796f752075702c0a4e6576657220676f6e6e61206c657420796f7520646f776e0a4e6576657220676f6e6e612072756e2061726f756e6420616e642064657365727420796f750a4e6576657220676f6e6e61206d616b6520796f75206372792c0a4e6576657220676f6e6e612073617920676f6f646279650a4e6576657220676f6e6e612074656c6c2061206c696520616e64206875727420796f750a0a5765277665206b6e6f776e2065616368206f7468657220666f7220736f206c6f6e670a596f75722068656172742773206265656e20616368696e672062757420796f7527726520746f6f2073687920746f207361792069740a496e7369646520776520626f7468206b6e6f7720776861742773206265656e20676f696e67206f6e0a5765206b6e6f77207468652067616d6520616e6420776527726520676f6e6e6120706c61792069740a416e6420696620796f752061736b206d6520686f772049276d206665656c696e670a446f6e27742074656c6c206d6520796f7527726520746f6f20626c696e6420746f20736565202843484f525553290a0a43484f52555343484f5255530a284f6f68206769766520796f75207570290a284f6f68206769766520796f75207570290a284f6f6829206e6576657220676f6e6e6120676976652c206e6576657220676f6e6e6120676976650a286769766520796f75207570290a284f6f6829206e6576657220676f6e6e6120676976652c206e6576657220676f6e6e6120676976650a286769766520796f75207570290a0a5765277665206b6e6f776e2065616368206f7468657220666f7220736f206c6f6e670a596f75722068656172742773206265656e20616368696e672062757420796f7527726520746f6f2073687920746f207361792069740a496e7369646520776520626f7468206b6e6f7720776861742773206265656e20676f696e67206f6e0a5765206b6e6f77207468652067616d6520616e6420776527726520676f6e6e6120706c61792069742028544f2046524f4e54290a0a"
@@ -248,7 +248,7 @@ int test_script_parsing_and_serialization5_OP_PUSH() {
     // 23b898cadf9ce45123dbdb1ab7e676d96eaf672297801a013b26f349892e1bb5
     char hex_str_in[] = "055556935b87";
     const size_t expected_cmds_size = 5;
-    char expected_str_outs[expected_cmds_size][4096] = {"55", "56", "93", "5b", "87"};
+    char expected_str_outs[expected_cmds_size][2048] = {"55", "56", "93", "5b", "87"};
     return test_parsing_and_serialization_and_get_asm(hex_str_in, expected_cmds_size, expected_str_outs, NULL);
 }
 
@@ -256,16 +256,35 @@ int test_script_parsing_and_serialization6_OP_PUSHDATA_end() {
     char hex_str_in[] = "034d0000";
     char expect_asm[] = "OP_PUSHDATA2";
     const size_t expected_cmds_size = 2;
-    char expected_str_outs[expected_cmds_size][4096] = {"4d", ""};
+    char expected_str_outs[expected_cmds_size][2048] = {"4d", ""};
     return test_parsing_and_serialization_and_get_asm(hex_str_in, expected_cmds_size, expected_str_outs, expect_asm);
 }
 
-int test_script_parsing_and_serialization6_OP_PUSHDATA_special1() {
-    char hex_str_in[] = "41fc70035c7a81bc6fcc36947f7c1b2d63620560bec2aa336a676213bab74c9f03d46788100dca84c0f19a0f1c14ef0d67f3fc63c011ba4787510d55fde9554e554e";
-    char expect_asm[] = "OP_RETURN_252 OP_2OVER OP_PUSHBYTES_3 5c7a81 OP_RETURN_188 OP_3DUP OP_RETURN_204 OP_PUSHBYTES_54 947f7c1b2d63620560bec2aa336a676213bab74c9f03d46788100dca84c0f19a0f1c14ef0d67f3fc63c011ba4787510d55fde9554e55<unexpected end>";
-    const size_t expected_cmds_size = 9;
-    char expected_str_outs[expected_cmds_size][4096] = {"fc", "70", "5c7a81", "bc", "6f", "cc", "947f7c1b2d63620560bec2aa336a676213bab74c9f03d46788100dca84c0f19a0f1c14ef0d67f3fc63c011ba4787510d55fde9554e55", "4e", ""};
-    return test_parsing_and_serialization_and_get_asm(hex_str_in, expected_cmds_size, expected_str_outs, expect_asm);
+int test_script_parsing_and_serialization6_special_cases() {
+    const size_t buf_size = 2048;
+    // If byte string is copied from blockstream.info, need to manually append 
+    // the length of the script to it.
+    char hex_str_in[][buf_size] = {
+        "41fc70035c7a81bc6fcc36947f7c1b2d63620560bec2aa336a676213bab74c9f03d46788100dca84c0f19a0f1c14ef0d67f3fc63c011ba4787510d55fde9554e554e",
+        "2c6a4c2952534b424c4f434b3a3f6536dbb51cbe76519e0cd70480cf7f07da4ae2334cac402ef18329004681c4"
+        };
+    char expect_asm[][buf_size] = {
+        "OP_RETURN_252 OP_2OVER OP_PUSHBYTES_3 5c7a81 OP_RETURN_188 OP_3DUP OP_RETURN_204 OP_PUSHBYTES_54 947f7c1b2d63620560bec2aa336a676213bab74c9f03d46788100dca84c0f19a0f1c14ef0d67f3fc63c011ba4787510d55fde9554e55<unexpected end>",
+        "OP_RETURN OP_PUSHDATA1 52534b424c4f434b3a3f6536dbb51cbe76519e0cd70480cf7f07da4ae2334cac402ef18329004681c4"
+    };
+    const size_t expected_cmds_size[] = {9, 3};
+    char expected_str_outs[][32][2048] = {
+        {"fc", "70", "5c7a81", "bc", "6f", "cc", "947f7c1b2d63620560bec2aa336a676213bab74c9f03d46788100dca84c0f19a0f1c14ef0d67f3fc63c011ba4787510d55fde9554e55", "4e", ""},
+        {"6a", "4c", "52534b424c4f434b3a3f6536dbb51cbe76519e0cd70480cf7f07da4ae2334cac402ef18329004681c4"}
+    };
+    for (size_t i = 0; i < sizeof(hex_str_in)/sizeof(hex_str_in[0]); ++i) {
+        printf("testing %d-th special cases\n", i+1);
+        int retval = test_parsing_and_serialization_and_get_asm(hex_str_in[i], expected_cmds_size[i], expected_str_outs[i], expect_asm[i]);
+        if (retval != 0) {
+            return 1;
+        }
+    }
+    return 0;
 }
 
 int main() {
@@ -286,7 +305,7 @@ int main() {
         {"test_script_parsing_and_serialization4_OP_PUSHDATA2()", &test_script_parsing_and_serialization4_OP_PUSHDATA2},
         {"test_script_parsing_and_serialization5_OP_PUSH()", &test_script_parsing_and_serialization5_OP_PUSH},
         {"test_script_parsing_and_serialization6_OP_PUSHDATA_end()", &test_script_parsing_and_serialization6_OP_PUSHDATA_end},
-        {"test_script_parsing_and_serialization6_OP_PUSHDATA_special1()", &test_script_parsing_and_serialization6_OP_PUSHDATA_special1}
+        {"test_script_parsing_and_serialization6_special_cases()", &test_script_parsing_and_serialization6_special_cases}
     };
 
     for (uint32_t i = 0; i < sizeof(test_suites)/sizeof(test_suites[0]); ++i) {
