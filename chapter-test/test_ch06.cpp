@@ -25,10 +25,11 @@ int test_parsing_and_serialization_and_get_asm(const char* hex_str_in, const siz
     Script my_script = Script();
     bool ret_val = my_script.parse(d);
     if (ret_val != 1) {
+        fprintf(stderr, "parse() failed\n");
         return 1;
     }
     if (my_script.get_cmds().size() != expected_cmds_size) {
-        fprintf(stderr, "Actual: %lu\nExpect: %lu", my_script.get_cmds().size(), expected_cmds_size);
+        fprintf(stderr, "get_cmds().size():\nActual: %lu\nExpect: %lu\n", my_script.get_cmds().size(), expected_cmds_size);
         return 1;
     }
     vector<vector<uint8_t>> cmds = my_script.get_cmds();
@@ -37,6 +38,7 @@ int test_parsing_and_serialization_and_get_asm(const char* hex_str_in, const siz
     for (size_t i = 0; i < expected_cmds_size; ++i) {
         hex_str_out = bytes_to_hex_string(cmds[i].data(), cmds[i].size(), false);
         if (strcmp(hex_str_out, expected_str_outs[i]) != 0) {
+            fprintf(stderr, "get_cmds()[%lu]:\nActual: %s\nExpect: %s\n", i, hex_str_out, expected_str_outs[i]);
             free(hex_str_out);
             return 1;
         }
@@ -46,16 +48,17 @@ int test_parsing_and_serialization_and_get_asm(const char* hex_str_in, const siz
     vector<uint8_t> out_bytes = my_script.serialize();
     hex_str_out = bytes_to_hex_string(out_bytes.data(), out_bytes.size(), false);
     if (strcmp(hex_str_out, hex_str_in) != 0) {
-        fprintf(stderr, "Actual: %s\nExpect: %s\n", hex_str_out, hex_str_in);
+        fprintf(stderr, "serialize():\nActual: %s\nExpect: %s\n", hex_str_out, hex_str_in);
         free(hex_str_out);
         return 1;
     }
     free(hex_str_out);
 
     if (expected_asm != NULL) {
-        char* actual_asm = (char*)my_script.get_asm().c_str();
-        if (strcmp(actual_asm, expected_asm) != 0) {
-            fprintf(stderr, "Expect: %s\nActual: %s\n", expected_asm, actual_asm);
+        string actual_asm = my_script.get_asm();
+        if (strcmp(actual_asm.c_str(), expected_asm) != 0) {
+            fprintf(stderr, "get_asm():\nExpect: %s\nActual: %s\n", expected_asm, actual_asm.c_str());
+            return 1;
         }
         // free(actual_asm); Don't free() it! It belongs to my_script!
     }
@@ -257,6 +260,14 @@ int test_script_parsing_and_serialization6_OP_PUSHDATA_end() {
     return test_parsing_and_serialization_and_get_asm(hex_str_in, expected_cmds_size, expected_str_outs, expect_asm);
 }
 
+int test_script_parsing_and_serialization6_OP_PUSHDATA_special1() {
+    char hex_str_in[] = "41fc70035c7a81bc6fcc36947f7c1b2d63620560bec2aa336a676213bab74c9f03d46788100dca84c0f19a0f1c14ef0d67f3fc63c011ba4787510d55fde9554e554e";
+    char expect_asm[] = "OP_RETURN_252 OP_2OVER OP_PUSHBYTES_3 5c7a81 OP_RETURN_188 OP_3DUP OP_RETURN_204 OP_PUSHBYTES_54 947f7c1b2d63620560bec2aa336a676213bab74c9f03d46788100dca84c0f19a0f1c14ef0d67f3fc63c011ba4787510d55fde9554e55<unexpected end>";
+    const size_t expected_cmds_size = 9;
+    char expected_str_outs[expected_cmds_size][4096] = {"fc", "70", "5c7a81", "bc", "6f", "cc", "947f7c1b2d63620560bec2aa336a676213bab74c9f03d46788100dca84c0f19a0f1c14ef0d67f3fc63c011ba4787510d55fde9554e55", "4e", ""};
+    return test_parsing_and_serialization_and_get_asm(hex_str_in, expected_cmds_size, expected_str_outs, expect_asm);
+}
+
 int main() {
     int retval = 0;
 
@@ -274,7 +285,8 @@ int main() {
         {"test_script_parsing_and_serialization3_OP_PUSHDATA1()", &test_script_parsing_and_serialization3_OP_PUSHDATA1},
         {"test_script_parsing_and_serialization4_OP_PUSHDATA2()", &test_script_parsing_and_serialization4_OP_PUSHDATA2},
         {"test_script_parsing_and_serialization5_OP_PUSH()", &test_script_parsing_and_serialization5_OP_PUSH},
-        {"test_script_parsing_and_serialization6_OP_PUSHDATA_end()", &test_script_parsing_and_serialization6_OP_PUSHDATA_end}
+        {"test_script_parsing_and_serialization6_OP_PUSHDATA_end()", &test_script_parsing_and_serialization6_OP_PUSHDATA_end},
+        {"test_script_parsing_and_serialization6_OP_PUSHDATA_special1()", &test_script_parsing_and_serialization6_OP_PUSHDATA_special1}
     };
 
     for (uint32_t i = 0; i < sizeof(test_suites)/sizeof(test_suites[0]); ++i) {

@@ -36,6 +36,7 @@ vector<uint8_t> Script::serialize() {
                 size_t operand_len = 0;
                 if (idx == this->cmds.size() - 1) {
                     operand_len = this->last_operand_nominal_len;
+                    operand_len = operand_len - Script::expected_cmd_sizes[this->cmds[idx-1][0]-76] > 0 ? operand_len - Script::expected_cmd_sizes[this->cmds[idx-1][0]-76] : 0;
                 } else {
                     operand_len = this->cmds[idx].size();
                 }
@@ -255,13 +256,11 @@ string Script::get_asm() {
                     );
                 }
                 if (i == this->cmds.size() - 1) {
-                    fprintf(stderr, "%lu\n", (size_t)this->last_operand_nominal_len);
                     if ((size_t)this->last_operand_nominal_len < Script::expected_cmd_sizes[this->cmds[i-1][0] - 76]) {
                         script_asm = script_asm.substr(0, script_asm.size() - strlen(" OP_PUSHDATA_ "));
                         script_asm += "<unexpected end>";
                         continue;
-                    }
-                    else if (1) {
+                    } else if ((size_t)this->last_operand_nominal_len < this->cmds[i].size()) {
                         script_asm += "<push past end>"; 
                         continue;
                     }
