@@ -23,7 +23,8 @@ private:
         by the serialization protocol, creating the need of a few special treatment, including the
         introduction of this variable.
     */
-    int last_operand_nominal_len; 
+    int last_operand_nominal_len;
+    inline static size_t expected_cmd_sizes[] = {1, 2, 4};
 protected:
 public:
     

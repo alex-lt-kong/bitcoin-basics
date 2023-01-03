@@ -21,7 +21,8 @@ vector<uint8_t> Script::serialize() {
     while (idx < this->cmds.size()) {
         if (this->is_opcode[idx] == true) {
             if (this->cmds[idx].size() != 1) {
-                fprintf(stderr, "Fatal error: opcode occupied more than one byte, which is supposed to be impossible\n");
+                fprintf(stderr, "Fatal error: opcode occupied more "
+                        "than one byte, which is supposed to be impossible\n");
                 return vector<uint8_t>(0);
             }
 
@@ -46,16 +47,35 @@ vector<uint8_t> Script::serialize() {
                         */
                     operand_len = 0;
                 }
-                d.push_back((uint8_t)operand_len);                 // for 0x0A0B0C0D, it extracts 0D at 0
-                if (this->cmds[idx-1][0] >= 77) {
-                    d.push_back((uint8_t)(operand_len >> 8));      // for 0x0A0B0C0D, it extracts 0C at 1
-                    if (this->cmds[idx-1][0] >= 78) {
-                        d.push_back((uint8_t)(operand_len >> 16)); // for 0x0A0B0C0D, it extracts 0B at 2
-                        d.push_back((uint8_t)(operand_len >> 24)); // for 0x0A0B0C0D, it extracts 0A at 3
+                // TODO: this section is very ugly, should re-write!
+                if ( idx != this->cmds.size() - 1 ||
+                    (idx == this->cmds.size() - 1 &&
+                     this->last_operand_nominal_len > 0)
+                ) {
+                    d.push_back((uint8_t)operand_len);                 // for 0x0A0B0C0D, it extracts 0D at 0
+                    if (this->cmds[idx-1][0] >= 77 && (
+                        ( idx != this->cmds.size() - 1 ||
+                         (idx == this->cmds.size() - 1 &&
+                          this->last_operand_nominal_len > 1)))
+                       ) {
+                        d.push_back((uint8_t)(operand_len >> 8));      // for 0x0A0B0C0D, it extracts 0C at 1
+                        if (this->cmds[idx-1][0] >= 78 && (
+                        ( idx != this->cmds.size() - 1 ||
+                         (idx == this->cmds.size() - 1 &&
+                          this->last_operand_nominal_len > 2)))
+                       ) {
+                            d.push_back((uint8_t)(operand_len >> 16)); // for 0x0A0B0C0D, it extracts 0B at 2
+                            if ( idx != this->cmds.size() - 1 ||
+                                (idx == this->cmds.size() - 1 &&
+                                this->last_operand_nominal_len > 3)) {
+                            d.push_back((uint8_t)(operand_len >> 24)); // for 0x0A0B0C0D, it extracts 0A at 3
+                            }
+                        }
                     }
                 }
                 if (operand_len != this->cmds[idx].size()) {
-                    fprintf(stderr, "Non-standard Script: operand_len is different from operand.size()\n");
+                    fprintf(stderr, "Non-standard Script: operand_len is "
+                            "different from operand.size()\n");
                 }
                 for (size_t j = 0; j < operand_len && j < this->cmds[idx].size(); ++j) {
                     d.push_back(this->cmds[idx][j]);
@@ -74,14 +94,16 @@ vector<uint8_t> Script::serialize() {
                 return vector<uint8_t>(0);
             }
         } else {
-            size_t operand_len = (this->cmds.size() - 1) == idx ? this->last_operand_nominal_len : this->cmds[idx].size();
+            size_t operand_len = (this->cmds.size() - 1) == idx ? 
+            this->last_operand_nominal_len : this->cmds[idx].size();
             if (operand_len >= 75) {
-                fprintf(stderr, "Non-standard Script: operand longer than 75 bytes without OP_PUSHDATA\n");
+                fprintf(stderr, "Non-standard Script: operand longer than "
+                "75 bytes without OP_PUSHDATA\n");
             }
             d.push_back(operand_len);
             for (size_t j = 0; j < this->cmds[idx].size(); ++j) {
                 d.push_back(this->cmds[idx][j]);
-            }            
+            }
         }
         ++idx;
     }
@@ -102,7 +124,6 @@ bool Script::parse(vector<uint8_t> byte_stream) {
     size_t data_length = 0;
     this->cmds.clear();
     this->is_opcode.clear();
-    const size_t expected_cmd_sizes[] = {1, 2, 4};
     const char cmd_names[][13] = {"OP_PUSHDATA1", "OP_PUSHDATA2", "OP_PUSHDATA4"};
     while (count < script_len) {
         if (byte_stream.size() == 0) {
@@ -150,10 +171,9 @@ bool Script::parse(vector<uint8_t> byte_stream) {
             if (OP_PUSHDATA_size < expected_cmd_sizes[cb - 76]) {
                 // Will only enter this branch if the coming operand is the last one.
                 // It also implies that OP_PUSHDATA pushes nothing at all! (as it has already reached the end of d.)
-                fprintf(
-                    stderr, "Non-standard Script: %lu too short for %s and it pushes no data at all\n",
-                    byte_stream.size(), cmd_names[cb-76]
-                );
+                fprintf(stderr, "Non-standard Script: %lu too short for %s and "
+                        "it pushes no data at all\n", byte_stream.size(),
+                        cmd_names[cb-76]);
             }
             uint8_t buf[4] = {0};
             memcpy(buf, byte_stream.data(), OP_PUSHDATA_size);
@@ -164,7 +184,7 @@ bool Script::parse(vector<uint8_t> byte_stream) {
             this->cmds.push_back(vector<uint8_t>{ cb });
             this->is_opcode.push_back(true);
             data_length = buf[0] << 0 | buf[1] << 8 | buf[2] << 16 | buf[3] << 24;
-            this->last_operand_nominal_len = data_length;
+            this->last_operand_nominal_len = OP_PUSHDATA_size + data_length;
             // little-endian bytes to int, this can be shared by three OP_PUSHDATAs
             if (data_length > byte_stream.size()) {
                 // Will only enter this branch if the coming operand is the last one.
@@ -234,20 +254,21 @@ string Script::get_asm() {
                         "Non-standard Script: operand loaded by OP_PUSHDATA has %lu bytes.\n", this->cmds[i].size()
                     );
                 }
-                if (
-                    this->cmds[i].size() != (size_t)this->last_operand_nominal_len &&
-                    i == this->cmds.size() - 1
-                ) {
-                    script_asm += "<push past end>";
-                } else {
-                    hex_str = bytes_to_hex_string(this->cmds[i].data(), this->cmds[i].size(), false);
-                    script_asm += hex_str;
-                    script_asm += this->cmds[i].size() > 0 ? " ": "";
-                    // this else block can handle size() == 0, except this
-                    // formatting issue--it results in two consecutive
-                    // 0's if not specially handled.
-                    free(hex_str);
+                if (i == this->cmds.size() - 1) {
+                    fprintf(stderr, "%lu\n", (size_t)this->last_operand_nominal_len);
+                    if ((size_t)this->last_operand_nominal_len < Script::expected_cmd_sizes[this->cmds[i-1][0] - 76]) {
+                        script_asm = script_asm.substr(0, script_asm.size() - strlen(" OP_PUSHDATA_ "));
+                        script_asm += "<unexpected end>";
+                        continue;
+                    }
+                    else if (1) {
+                        script_asm += "<push past end>"; 
+                        continue;
+                    }
                 }
+                hex_str = bytes_to_hex_string(this->cmds[i].data(), this->cmds[i].size(), false);
+                script_asm += hex_str;
+                free(hex_str);
             }
         } else {
             if (this->cmds[i].size() > 75) {
@@ -273,11 +294,3 @@ string Script::get_asm() {
 }
 
 Script::~Script() {}
-
-/*
-03eeb20b1362696e616e63652f383232b100010088314f85fabe6d6d6fefe54c0076a788e4b490881f75dcc63a0ff477383bc86a16ce6635206a5bf30200000000000000979d00003358000000000000"
-"OP_PUSHBYTES_3 eeb20b OP_PUSHBYTES_19 62696e616e63652f383232b100010088314f85 OP_RETURN_250 OP_RETURN_190 OP_2DROP OP_2DROP OP_3DUP OP_RETURN_239 OP_RETURN_229 OP_PUSHDATA1 OP_DUP OP_SHA1 OP_EQUALVERIFY OP_RETURN_228 OP_NOP5 OP_ABS OP_EQUALVERIFY OP_PUSHBYTES_31 75dcc63a0ff477383bc86a16ce6635206a5bf30200000000000000979d0000 OP_PUSHBYTES_51 <push past end>"
-Actual: OP_PUSHBYTES_3 eeb20b OP_PUSHBYTES_19 62696e616e63652f383232b100010088314f85 OP_RETURN_250 OP_RETURN_190 OP_2DROP OP_2DROP OP_3DUP OP_RETURN_239 OP_RETURN_229 OP_PUSHDATA1  OP_DUP OP_SHA1 OP_EQUALVERIFY OP_RETURN_228 OP_NOP5 OP_ABS OP_EQUALVERIFY OP_PUSHBYTES_31 75dcc63a0ff477383bc86a16ce6635206a5bf30200000000000000979d0000 OP_PUSHBYTES_51 <push past end>
-Expect: OP_PUSHBYTES_3 eeb20b OP_PUSHBYTES_19 62696e616e63652f383232b100010088314f85 OP_RETURN_250 OP_RETURN_190 OP_2DROP OP_2DROP OP_3DUP OP_RETURN_239 OP_RETURN_229 OP_PUSHDATA1 OP_DUP OP_SHA1 OP_EQUALVERIFY OP_RETURN_228 OP_NOP5 OP_ABS OP_EQUALVERIFY OP_PUSHBYTES_31 75dcc63a0ff477383bc86a16ce6635206a5bf30200000000000000979d0000 OP_PUSHBYTES_51 <push past end>
-
-*/

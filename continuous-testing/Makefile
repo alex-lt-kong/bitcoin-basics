@@ -1,4 +1,4 @@
-OPT = -O3 -Wall
+OPT = -O3 -Wall -pedantic
 
 main:   script-test.o script.o tx.o utils.o op.o
 	g++ script-test.o script.o tx.o utils.o op.o -o script-test.out -lboost_random $(OPT) -lcurl -lmycrypto
