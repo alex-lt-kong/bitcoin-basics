@@ -24,7 +24,14 @@ private:
         introduction of this variable.
     */
     int last_operand_nominal_len;
-    inline static size_t expected_cmd_sizes[] = {1, 2, 4};
+    /**
+     * @brief get the number of bytes next to OP_PUSHDATA operations to store
+     * the length of the incoming operand
+     * @param opcode opcode, can only be 76, 77 or 78 per Bitcoin's specs
+     * @returns the number of bytes used to store operand's length
+     * (i.e., 1, 2 or 4) or -1 if an invalid opcode is passed
+    */
+    int get_op_pushdata_size(uint8_t opcode);
 protected:
 public:
     
