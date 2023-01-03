@@ -22,13 +22,17 @@ file_handler.setFormatter(
 lgr.addHandler(file_handler)
 lgr.setLevel(logging.INFO)
 
-assert os.getenv('BITCOIN_INTERNALS_KAFKA_BROKERS') is not None
-assert os.getenv('BITCOIN_INTERNALS_KAFKA_TOPIC') is not None
-
-producer = Producer({
-    'bootstrap.servers': os.getenv('BITCOIN_INTERNALS_KAFKA_BROKERS'),
-    'client.id': socket.getfqdn()
-})
+if (
+    os.getenv('BITCOIN_INTERNALS_KAFKA_BROKERS') is not None and
+    os.getenv('BITCOIN_INTERNALS_KAFKA_TOPIC') is not None
+):
+    producer = Producer({
+        'bootstrap.servers': os.getenv('BITCOIN_INTERNALS_KAFKA_BROKERS'),
+        'client.id': socket.getfqdn()
+    })
+else:
+    lgr.warning('kafka-related environment variables not set, will disable it')
+    producer = None
 
 def kafka_cb(err, msg):
     if err is not None:
@@ -36,6 +40,8 @@ def kafka_cb(err, msg):
 
 
 def send_to_kafka(block_height: int, status: str) -> None:
+    if producer is None:
+        return
     producer.produce(
         os.getenv('BITCOIN_INTERNALS_KAFKA_TOPIC'),
         value=json.dumps({
