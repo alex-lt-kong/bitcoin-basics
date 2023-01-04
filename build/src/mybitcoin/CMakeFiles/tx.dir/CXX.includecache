@@ -1,0 +1,42 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/root/repos/bitcoin-internals/src/mybitcoin/tx.cpp
+curl/curl.h
+-
+tx.h
+/root/repos/bitcoin-internals/src/mybitcoin/tx.h
+
+/root/repos/bitcoin-internals/src/mybitcoin/tx.h
+stdint.h
+-
+sstream
+-
+stdio.h
+-
+stdlib.h
+-
+mycrypto/sha256.h
+-
+utils.h
+/root/repos/bitcoin-internals/src/mybitcoin/utils.h
+
+/root/repos/bitcoin-internals/src/mybitcoin/utils.h
+stdint.h
+-
+boost/multiprecision/cpp_int.hpp
+-
+vector
+-
+mycrypto/sha256.h
+/root/repos/bitcoin-internals/src/mybitcoin/mycrypto/sha256.h
+mycrypto/ripemd160.h
+/root/repos/bitcoin-internals/src/mybitcoin/mycrypto/ripemd160.h
+mycrypto/misc.h
+/root/repos/bitcoin-internals/src/mybitcoin/mycrypto/misc.h
+

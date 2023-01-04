@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/root/repos/bitcoin-internals/chapter-test/test_ch02.cpp
+iostream
+-
+math.h
+-
+stdexcept
+-
+float.h
+-
+limits.h
+-
+

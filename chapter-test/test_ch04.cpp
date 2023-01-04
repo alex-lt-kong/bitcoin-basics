@@ -2,8 +2,8 @@
 #include <criterion/criterion.h>
 #include <criterion/new/assert.h>
 
-#include "../src/ecc.h"
-#include "../src/utils.h"
+#include "mybitcoin/ecc.h"
+#include "mybitcoin/utils.h"
 
 Test(ch04_test_suite, test_uncompressed_sec_format_from_bytes) {
   const size_t test_case_size = 3;

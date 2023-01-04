@@ -5,10 +5,10 @@
 #include <mycrypto/misc.h>
 #include <mycrypto/sha256.h>
 
-#include "../src/tx.h"
-#include "../src/utils.h"
-#include "../src/script.h"
-#include "../src/op.h"
+#include "mybitcoin/tx.h"
+#include "mybitcoin/utils.h"
+#include "mybitcoin/script.h"
+#include "mybitcoin/op.h"
 
 
 using namespace std;
@@ -252,17 +252,9 @@ int test_script_parsing_and_serialization5_OP_PUSH() {
     return test_parsing_and_serialization_and_get_asm(hex_str_in, expected_cmds_size, expected_str_outs, NULL);
 }
 
-int test_script_parsing_and_serialization6_OP_PUSHDATA_end() {
-    char hex_str_in[] = "034d0000";
-    char expect_asm[] = "OP_PUSHDATA2";
-    const size_t expected_cmds_size = 2;
-    char expected_str_outs[expected_cmds_size][2048] = {"4d", ""};
-    return test_parsing_and_serialization_and_get_asm(hex_str_in, expected_cmds_size, expected_str_outs, expect_asm);
-}
-
 int test_script_parsing_and_serialization6_special_cases() {
-    printf("A lot of warnings are expected but none of them should break "
-           "the program\n");
+    printf("\n=== A lot of warnings are expected but none of them should break "
+           "the program===\n");
     const size_t buf_size = 2048;
     // If hex string is copied from blockstream.info, need to manually append 
     // the varint-encoded length of the script to it. (e.g., 41 and 2c)
@@ -270,22 +262,25 @@ int test_script_parsing_and_serialization6_special_cases() {
     char hex_str_in[][buf_size] = {
         "41fc70035c7a81bc6fcc36947f7c1b2d63620560bec2aa336a676213bab74c9f03d46788100dca84c0f19a0f1c14ef0d67f3fc63c011ba4787510d55fde9554e554e",
         "2c6a4c2952534b424c4f434b3a3f6536dbb51cbe76519e0cd70480cf7f07da4ae2334cac402ef18329004681c4",
-        "5003d67e0b1362696e616e63652f38303499008301359ed78efabe6d6d99fe4e5b8988d90b863c1a90ab7b8f5b6ebd24d31a7835014839aefa3d39897904000000000000000000a5a001e9170000000000"
+        "5003d67e0b1362696e616e63652f38303499008301359ed78efabe6d6d99fe4e5b8988d90b863c1a90ab7b8f5b6ebd24d31a7835014839aefa3d39897904000000000000000000a5a001e9170000000000",
+        "034d0000"
     };
     // Should be the scriptpubkey_asm or scriptsig_asm value from
     // blockstream.info
     char expect_asm[][buf_size] = {
         "OP_RETURN_252 OP_2OVER OP_PUSHBYTES_3 5c7a81 OP_RETURN_188 OP_3DUP OP_RETURN_204 OP_PUSHBYTES_54 947f7c1b2d63620560bec2aa336a676213bab74c9f03d46788100dca84c0f19a0f1c14ef0d67f3fc63c011ba4787510d55fde9554e55<unexpected end>",
         "OP_RETURN OP_PUSHDATA1 52534b424c4f434b3a3f6536dbb51cbe76519e0cd70480cf7f07da4ae2334cac402ef18329004681c4",
-        "OP_PUSHBYTES_3 d67e0b OP_PUSHBYTES_19 62696e616e63652f38303499008301359ed78e OP_RETURN_250 OP_RETURN_190 OP_2DROP OP_2DROP OP_RSHIFT OP_RETURN_254 OP_PUSHDATA4 <push past end>"
+        "OP_PUSHBYTES_3 d67e0b OP_PUSHBYTES_19 62696e616e63652f38303499008301359ed78e OP_RETURN_250 OP_RETURN_190 OP_2DROP OP_2DROP OP_RSHIFT OP_RETURN_254 OP_PUSHDATA4 <push past end>",
+        "OP_PUSHDATA2"
     };
-    const size_t expected_cmds_size[] = {9, 3, 10};
+    const size_t expected_cmds_size[] = {9, 3, 10, 2};
     // Should exclude the length of operand (e.g., OP_PUSHBYTES_3) but
     // include the last operand even if its length is not expected.
     char expected_str_outs[][32][2048] = {
         {"fc", "70", "5c7a81", "bc", "6f", "cc", "947f7c1b2d63620560bec2aa336a676213bab74c9f03d46788100dca84c0f19a0f1c14ef0d67f3fc63c011ba4787510d55fde9554e55", "4e", ""},
         {"6a", "4c", "52534b424c4f434b3a3f6536dbb51cbe76519e0cd70480cf7f07da4ae2334cac402ef18329004681c4"},
-        {"d67e0b", "62696e616e63652f38303499008301359ed78e", "fa", "be", "6d", "6d", "99", "fe", "4e", "0b863c1a90ab7b8f5b6ebd24d31a7835014839aefa3d39897904000000000000000000a5a001e9170000000000"}
+        {"d67e0b", "62696e616e63652f38303499008301359ed78e", "fa", "be", "6d", "6d", "99", "fe", "4e", "0b863c1a90ab7b8f5b6ebd24d31a7835014839aefa3d39897904000000000000000000a5a001e9170000000000"},
+        {"4d", ""}
 
     };
     for (size_t i = 0; i < sizeof(hex_str_in)/sizeof(hex_str_in[0]); ++i) {
@@ -316,7 +311,6 @@ int main() {
         {"test_script_parsing_and_serialization3_OP_PUSHDATA1()", &test_script_parsing_and_serialization3_OP_PUSHDATA1},
         {"test_script_parsing_and_serialization4_OP_PUSHDATA2()", &test_script_parsing_and_serialization4_OP_PUSHDATA2},
         {"test_script_parsing_and_serialization5_OP_PUSH()", &test_script_parsing_and_serialization5_OP_PUSH},
-        {"test_script_parsing_and_serialization6_OP_PUSHDATA_end()", &test_script_parsing_and_serialization6_OP_PUSHDATA_end},
         {"test_script_parsing_and_serialization6_special_cases()", &test_script_parsing_and_serialization6_special_cases}
     };
 

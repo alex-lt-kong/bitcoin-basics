@@ -256,14 +256,10 @@ string Script::get_asm() {
                     continue;
                 }
                 ++i;
-                if (
-                    (cmds[i].size() > 255 && cmds[i-1][0] == 76) ||
-                    (cmds[i].size() > 520 && cmds[i-1][0] >= 77)
-                ) {
-                    fprintf(
-                        stderr,
-                        "Non-standard Script: operand loaded by OP_PUSHDATA has %lu bytes.\n", cmds[i].size()
-                    );
+                if ((cmds[i].size() > 255 && cmds[i-1][0] == 76) ||
+                    (cmds[i].size() > 520 && cmds[i-1][0] >= 77)) {
+                    fprintf(stderr, "Non-standard Script: operand loaded by "
+                            "OP_PUSHDATA has %lu bytes.\n", cmds[i].size());
                 }
                 if (i == cmds.size() - 1) {
                     if (last_operand_nominal_len < (size_t)get_op_pushdata_size(cmds[i-1][0])) {
@@ -279,6 +275,7 @@ string Script::get_asm() {
                 }
                 hex_str = bytes_to_hex_string(cmds[i].data(), cmds[i].size(), false);
                 script_asm += hex_str;
+                script_asm += " ";
                 free(hex_str);
             }
         } else {

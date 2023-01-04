@@ -601,7 +601,7 @@ S256Point ECDSAKey::public_key() {
 
 char* ECDSAKey::get_wif_private_key(bool compressed, bool testnet) {
   const size_t input_len = (compressed ? 34 : 33);
-  uint8_t input[input_len] = {0};
+  uint8_t input[34] = {0};
   input[0] = (testnet ? 0xef : 0x80);
   if (compressed) { input[33] = 0x01; }  
   memcpy(input + 1, this->privkey_bytes_, 32);

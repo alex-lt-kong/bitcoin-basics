@@ -5,8 +5,8 @@
 #include <criterion/criterion.h>
 #include <criterion/new/assert.h>
 
-#include "../src/ecc.h"
-#include "../src/utils.h"
+#include "mybitcoin/ecc.h"
+#include "mybitcoin/utils.h"
 
 using namespace std;
 

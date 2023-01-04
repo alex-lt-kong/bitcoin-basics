@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <mycrypto/misc.h>
 
-#include "../src/tx.h"
-#include "../src/utils.h"
+#include "mybitcoin/tx.h"
+#include "mybitcoin/utils.h"
 
 
 using namespace std;
