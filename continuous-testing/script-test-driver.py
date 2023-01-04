@@ -11,7 +11,7 @@ import subprocess
 import time
 import os
 
-test_program = os.path.join(os.path.dirname(__file__), 'script-test.out')
+test_program = os.path.join(os.path.dirname(__file__), 'script-test')
 lgr = logging.getLogger()
 #stream_handler = logging.StreamHandler(sys.stdout)
 file_handler = logging.FileHandler('/var/log/bitcoin-internals/script-test.log')

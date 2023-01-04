@@ -29,3 +29,10 @@
 /root/repos/bitcoin-internals/build/chapter-test/CMakeFiles/test.dir
 /root/repos/bitcoin-internals/build/chapter-test/CMakeFiles/test_ch02.dir
 /root/repos/bitcoin-internals/build/chapter-test/CMakeFiles/test_ch01.dir
+/root/repos/bitcoin-internals/build/continuous-testing/CMakeFiles/install/strip.dir
+/root/repos/bitcoin-internals/build/continuous-testing/CMakeFiles/install/local.dir
+/root/repos/bitcoin-internals/build/continuous-testing/CMakeFiles/edit_cache.dir
+/root/repos/bitcoin-internals/build/continuous-testing/CMakeFiles/install.dir
+/root/repos/bitcoin-internals/build/continuous-testing/CMakeFiles/list_install_components.dir
+/root/repos/bitcoin-internals/build/continuous-testing/CMakeFiles/rebuild_cache.dir
+/root/repos/bitcoin-internals/build/continuous-testing/CMakeFiles/script-test.dir

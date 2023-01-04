@@ -344,6 +344,19 @@ test_ch01/fast:
 	$(MAKE) $(MAKESILENT) -f chapter-test/CMakeFiles/test_ch01.dir/build.make chapter-test/CMakeFiles/test_ch01.dir/build
 .PHONY : test_ch01/fast
 
+#=============================================================================
+# Target rules for targets named script-test
+
+# Build rule for target.
+script-test: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 script-test
+.PHONY : script-test
+
+# fast build rule for target.
+script-test/fast:
+	$(MAKE) $(MAKESILENT) -f continuous-testing/CMakeFiles/script-test.dir/build.make continuous-testing/CMakeFiles/script-test.dir/build
+.PHONY : script-test/fast
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -361,6 +374,7 @@ help:
 	@echo "... mybitcoin"
 	@echo "... op"
 	@echo "... script"
+	@echo "... script-test"
 	@echo "... test_ch01"
 	@echo "... test_ch02"
 	@echo "... test_ch03"

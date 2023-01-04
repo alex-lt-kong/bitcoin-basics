@@ -12,6 +12,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "CMakeFiles/3.18.4/CMakeCXXCompiler.cmake"
   "CMakeFiles/3.18.4/CMakeSystem.cmake"
   "../chapter-test/CMakeLists.txt"
+  "../continuous-testing/CMakeLists.txt"
   "../src/mybitcoin/CMakeLists.txt"
   "/usr/share/cmake-3.18/Modules/CMakeCInformation.cmake"
   "/usr/share/cmake-3.18/Modules/CMakeCXXInformation.cmake"
@@ -48,6 +49,7 @@ set(CMAKE_MAKEFILE_PRODUCTS
   "CMakeFiles/CMakeDirectoryInformation.cmake"
   "src/mybitcoin/CMakeFiles/CMakeDirectoryInformation.cmake"
   "chapter-test/CMakeFiles/CMakeDirectoryInformation.cmake"
+  "continuous-testing/CMakeFiles/CMakeDirectoryInformation.cmake"
   )
 
 # Dependency information for all targets:
@@ -65,4 +67,5 @@ set(CMAKE_DEPEND_INFO_FILES
   "chapter-test/CMakeFiles/test.dir/DependInfo.cmake"
   "chapter-test/CMakeFiles/test_ch02.dir/DependInfo.cmake"
   "chapter-test/CMakeFiles/test_ch01.dir/DependInfo.cmake"
+  "continuous-testing/CMakeFiles/script-test.dir/DependInfo.cmake"
   )

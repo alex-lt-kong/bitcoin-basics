@@ -3,9 +3,9 @@
 #include <stdlib.h>
 #include <mycrypto/misc.h>
 
-#include "../src/tx.h"
-#include "../src/script.h"
-#include "../src/utils.h"
+#include "mybitcoin/tx.h"
+#include "mybitcoin/script.h"
+#include "mybitcoin/utils.h"
 #include "script-test.h"
 
 
