@@ -164,9 +164,9 @@ def main() -> None:
                 for j in range(len(tx['vin'])):
                     tx_in = tx['vin'][j]
                     if tx_in['scriptsig'] == '' and tx_in['scriptsig_asm'] == '':
-                        lgr.info(f'[{total_idx+i}] {j}-th input script is empty, skipped')
+                        lgr.debug(f'[{total_idx+i}] {j}-th input script is empty, skipped')
                         continue
-                    lgr.info(f'[{total_idx+i}] testing {j}-th input...')
+                    lgr.debug(f'[{total_idx+i}] testing {j}-th input...')
                     try:
                         test_script(str(tx_in['scriptsig']), str(tx_in['scriptsig_asm']))
                     except Exception as ex:
@@ -178,9 +178,9 @@ def main() -> None:
                 for j in range(len(tx['vout'])):
                     tx_out = tx['vout'][j]
                     if tx_out['scriptpubkey'] == '' and tx_out['scriptpubkey_asm'] == '':
-                        lgr.info(f'[{total_idx+i}] {j+1}-th output script is empty, skipped')
+                        lgr.debug(f'[{total_idx+i}] {j+1}-th output script is empty, skipped')
                         continue
-                    lgr.info(f'[{total_idx+i}] testing {j+1}-th output...')
+                    lgr.debug(f'[{total_idx+i}] testing {j+1}-th output...')
                     try:
                         test_script(str(tx_out['scriptpubkey']), str(tx_out['scriptpubkey_asm']))
                     except Exception as ex:

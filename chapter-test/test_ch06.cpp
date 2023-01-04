@@ -261,25 +261,37 @@ int test_script_parsing_and_serialization6_OP_PUSHDATA_end() {
 }
 
 int test_script_parsing_and_serialization6_special_cases() {
+    printf("A lot of warnings are expected but none of them should break "
+           "the program\n");
     const size_t buf_size = 2048;
-    // If byte string is copied from blockstream.info, need to manually append 
-    // the length of the script to it.
+    // If hex string is copied from blockstream.info, need to manually append 
+    // the varint-encoded length of the script to it. (e.g., 41 and 2c)
+    // at the beginning of the first two strings.
     char hex_str_in[][buf_size] = {
         "41fc70035c7a81bc6fcc36947f7c1b2d63620560bec2aa336a676213bab74c9f03d46788100dca84c0f19a0f1c14ef0d67f3fc63c011ba4787510d55fde9554e554e",
-        "2c6a4c2952534b424c4f434b3a3f6536dbb51cbe76519e0cd70480cf7f07da4ae2334cac402ef18329004681c4"
-        };
+        "2c6a4c2952534b424c4f434b3a3f6536dbb51cbe76519e0cd70480cf7f07da4ae2334cac402ef18329004681c4",
+        "5003d67e0b1362696e616e63652f38303499008301359ed78efabe6d6d99fe4e5b8988d90b863c1a90ab7b8f5b6ebd24d31a7835014839aefa3d39897904000000000000000000a5a001e9170000000000"
+    };
+    // Should be the scriptpubkey_asm or scriptsig_asm value from
+    // blockstream.info
     char expect_asm[][buf_size] = {
         "OP_RETURN_252 OP_2OVER OP_PUSHBYTES_3 5c7a81 OP_RETURN_188 OP_3DUP OP_RETURN_204 OP_PUSHBYTES_54 947f7c1b2d63620560bec2aa336a676213bab74c9f03d46788100dca84c0f19a0f1c14ef0d67f3fc63c011ba4787510d55fde9554e55<unexpected end>",
-        "OP_RETURN OP_PUSHDATA1 52534b424c4f434b3a3f6536dbb51cbe76519e0cd70480cf7f07da4ae2334cac402ef18329004681c4"
+        "OP_RETURN OP_PUSHDATA1 52534b424c4f434b3a3f6536dbb51cbe76519e0cd70480cf7f07da4ae2334cac402ef18329004681c4",
+        "OP_PUSHBYTES_3 d67e0b OP_PUSHBYTES_19 62696e616e63652f38303499008301359ed78e OP_RETURN_250 OP_RETURN_190 OP_2DROP OP_2DROP OP_RSHIFT OP_RETURN_254 OP_PUSHDATA4 <push past end>"
     };
-    const size_t expected_cmds_size[] = {9, 3};
+    const size_t expected_cmds_size[] = {9, 3, 10};
+    // Should exclude the length of operand (e.g., OP_PUSHBYTES_3) but
+    // include the last operand even if its length is not expected.
     char expected_str_outs[][32][2048] = {
         {"fc", "70", "5c7a81", "bc", "6f", "cc", "947f7c1b2d63620560bec2aa336a676213bab74c9f03d46788100dca84c0f19a0f1c14ef0d67f3fc63c011ba4787510d55fde9554e55", "4e", ""},
-        {"6a", "4c", "52534b424c4f434b3a3f6536dbb51cbe76519e0cd70480cf7f07da4ae2334cac402ef18329004681c4"}
+        {"6a", "4c", "52534b424c4f434b3a3f6536dbb51cbe76519e0cd70480cf7f07da4ae2334cac402ef18329004681c4"},
+        {"d67e0b", "62696e616e63652f38303499008301359ed78e", "fa", "be", "6d", "6d", "99", "fe", "4e", "0b863c1a90ab7b8f5b6ebd24d31a7835014839aefa3d39897904000000000000000000a5a001e9170000000000"}
+
     };
     for (size_t i = 0; i < sizeof(hex_str_in)/sizeof(hex_str_in[0]); ++i) {
-        printf("testing %d-th special cases\n", i+1);
-        int retval = test_parsing_and_serialization_and_get_asm(hex_str_in[i], expected_cmds_size[i], expected_str_outs[i], expect_asm[i]);
+        printf("testing %lu-th special cases\n", i+1);
+        int retval = test_parsing_and_serialization_and_get_asm(hex_str_in[i],
+            expected_cmds_size[i], expected_str_outs[i], expect_asm[i]);
         if (retval != 0) {
             return 1;
         }

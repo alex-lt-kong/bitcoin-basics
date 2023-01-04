@@ -5,7 +5,7 @@
 
 Script::Script(vector<vector<uint8_t>> cmds) {
     this->cmds = cmds; // this makes a copy of cmds.
-    last_operand_nominal_len = -1;
+    last_operand_nominal_len = 0;
 }
 
 Script::Script() {}
@@ -235,7 +235,8 @@ string Script::get_asm() {
     string script_asm = "";
     char* hex_str;
     if (cmds.size() == 0) {
-        fprintf(stderr, "cmds is empty, get_asm() is not supposed to be called!\n");
+        fprintf(stderr, "cmds is empty, get_asm() is not "
+                "supposed to be called!\n");
     }
     for (size_t i = 0; i < cmds.size(); ++i) {
         if (is_opcode[i]) {
@@ -265,13 +266,13 @@ string Script::get_asm() {
                     );
                 }
                 if (i == cmds.size() - 1) {
-                    if (last_operand_nominal_len < get_op_pushdata_size(cmds[i-1][0])) {
+                    if (last_operand_nominal_len < (size_t)get_op_pushdata_size(cmds[i-1][0])) {
                         script_asm = script_asm.substr(0, script_asm.size() - strlen(" OP_PUSHDATA_ "));
                         script_asm += "<unexpected end>";
                         continue;
                     } else if (last_operand_nominal_len - 
                                get_op_pushdata_size(cmds[i-1][0]) >
-                               (int)cmds[i].size()) {
+                               cmds[i].size()) {
                         script_asm += "<push past end>"; 
                         continue;
                     }

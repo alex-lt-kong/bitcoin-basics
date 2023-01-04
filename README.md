@@ -29,7 +29,8 @@ in Jimmy Song's [Programming Bitcoin](https://www.oreilly.com/library/view/progr
 
 ## Repo structure
 
-* `chapter-test`: driver functions that run unit tests on Bitcoin client's functionalities. There is one test driver source code file
+* `chapter-test`: driver functions that run unit tests on Bitcoin client's
+functionalities. There is one test driver source code file
 for each chapter in Jimmy's book
 * `src`: source code that implements a Bitcoin client
   * `ecc.h`/`ecc.cpp`: implementation of the ECDSA algorithm from scratch.
@@ -41,5 +42,5 @@ for each chapter in Jimmy's book
 against the result from a Bitcoin blockchain explorer called
 [Blockstream explorer](https://blockstream.info).
   * `script-test-driver.py`: Parse all Script components of Bitcoin blocks
-  against Blockstream exlporer.
-
+  against Blockstream exlporer. Apache Kafka is supported to send real-time
+  test results to any interested clients.

@@ -23,7 +23,7 @@ private:
         by the serialization protocol, creating the need of a few special treatment, including the
         introduction of this variable.
     */
-    int last_operand_nominal_len;
+    size_t last_operand_nominal_len;
     /**
      * @brief get the number of bytes next to OP_PUSHDATA operations to store
      * the length of the incoming operand
