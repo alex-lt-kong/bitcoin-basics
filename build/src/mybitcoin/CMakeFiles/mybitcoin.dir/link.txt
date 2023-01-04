@@ -1,2 +1,0 @@
-/usr/bin/ar qc libmybitcoin.a CMakeFiles/mybitcoin.dir/ecc.cpp.o CMakeFiles/mybitcoin.dir/op.cpp.o CMakeFiles/mybitcoin.dir/script.cpp.o CMakeFiles/mybitcoin.dir/tx.cpp.o CMakeFiles/mybitcoin.dir/utils.cpp.o
-/usr/bin/ranlib libmybitcoin.a

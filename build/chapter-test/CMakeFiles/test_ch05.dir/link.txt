@@ -1,1 +1,0 @@
-/usr/bin/clang++ CMakeFiles/test_ch05.dir/test_ch05.cpp.o -o test_ch05  -lboost_random -lmycrypto ../src/mybitcoin/libmybitcoin.a -lmycrypto -lcurl 

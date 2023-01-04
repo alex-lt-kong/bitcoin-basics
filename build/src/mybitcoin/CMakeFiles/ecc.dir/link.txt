@@ -1,2 +1,0 @@
-/usr/bin/ar qc libecc.a CMakeFiles/ecc.dir/ecc.cpp.o
-/usr/bin/ranlib libecc.a
