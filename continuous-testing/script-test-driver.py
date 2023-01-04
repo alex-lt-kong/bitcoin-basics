@@ -39,7 +39,7 @@ def kafka_cb(err, msg):
         lgr.error(f'Failed to deliver message [{msg}], reason: {err}')
 
 
-def send_to_kafka(block_height: int, status: str) -> None:
+def send_to_kafka(block_height: int, block_ts: int, status: str) -> None:
     if producer is None:
         return
     producer.produce(
@@ -48,6 +48,7 @@ def send_to_kafka(block_height: int, status: str) -> None:
             'host': socket.getfqdn(),
             'unix_ts': time.time(),
             'block_height': block_height,
+            'block_ts': block_ts,
             'status': status
         }),
         callback=kafka_cb
@@ -123,7 +124,7 @@ def main() -> None:
         except Exception:
             if retry > max_retry:
                 err_msg = f'HTTP GETing {url_block_by_height} failed and max_retry ({max_retry}) exceeded'
-                send_to_kafka(height, err_msg)
+                send_to_kafka(height, block_metadata['timestamp'], err_msg)
                 raise RuntimeError(err_msg)
             lgr.warning(f'0 blocks are fetched from {url_block_by_height}, will sleep() then retry...')
             time.sleep(30)
@@ -154,7 +155,7 @@ def main() -> None:
             except Exception:
                 if retry > max_retry:
                     err_msg = f'HTTP GETing {paged_tx_url} failed and max_retry exceeded'
-                    send_to_kafka(height, err_msg)
+                    send_to_kafka(height, block_metadata['timestamp'], err_msg)
                     raise RuntimeError()
                 lgr.warning('Failed to fetch paged_txes, will sleep() then retry...')
                 time.sleep(30)
@@ -172,7 +173,7 @@ def main() -> None:
                     except Exception as ex:
                         err_msg = f'testing {str(tx_in["scriptsig"])} (ASM: {str(tx_in["scriptsig_asm"])}),'
                         err_msg += f'height: {height}, transaction idx: {total_idx+i}: {ex}'
-                        send_to_kafka(height, err_msg)
+                        send_to_kafka(height, block_metadata['timestamp'], err_msg)
                         lgr.exception(err_msg)
                         raise RuntimeError(err_msg)
                 for j in range(len(tx['vout'])):
@@ -186,12 +187,12 @@ def main() -> None:
                     except Exception as ex:
                         err_msg = f'testing {str(tx_out["scriptpubkey"])} (ASM: {str(tx_out["scriptpubkey_asm"])}),'
                         err_msg += f'height: {height}, transaction idx: {total_idx+i}: {ex}'
-                        send_to_kafka(height, err_msg)
+                        send_to_kafka(height, block_metadata['timestamp'], err_msg)
                         lgr.exception(err_msg)
                         raise RuntimeError(err_msg)
                 
             total_idx += 25
-        send_to_kafka(height, 'okay')            
+        send_to_kafka(height, block_metadata['timestamp'], 'okay')            
         height += 1
 
     lgr.info(f'All scripts are tested by [{test_program}] and no errors are reported')
