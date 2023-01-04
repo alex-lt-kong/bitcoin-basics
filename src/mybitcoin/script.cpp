@@ -239,46 +239,7 @@ string Script::get_asm() {
                 "supposed to be called!\n");
     }
     for (size_t i = 0; i < cmds.size(); ++i) {
-        if (is_opcode[i]) {
-            script_asm += get_opcode(cmds[i][0]).func_name;
-            script_asm += " ";
-            if (cmds[i][0] >= 76 && cmds[i][0] <= 78) {
-                /*
-                OP_PUSDATA1, OP_PUSDATA2 and OP_PUSHDATA4, will be loaded here, instead of relying on else {}.
-                This design aims to make the output asm format consistent with:
-                https://blockstream.info/api/tx/2f0d8d829a5e447eef46abb868de57924841755147a498b85deda841fc9b7889,
-                which we rely on checking the parse(), serailize() and the get_asm()
-                */
-                if (i+1 >= cmds.size() || is_opcode[i+1]) {
-                    // Case I:  cmds reaches its end
-                    // Case II: next cmd is still an opcode, not data.
-                    fprintf(stderr, "Non-standard Script: OP_PUSHDATA followed by no data\n");
-                    continue;
-                }
-                ++i;
-                if ((cmds[i].size() > 255 && cmds[i-1][0] == 76) ||
-                    (cmds[i].size() > 520 && cmds[i-1][0] >= 77)) {
-                    fprintf(stderr, "Non-standard Script: operand loaded by "
-                            "OP_PUSHDATA has %lu bytes.\n", cmds[i].size());
-                }
-                if (i == cmds.size() - 1) {
-                    if (last_operand_nominal_len < (size_t)get_op_pushdata_size(cmds[i-1][0])) {
-                        script_asm = script_asm.substr(0, script_asm.size() - strlen(" OP_PUSHDATA_ "));
-                        script_asm += "<unexpected end>";
-                        continue;
-                    } else if (last_operand_nominal_len - 
-                               get_op_pushdata_size(cmds[i-1][0]) >
-                               cmds[i].size()) {
-                        script_asm += "<push past end>"; 
-                        continue;
-                    }
-                }
-                hex_str = bytes_to_hex_string(cmds[i].data(), cmds[i].size(), false);
-                script_asm += hex_str;
-                script_asm += " ";
-                free(hex_str);
-            }
-        } else {
+        if (!is_opcode[i]) {
             if (cmds[i].size() > 75) {
                 fprintf(stderr, "This should never happen\n");
                 return "";
@@ -292,7 +253,48 @@ string Script::get_asm() {
                 script_asm += hex_str;
                 script_asm += " ";
                 free(hex_str);
-            }            
+            }
+            continue;
+        } 
+        script_asm += get_opcode(cmds[i][0]).func_name;
+        script_asm += " ";
+        if (cmds[i][0] >= 76 && cmds[i][0] <= 78) {
+            /*
+            OP_PUSDATA1, OP_PUSDATA2 and OP_PUSHDATA4, will be loaded here, instead of relying on else {}.
+            This design aims to make the output asm format consistent with:
+            https://blockstream.info/api/tx/2f0d8d829a5e447eef46abb868de57924841755147a498b85deda841fc9b7889,
+            which we rely on checking the parse(), serailize() and the get_asm()
+            */
+            if (i+1 >= cmds.size() || is_opcode[i+1]) {
+                // Case I:  cmds reaches its end
+                // Case II: next cmd is still an opcode, not data.
+                fprintf(stderr, "Non-standard Script: OP_PUSHDATA followed by no data\n");
+                continue;
+            }
+            ++i;
+            if ((cmds[i].size() > 255 && cmds[i-1][0] == 76) ||
+                (cmds[i].size() > 520 && cmds[i-1][0] >= 77)) {
+                fprintf(stderr, "Non-standard Script: operand loaded by "
+                        "OP_PUSHDATA has %lu bytes.\n", cmds[i].size());
+            }
+            if (i == cmds.size() - 1) {
+                if (last_operand_nominal_len < (size_t)get_op_pushdata_size(cmds[i-1][0])) {
+                    script_asm = script_asm.substr(0, script_asm.size() - strlen(" OP_PUSHDATA_ "));
+                    script_asm += "<unexpected end>";
+                    continue;
+                } else if (last_operand_nominal_len - 
+                            get_op_pushdata_size(cmds[i-1][0]) >
+                            cmds[i].size()) {
+                    script_asm += "<push past end>"; 
+                    continue;
+                }
+            }
+            if (cmds[i].size() > 0) {
+                hex_str = bytes_to_hex_string(cmds[i].data(), cmds[i].size(), false);
+                script_asm += hex_str;
+                script_asm += " ";
+                free(hex_str);
+            }
         }
     }
     while (script_asm.size() > 0 && script_asm[script_asm.size() - 1] == ' ') {
