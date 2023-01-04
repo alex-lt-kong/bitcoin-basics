@@ -7,6 +7,12 @@ if(NOT MYCRYPTO_LIB)
   )
 endif()
 
+find_library(BOOST_RANDOM_LIB boost_random)
+if(NOT BOOST_RANDOM_LIB)
+  message(
+    FATAL_ERROR "boost_random library not found: apt install libboost-all-dev"
+  )
+endif()
 
 find_library(CURL_LIB curl)
 if(NOT CURL_LIB)
@@ -22,7 +28,7 @@ add_library(tx tx.cpp)
 add_library(utils utils.cpp)
 
 add_library(mybitcoin ecc op script tx utils)
-target_link_libraries(mybitcoin mycrypto curl)
+target_link_libraries(mybitcoin mycrypto curl boost_random )
 
 
 set_target_properties(mybitcoin PROPERTIES PUBLIC_HEADER "ecc.h;op.h;script.h;tx.h;utils.h;")
