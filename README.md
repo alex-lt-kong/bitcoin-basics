@@ -1,19 +1,28 @@
-# bitcoin-internals
+# libmybitcoin
 
 * The repo is still a work in progress..
 
-* Implementation of [examples](https://github.com/jimmysong/programmingbitcoin) 
-in Jimmy Song's [Programming Bitcoin](https://www.oreilly.com/library/view/programming-bitcoin/9781492031482/) and more:
-  * The book's implementation is in Python, which hides a lot of interesting details. This repo implements
-    everything in C++--thus we can get down to the nitty-gritty of Bitcoin.
-  * The book's implementation includes minimal test cases, which only demonstrates the basic idea of Bitcoin's design,
-  but fails to test the program against a wide variety of "non-standard" transactions on the blockchain. Actually
-  many valid transactions on the Bitcoin's mainnet can break Jimmy's implementation. This repo aims to test its
-  implementation again each and single transaction on the mainnet blockchain, making sure that it is fully compatible
-  with Bitcoin in practice.
-  * The book implements ECDSA only--all other cryptographic algorithms are from Python libraries. This repo does not
-  use any third-party cryptography libraries--all the necessary cryptographic algorithms are either implemented right
-  in this repo or in the [libmycrypto](https://github.com/alex-lt-kong/libmycrypto) repo.
+* The repo starts as implementation of [examples](https://github.com/jimmysong/programmingbitcoin) 
+in Jimmy Song's [Programming Bitcoin](https://www.oreilly.com/library/view/programming-bitcoin/9781492031482/)
+and it evolves to be a full-fledged bitcoin library.
+* It differs from Jimmy's book in many ways, including:
+
+    1. The book's implementation is in Python, which hides a lot of interesting
+    (or gory if you prefer)details. This repo implements everything in C++--
+    thus we can get down to the nitty-gritty of Bitcoin.
+    1. The book's implementation includes minimal test cases, which only
+    aim to demonstrate the basic idea of Bitcoin's design. These tests fail to
+    test the program against a wide variety of "non-standard" transactions
+    on the Bitcoin's blockchain. Actually many valid transactions on the
+    Bitcoin's mainnet can break Jimmy's implementation. This repo attempts to
+    test the implementation against each and single transaction on the Bitcoin
+    mainnet blockchain, making sure that it is fully compatible with Bitcoin
+    in as we know in real life.
+    1. The book implements ECDSA only--all other cryptographic algorithms
+    are from Python libraries. This repo does not use any third-party
+    cryptography libraries. All the necessary cryptographic algorithms are
+    either implemented right in this repo or in the
+    [libmycrypto](https://github.com/alex-lt-kong/libmycrypto) repo.
 
 * Other points to note:
   * The book's analogy on ECDSA makes the thing even more difficult to understand, may use
