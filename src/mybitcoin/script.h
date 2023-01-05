@@ -17,8 +17,13 @@ private:
     vector<vector<uint8_t>> cmds;
     vector<bool> is_opcode;
     /*
-        If last_operand is preceded by an OP_PUSHDATA, last_operand includes
+        If last_operand is preceded by an OP_PUSHDATA, last_operand INcludes
         the bytes used to specify the length of "real operand".
+        Otherwise (i.e., last_operand is preceded by an fictional
+        OP_PUSHBYTES_,), it INcludeds the preceding bytes denoting the length
+        of the operand.
+        Either way, we store the nominal length of the last operand in order
+        to properly serialize() the Script to bytes etc.
     */
     vector<uint8_t> last_operand;
     /**

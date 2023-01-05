@@ -13,88 +13,19 @@ Script::Script() {}
 vector<uint8_t> Script::serialize() {
     vector<uint8_t> d(0);
     if (cmds.size() == 0) {
-        fprintf(stderr, "cmds is empty, serialize() is not "
+        fprintf(stderr, "Fatal: cmds is empty, serialize() is not "
                 "supposed to be called!\n");
         return vector<uint8_t>(0);
     }
     size_t idx = 0;
     while (idx < cmds.size()) {
-        if (is_opcode[idx] == true) {
-            if (cmds[idx].size() != 1) {
-                fprintf(stderr, "Fatal error: opcode occupied more "
-                        "than one byte, which is supposed to be impossible\n");
-                return vector<uint8_t>(0);
-            }
-
-            if (cmds[idx][0] > 78 || cmds[idx][0] == 0) {
-                d.push_back(cmds[idx][0]);
-            } else if (cmds[idx][0] >= 76 && cmds[idx][0] <= 78) {
-                d.push_back(cmds[idx][0]);
-
-                ++idx;
-                size_t operand_len = 0;
-                if (idx != cmds.size() - 1) {
-                    operand_len = cmds[idx].size();                    
-                    d.push_back((uint8_t)operand_len);                 // for 0x0A0B0C0D, it extracts 0D at 0
-                    if (this->cmds[idx-1][0] >= 77) {
-                        d.push_back((uint8_t)(operand_len >> 8));      // for 0x0A0B0C0D, it extracts 0C at 1
-                        if (this->cmds[idx-1][0] >= 78) {
-                            d.push_back((uint8_t)(operand_len >> 16)); // for 0x0A0B0C0D, it extracts 0B at 2
-                            d.push_back((uint8_t)(operand_len >> 24)); // for 0x0A0B0C0D, it extracts 0A at 3
-                        }
-                    }
-                    if (is_opcode[idx] == true) {
-                        /* Use to handle this scenario:
-                            ASM:      OP_BOOLOR OP_PUSHDATA1    OP_0 OP_CODESEPARATOR
-                            Actual:          9b           4c 01   00               ab
-                            Expect:          9b           4c 00   00               ab
-                            */
-                        operand_len = 0;
-                    }
-                } else if (idx >= cmds.size()) {
-                    fprintf(stderr, "access violation, this is FATAL.\n");
-                    return vector<uint8_t>(0);
-                } else {
-                    operand_len = last_operand.size();
-                    if (operand_len > 0) {
-                        d.push_back(last_operand[0]);
-                        if (cmds[idx-1][0] >= 77 && (operand_len > 1)) {
-                            d.push_back((last_operand[1]));
-                            if (cmds[idx-1][0] >= 78 && (operand_len > 2)) {
-                                d.push_back((uint8_t)(last_operand[2]));
-                                if (operand_len > 3) {
-                                    d.push_back((uint8_t)(last_operand[3]));
-                                }
-                            }
-                        }
-                    }
-                }
-                if (operand_len != cmds[idx].size() + get_nominal_operand_len_byte_count_after_op_pushdata(cmds[idx-1][0])) {
-                    fprintf(stderr, "Non-standard Script: operand_len (%lu) is "
-                            "different from operand.size() + bytes used to "
-                            "store operand_len (%lu+%lu)\n", operand_len,
-                            cmds[idx].size(),
-                            get_nominal_operand_len_byte_count_after_op_pushdata(cmds[idx-1][0]));
-                }
-                for (size_t j = 0; j < operand_len && j < cmds[idx].size(); ++j) {
-                    d.push_back(cmds[idx][j]);
-                }
-                if (is_opcode[idx] == true) {
-                    /*
-                    It is a bit difficult to explain the case succinctly,
-                    it is needed to serialize() the following test case:
-                    "03cf760b1b4d696e656420627920416e74506f6f6c383738be00010045bd3903fabe6d6d8dee9c6ded1bbc251c0bdf56784cd8e32dc6c6448186a124ffdda854c54ff1eb02000000000000009b4c0000abc8000000000000"
-                    "OP_PUSHBYTES_3 cf760b OP_PUSHBYTES_27 4d696e656420627920416e74506f6f6c383738be00010045bd3903 OP_RETURN_250 OP_RETURN_190 OP_2DROP OP_2DROP OP_2MUL OP_RETURN_238 OP_NUMEQUAL OP_2DROP OP_RETURN_237 OP_PUSHBYTES_27 bc251c0bdf56784cd8e32dc6c6448186a124ffdda854c54ff1eb02 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0 OP_BOOLOR OP_PUSHDATA1 OP_0 OP_CODESEPARATOR OP_RETURN_200 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0"
-                    */
-                    --idx;
-                }
+        if (is_opcode[idx] != true) {
+            size_t operand_len = 0;
+            if (cmds.size() - 1 == idx) {
+                operand_len = last_operand[0];
             } else {
-                fprintf(stderr, "Invalid opcode: %d\n", cmds[idx][0]);
-                return vector<uint8_t>(0);
+                operand_len = cmds[idx].size();
             }
-        } else {
-            size_t operand_len = (cmds.size() - 1) == idx ? 
-            last_operand.size() : cmds[idx].size();
             if (operand_len >= 75) {
                 fprintf(stderr, "Non-standard Script: operand longer than "
                 "75 bytes without OP_PUSHDATA\n");
@@ -103,6 +34,82 @@ vector<uint8_t> Script::serialize() {
             for (size_t j = 0; j < cmds[idx].size(); ++j) {
                 d.push_back(cmds[idx][j]);
             }
+            ++idx;
+            continue;
+        }
+        // is_opcode == true:
+        if (cmds[idx].size() != 1) {
+            fprintf(stderr, "Fatal: opcode occupied more "
+                    "than one byte, which is supposed to be impossible\n");
+            return vector<uint8_t>(0);
+        }
+
+        if (cmds[idx][0] > 78 || cmds[idx][0] == 0) {
+            d.push_back(cmds[idx][0]);
+        } else if (cmds[idx][0] >= 76 && cmds[idx][0] <= 78) {
+            d.push_back(cmds[idx][0]);
+
+            ++idx;
+            size_t operand_len = 0;
+            if (idx != cmds.size() - 1) {
+                operand_len = cmds[idx].size();                    
+                d.push_back((uint8_t)operand_len);                 // for 0x0A0B0C0D, it extracts 0D at 0
+                if (this->cmds[idx-1][0] >= 77) {
+                    d.push_back((uint8_t)(operand_len >> 8));      // for 0x0A0B0C0D, it extracts 0C at 1
+                    if (this->cmds[idx-1][0] >= 78) {
+                        d.push_back((uint8_t)(operand_len >> 16)); // for 0x0A0B0C0D, it extracts 0B at 2
+                        d.push_back((uint8_t)(operand_len >> 24)); // for 0x0A0B0C0D, it extracts 0A at 3
+                    }
+                }
+                if (is_opcode[idx] == true) {
+                    /* Use to handle this scenario:
+                        ASM:      OP_BOOLOR OP_PUSHDATA1    OP_0 OP_CODESEPARATOR
+                        Actual:          9b           4c 01   00               ab
+                        Expect:          9b           4c 00   00               ab
+                        */
+                    operand_len = 0;
+                }
+            } else if (idx >= cmds.size()) {
+                fprintf(stderr, "access violation, this is FATAL.\n");
+                return vector<uint8_t>(0);
+            } else {
+                operand_len = last_operand.size();
+                if (operand_len > 0) {
+                    d.push_back(last_operand[0]);
+                    if (cmds[idx-1][0] >= 77 && (operand_len > 1)) {
+                        d.push_back((last_operand[1]));
+                        if (cmds[idx-1][0] >= 78 && (operand_len > 2)) {
+                            d.push_back((uint8_t)(last_operand[2]));
+                            if (operand_len > 3) {
+                                d.push_back((uint8_t)(last_operand[3]));
+                            }
+                        }
+                    }
+                }
+            }
+            if (operand_len != cmds[idx].size() +
+                get_nominal_operand_len_byte_count_after_op_pushdata(cmds[idx-1][0])) {
+                fprintf(stderr, "Non-standard Script: operand_len (%lu) is "
+                    "different from operand.size() + bytes used to "
+                    "store operand_len (%lu+%u)\n", operand_len,
+                    cmds[idx].size(),
+                    get_nominal_operand_len_byte_count_after_op_pushdata(cmds[idx-1][0]));
+            }
+            for (size_t j = 0; j < operand_len && j < cmds[idx].size(); ++j) {
+                d.push_back(cmds[idx][j]);
+            }
+            if (is_opcode[idx] == true) {
+                /*
+                It is a bit difficult to explain the case succinctly,
+                it is needed to serialize() the following test case:
+                "03cf760b1b4d696e656420627920416e74506f6f6c383738be00010045bd3903fabe6d6d8dee9c6ded1bbc251c0bdf56784cd8e32dc6c6448186a124ffdda854c54ff1eb02000000000000009b4c0000abc8000000000000"
+                "OP_PUSHBYTES_3 cf760b OP_PUSHBYTES_27 4d696e656420627920416e74506f6f6c383738be00010045bd3903 OP_RETURN_250 OP_RETURN_190 OP_2DROP OP_2DROP OP_2MUL OP_RETURN_238 OP_NUMEQUAL OP_2DROP OP_RETURN_237 OP_PUSHBYTES_27 bc251c0bdf56784cd8e32dc6c6448186a124ffdda854c54ff1eb02 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0 OP_BOOLOR OP_PUSHDATA1 OP_0 OP_CODESEPARATOR OP_RETURN_200 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0"
+                */
+                --idx;
+            }
+        } else {
+            fprintf(stderr, "Invalid opcode: %d\n", cmds[idx][0]);
+            return vector<uint8_t>(0);
         }
         ++idx;
     }
@@ -126,7 +133,7 @@ bool Script::parse(vector<uint8_t> byte_stream) {
     const char cmd_names[][13] = {"OP_PUSHDATA1", "OP_PUSHDATA2", "OP_PUSHDATA4"};
     while (count < script_len) {
         if (byte_stream.size() == 0) {
-            fprintf(stderr, "cbytes vector empty already\n");
+            fprintf(stderr, "Fatal: byte_stream ends unexpectedly\n");
             return false;
         }
         cb = byte_stream[0];
@@ -135,17 +142,23 @@ bool Script::parse(vector<uint8_t> byte_stream) {
         if (cb >= 1 && cb <= 75) {
             // an ordinary element should be between 1 to 75 bytes. If cb is smaller then 75, it implies this component
             // is an ordinary element (i.e., an operand, not an opcode)
-            if (cb > byte_stream.size()) {
+            uint8_t nominal_len = cb;
+            uint8_t actual_len = cb;
+            if (actual_len > byte_stream.size()) {
                 // Will only enter this branch if the current operand is the last one.
                 fprintf(stderr, "Non-standard Script: push past end\n");
-                cb = byte_stream.size();
+                actual_len = byte_stream.size();
             }
-            vector<uint8_t> cmd(cb);
-            memcpy(cmd.data(), byte_stream.data(), cb);
-            last_operand = cmd;
-            byte_stream.erase(byte_stream.begin(), byte_stream.begin() + cb);
+            last_operand = vector<uint8_t>(1 + actual_len);
+            last_operand[0] = nominal_len;
+            vector<uint8_t> cmd(actual_len);
+            memcpy(cmd.data(), byte_stream.data(), actual_len);
+            memcpy(last_operand.data() + 1 * sizeof(uint8_t),
+                   byte_stream.data(), actual_len);
+            byte_stream.erase(byte_stream.begin(), byte_stream.begin() + actual_len);
+            
             /*
-                What if cb == 0?
+                What if actual_len == 0?
                 According to: https://en.cppreference.com/w/cpp/container/vector/erase
                 If last == end() prior to removal, then the updated end() iterator is returned.
                 If [first, last) is an empty range, then last is returned. 
@@ -154,11 +167,11 @@ bool Script::parse(vector<uint8_t> byte_stream) {
                 past-the-end element is the theoretical element that would follow the last element in the vector.
                 It does not point to any element, and thus shall not be dereferenced. 
 
-                Therefore, it seems that cb == 0 and d.begin() == end() are both valid.
+                Therefore, it seems that actual_len == 0 and d.begin() == end() are both valid.
             */
             cmds.push_back(cmd);
             is_opcode.push_back(false);
-            count += cb; // curr_byte stores the size of the operand
+            count += actual_len; // curr_byte stores the size of the operand
         } else if (cb >= 76 && cb <= 78) {
             // 76,77,78 corresponds to OP_PUSHDATA1/OP_PUSHDATA2/OP_PUSHDATA4,
             // meaning that we read the next 1,2,4 bytes
@@ -262,9 +275,9 @@ string Script::get_asm() {
             if (cmds[i].size() > 75) {
                 fprintf(stderr, "This should never happen\n");
                 return "";
-            }            
-            if (i == cmds.size() - 1 && cmds[i].size() != last_operand.size()) {
-                script_asm += "OP_PUSHBYTES_" + to_string(last_operand.size()) + " ";
+            }
+            if (i == cmds.size() - 1 && cmds[i].size() != last_operand[0]) {
+                script_asm += "OP_PUSHBYTES_" + to_string(last_operand[0]) + " ";
                 script_asm += "<push past end>";
             } else {
                 script_asm += "OP_PUSHBYTES_" + to_string(cmds[i].size()) + " ";

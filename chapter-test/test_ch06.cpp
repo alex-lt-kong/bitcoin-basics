@@ -255,7 +255,7 @@ int test_script_parsing_and_serialization5_OP_PUSH() {
 int test_script_parsing_and_serialization6_special_cases() {
     printf("\n=== A lot of warnings are expected but none of them should break "
            "the program===\n");
-            
+             
     const size_t buf_size = 2048;
     // If hex string is copied from blockstream.info, need to manually append 
     // the varint-encoded length of the script to it. (e.g., 41 and 2c)
@@ -267,7 +267,9 @@ int test_script_parsing_and_serialization6_special_cases() {
         "034d0000",
         "4e03acb70b11627463636f6d383930e1023b025de50debfabe6d6d105d17bbc86f999c3b578d9696815d8bba132206863eceebaf339f9bbc01486b04000000000000000000a5fa4c00000000000000",
         // Tx in block 500531
-        "1f0333a307122f3538636f696e2e636f6d2f16205a3cfb3dbe4f0000d84e0100"
+        "1f0333a307122f3538636f696e2e636f6d2f16205a3cfb3dbe4f0000d84e0100",
+        // Tx in block 500000
+        "4b0320a107046f0a385a632f4254432e434f4d2ffabe6d6dbdd0ee86f9a1badfd0aa1b3c9dac8d90840cf973f7b2590d6c9adde1a6e0974a010000000000000001283da9a172020000000000"
     };
     // Should be the scriptpubkey_asm or scriptsig_asm value from
     // blockstream.info
@@ -283,10 +285,12 @@ int test_script_parsing_and_serialization6_special_cases() {
         // OP_PUSHDATA that pushes nothing
         "OP_PUSHBYTES_3 acb70b OP_PUSHBYTES_17 627463636f6d383930e1023b025de50deb OP_RETURN_250 OP_RETURN_190 OP_2DROP OP_2DROP OP_PUSHBYTES_16 5d17bbc86f999c3b578d9696815d8bba OP_PUSHBYTES_19 2206863eceebaf339f9bbc01486b0400000000 OP_0 OP_0 OP_0 OP_0 OP_0 OP_WITHIN OP_RETURN_250 OP_PUSHDATA1 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0",
         // Combination of <unexpected end> and less bytes for OP_PUSHDATA than expected
-        "OP_PUSHBYTES_3 33a307 OP_PUSHBYTES_18 2f3538636f696e2e636f6d2f16205a3cfb3d OP_RETURN_190 OP_PUSHNUM_NEG1 OP_0 OP_0 OP_RETURN_216<unexpected end>"
+        "OP_PUSHBYTES_3 33a307 OP_PUSHBYTES_18 2f3538636f696e2e636f6d2f16205a3cfb3d OP_RETURN_190 OP_PUSHNUM_NEG1 OP_0 OP_0 OP_RETURN_216<unexpected end>",
+        // <push past end> without OP_PUSHDATA
+        "OP_PUSHBYTES_3 20a107 OP_PUSHBYTES_4 6f0a385a OP_IF OP_PUSHBYTES_47 4254432e434f4d2ffabe6d6dbdd0ee86f9a1badfd0aa1b3c9dac8d90840cf973f7b2590d6c9adde1a6e0974a010000 OP_0 OP_0 OP_0 OP_0 OP_0 OP_PUSHBYTES_1 28 OP_PUSHBYTES_61 <push past end>"
         
     };
-    const size_t expected_cmds_size[] = {9, 3, 10, 2, 23, 9};
+    const size_t expected_cmds_size[] = {9, 3, 10, 2, 23, 9, 11};
     // Should exclude the length of operand (e.g., OP_PUSHBYTES_3) but
     // include the last operand even if its length is not expected.
     char expected_str_outs[][32][2048] = {
@@ -295,7 +299,8 @@ int test_script_parsing_and_serialization6_special_cases() {
         {"d67e0b", "62696e616e63652f38303499008301359ed78e", "fa", "be", "6d", "6d", "99", "fe", "4e", "0b863c1a90ab7b8f5b6ebd24d31a7835014839aefa3d39897904000000000000000000a5a001e9170000000000"},
         {"4d", ""},
         {"acb70b", "627463636f6d383930e1023b025de50deb", "fa", "be", "6d", "6d", "5d17bbc86f999c3b578d9696815d8bba", "2206863eceebaf339f9bbc01486b0400000000", "00", "00", "00", "00", "00", "a5", "fa", "4c", "", "00", "00", "00", "00", "00", "00"},
-        {"33a307", "2f3538636f696e2e636f6d2f16205a3cfb3d", "be", "4f", "00", "00", "d8", "4e", ""}
+        {"33a307", "2f3538636f696e2e636f6d2f16205a3cfb3d", "be", "4f", "00", "00", "d8", "4e", ""},
+        {"20a107", "6f0a385a", "63", "4254432e434f4d2ffabe6d6dbdd0ee86f9a1badfd0aa1b3c9dac8d90840cf973f7b2590d6c9adde1a6e0974a010000", "00", "00", "00", "00", "00", "28", "a9a172020000000000"}
 
     };
     for (size_t i = 0; i < sizeof(hex_str_in)/sizeof(hex_str_in[0]); ++i) {
