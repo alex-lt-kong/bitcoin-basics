@@ -5,7 +5,6 @@
 
 Script::Script(vector<vector<uint8_t>> cmds) {
     this->cmds = cmds; // this makes a copy of cmds.
-    last_operand_nominal_len = 0;
 }
 
 Script::Script() {}
@@ -14,7 +13,8 @@ Script::Script() {}
 vector<uint8_t> Script::serialize() {
     vector<uint8_t> d(0);
     if (cmds.size() == 0) {
-        fprintf(stderr, "cmds is empty, serialize() is not supposed to be called!\n");
+        fprintf(stderr, "cmds is empty, serialize() is not "
+                "supposed to be called!\n");
         return vector<uint8_t>(0);
     }
     size_t idx = 0;
@@ -34,42 +34,35 @@ vector<uint8_t> Script::serialize() {
 
                 ++idx;
                 size_t operand_len = 0;
-                if (idx == cmds.size() - 1) {
-                    operand_len = last_operand_nominal_len;
-                    operand_len = operand_len - get_op_pushdata_size(cmds[idx-1][0]) > 0 ? operand_len - get_op_pushdata_size(cmds[idx-1][0]) : 0;
-                } else {
-                    operand_len = cmds[idx].size();
-                }
-                if (is_opcode[idx] == true) {
-                    /* Use to handle this scenario:
-                        ASM:      OP_BOOLOR OP_PUSHDATA1    OP_0 OP_CODESEPARATOR
-                        Actual:          9b           4c 01   00               ab
-                        Expect:          9b           4c 00   00               ab
-                        */
-                    operand_len = 0;
-                }
-                // TODO: this section is very ugly, should re-write!
-                if ( idx != cmds.size() - 1 ||
-                    (idx == cmds.size() - 1 &&
-                     last_operand_nominal_len > 0)
-                ) {
+                if (idx != cmds.size() - 1) {
+                    operand_len = cmds[idx].size();                    
                     d.push_back((uint8_t)operand_len);                 // for 0x0A0B0C0D, it extracts 0D at 0
-                    if (cmds[idx-1][0] >= 77 && (
-                        ( idx != cmds.size() - 1 ||
-                         (idx == cmds.size() - 1 &&
-                          last_operand_nominal_len > 1)))
-                       ) {
+                    if (this->cmds[idx-1][0] >= 77) {
                         d.push_back((uint8_t)(operand_len >> 8));      // for 0x0A0B0C0D, it extracts 0C at 1
-                        if (cmds[idx-1][0] >= 78 && (
-                        ( idx != cmds.size() - 1 ||
-                         (idx == cmds.size() - 1 &&
-                          last_operand_nominal_len > 2)))
-                       ) {
+                        if (this->cmds[idx-1][0] >= 78) {
                             d.push_back((uint8_t)(operand_len >> 16)); // for 0x0A0B0C0D, it extracts 0B at 2
-                            if ( idx != cmds.size() - 1 ||
-                                (idx == cmds.size() - 1 &&
-                                last_operand_nominal_len > 3)) {
                             d.push_back((uint8_t)(operand_len >> 24)); // for 0x0A0B0C0D, it extracts 0A at 3
+                        }
+                    }
+                    if (is_opcode[idx] == true) {
+                        /* Use to handle this scenario:
+                            ASM:      OP_BOOLOR OP_PUSHDATA1    OP_0 OP_CODESEPARATOR
+                            Actual:          9b           4c 01   00               ab
+                            Expect:          9b           4c 00   00               ab
+                            */
+                        operand_len = 0;
+                    }
+                } else {
+                    operand_len = last_operand.size();
+                    if (last_operand.size() > 0) {
+                        d.push_back(last_operand[0]);
+                        if (cmds[idx-1][0] >= 77 && (last_operand.size() > 1)) {
+                            d.push_back((last_operand[1]));
+                            if (cmds[idx-1][0] >= 78 && (last_operand.size() > 2)) {
+                                d.push_back((uint8_t)(last_operand[2])); // for 0x0A0B0C0D, it extracts 0B at 2
+                                if (last_operand.size() > 3) {
+                                    d.push_back((uint8_t)(last_operand[3])); // for 0x0A0B0C0D, it extracts 0A at 3
+                                }
                             }
                         }
                     }
@@ -96,7 +89,7 @@ vector<uint8_t> Script::serialize() {
             }
         } else {
             size_t operand_len = (cmds.size() - 1) == idx ? 
-            last_operand_nominal_len : cmds[idx].size();
+            last_operand.size() : cmds[idx].size();
             if (operand_len >= 75) {
                 fprintf(stderr, "Non-standard Script: operand longer than "
                 "75 bytes without OP_PUSHDATA\n");
@@ -122,7 +115,7 @@ bool Script::parse(vector<uint8_t> byte_stream) {
     uint64_t script_len = read_variable_int(byte_stream);
     size_t count = 0;
     uint8_t cb = 0; // current byte
-    size_t data_length = 0;
+    size_t actual_operand_len = 0;
     cmds.clear();
     is_opcode.clear();
     const char cmd_names[][13] = {"OP_PUSHDATA1", "OP_PUSHDATA2", "OP_PUSHDATA4"};
@@ -137,7 +130,6 @@ bool Script::parse(vector<uint8_t> byte_stream) {
         if (cb >= 1 && cb <= 75) {
             // an ordinary element should be between 1 to 75 bytes. If cb is smaller then 75, it implies this component
             // is an ordinary element (i.e., an operand, not an opcode)
-            last_operand_nominal_len = cb;
             if (cb > byte_stream.size()) {
                 // Will only enter this branch if the current operand is the last one.
                 fprintf(stderr, "Non-standard Script: push past end\n");
@@ -145,6 +137,7 @@ bool Script::parse(vector<uint8_t> byte_stream) {
             }
             vector<uint8_t> cmd(cb);
             memcpy(cmd.data(), byte_stream.data(), cb);
+            last_operand = cmd;
             byte_stream.erase(byte_stream.begin(), byte_stream.begin() + cb);
             /*
                 What if cb == 0?
@@ -165,6 +158,8 @@ bool Script::parse(vector<uint8_t> byte_stream) {
             // 76,77,78 corresponds to OP_PUSHDATA1/OP_PUSHDATA2/OP_PUSHDATA4,
             // meaning that we read the next 1,2,4 bytes
             // which, in little endian order, specify how many bytes the element has.
+            cmds.push_back(vector<uint8_t>{ cb });
+            is_opcode.push_back(true);
             size_t OP_PUSHDATA_size = (
                 byte_stream.size() > (size_t)get_op_pushdata_size(cb) ?
                 get_op_pushdata_size(cb) : byte_stream.size()
@@ -176,34 +171,36 @@ bool Script::parse(vector<uint8_t> byte_stream) {
                         "it pushes no data at all\n", byte_stream.size(),
                         cmd_names[cb-76]);
             }
-            uint8_t buf[4] = {0};
-            memcpy(buf, byte_stream.data(), OP_PUSHDATA_size);
-            byte_stream.erase(
-                byte_stream.begin(), byte_stream.begin() + OP_PUSHDATA_size
-            );
-            // As documented above, OP_PUSHDATA_size == 0 and byte_stream.begin() == end() are both valid.
-            cmds.push_back(vector<uint8_t>{ cb });
-            is_opcode.push_back(true);
-            data_length = buf[0] << 0 | buf[1] << 8 | buf[2] << 16 | buf[3] << 24;
-            last_operand_nominal_len = OP_PUSHDATA_size + data_length;
-            // little-endian bytes to int, this can be shared by three OP_PUSHDATAs
-            if (data_length > byte_stream.size()) {
-                // Will only enter this branch if the coming operand is the last one.
+
+            int64_t actual_operand_len = get_nominal_operand_len_after_op_pushdata(cb, byte_stream);            
+            if (actual_operand_len > byte_stream.size() - OP_PUSHDATA_size) {
+                // Though not explicitly put in if, program will only enter this
+                // branch if the coming operand is the last one.
                 fprintf(stderr, "Non-standard Script: push past end\n");
-                data_length = byte_stream.size();
+                actual_operand_len = byte_stream.size() - OP_PUSHDATA_size;
             }
-            if (data_length > 520) {
-                fprintf(stderr, "Non-standard Script: data_length > 520\n");
+
+            if (actual_operand_len > 520) {
+                fprintf(stderr, "Non-standard Script: actual_operand_len > 520\n");
+                if (actual_operand_len > 4096) {
+                    fprintf(stderr, "Non-standard Script: actual_operand_len > 4096, FATAL\n");
+                    return false;
+                }
             }
-            vector<uint8_t> cmd(data_length);
-            memcpy(cmd.data(), byte_stream.data(), data_length);
+            last_operand = vector<uint8_t>(OP_PUSHDATA_size + actual_operand_len);
+            memcpy(last_operand.data(), byte_stream.data(), OP_PUSHDATA_size);
+            byte_stream.erase(byte_stream.begin(), 
+                              byte_stream.begin() + OP_PUSHDATA_size);
+            vector<uint8_t> cmd(actual_operand_len);
+            memcpy(cmd.data(), byte_stream.data(), actual_operand_len);
+            memcpy(last_operand.data() + OP_PUSHDATA_size * sizeof(uint8_t), byte_stream.data(), actual_operand_len);
             byte_stream.erase(
-                byte_stream.begin(), byte_stream.begin() + data_length
+                byte_stream.begin(), byte_stream.begin() + actual_operand_len
             );
             cmds.push_back(cmd);
             is_opcode.push_back(false);
             
-            count += data_length + OP_PUSHDATA_size;
+            count += last_operand.size();
         } else {
             // otherwise it is an opcode
             vector<uint8_t> cmd{ cb };
@@ -230,7 +227,21 @@ int Script::get_op_pushdata_size(uint8_t opcode) {
     return operand_lengths[opcode - 76];
 }
 
-
+int64_t Script::get_nominal_operand_len_after_op_pushdata(uint8_t opcode, vector<uint8_t> byte_stream) {
+    int nominal_operand_len_byte_count = get_op_pushdata_size(opcode);
+    if (nominal_operand_len_byte_count == -1) {
+        return -1;
+    }
+    uint8_t buf[4] = {0};
+    if (nominal_operand_len_byte_count > byte_stream.size()) {
+        nominal_operand_len_byte_count = byte_stream.size();
+        fprintf(stderr, "Non-standard Script: push past end\n");
+    }
+    memcpy(buf, byte_stream.data(), nominal_operand_len_byte_count);
+    // OP_PUSHDATA_size == 0 and byte_stream.begin() == end() are both valid.   
+    int64_t nominal_operand_len = buf[0] << 0 | buf[1] << 8 | buf[2] << 16 | buf[3] << 24;
+    return nominal_operand_len;
+}
 string Script::get_asm() {
     string script_asm = "";
     char* hex_str;
@@ -244,8 +255,8 @@ string Script::get_asm() {
                 fprintf(stderr, "This should never happen\n");
                 return "";
             }            
-            if (i == cmds.size() - 1 && cmds[i].size() != (size_t)last_operand_nominal_len) {
-                script_asm += "OP_PUSHBYTES_" + to_string(last_operand_nominal_len) + " ";
+            if (i == cmds.size() - 1 && cmds[i].size() != last_operand.size()) {
+                script_asm += "OP_PUSHBYTES_" + to_string(last_operand.size()) + " ";
                 script_asm += "<push past end>";
             } else {
                 script_asm += "OP_PUSHBYTES_" + to_string(cmds[i].size()) + " ";
@@ -278,13 +289,17 @@ string Script::get_asm() {
                         "OP_PUSHDATA has %lu bytes.\n", cmds[i].size());
             }
             if (i == cmds.size() - 1) {
-                if (last_operand_nominal_len < (size_t)get_op_pushdata_size(cmds[i-1][0])) {
-                    script_asm = script_asm.substr(0, script_asm.size() - strlen(" OP_PUSHDATA_ "));
+                if (last_operand.size() < 
+                    (size_t)get_op_pushdata_size(cmds[i-1][0])) {
+                    // This is how blockstream.info handles this case:
+                    // we need to dial back the "OP_PUSHDATA" opcode to match 
+                    // its.
+                    script_asm = script_asm.substr(
+                        0, script_asm.size() - strlen(" OP_PUSHDATA_ ")
+                    );
                     script_asm += "<unexpected end>";
                     continue;
-                } else if (last_operand_nominal_len - 
-                            get_op_pushdata_size(cmds[i-1][0]) >
-                            cmds[i].size()) {
+                } else if (get_nominal_operand_len_after_op_pushdata(cmds[i-1][0], last_operand) > cmds[i].size()) {
                     script_asm += "<push past end>"; 
                     continue;
                 }
@@ -304,3 +319,8 @@ string Script::get_asm() {
 }
 
 Script::~Script() {}
+/*
+
+4c525221020561ef602a5d29c9aa1007772c1799b3802df9a1995ea7aae06d3cc81ba254ad21026b29b39135808c8480cf17b1e0b383588e9301f5c6242f77ca6276a4345f5c8e2102f8b708a979928d301cbb697217385a287f1dcae6f7f0b51321e58e0f8e04cc1c21032c6023144a138c31b3b5f4aec7a84d9b71a4c6ceaa7abe3f9311071407541be554ae
+4c8b5221020561ef602a5d29c9aa1007772c1799b3802df9a1995ea7aae06d3cc81ba254ad21026b29b39135808c8480cf17b1e0b383588e9301f5c6242f77ca6276a4345f5c8e2102f8b708a979928d301cbb697217385a287f1dcae6f7f0b51321e58e0f8e04cc1c21032c6023144a138c31b3b5f4aec7a84d9b71a4c6ceaa7abe3f9311071407541be554ae
+*/

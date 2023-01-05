@@ -60,14 +60,12 @@ int main(int argc, char **argv) {
         printf("failed to serialize() Script\n");
         return 1;
     }
-    char* serialized_chrs = bytes_to_hex_string(out_d.data() + varint_len, out_d.size() - varint_len, false);
+    char* serialized_chrs = bytes_to_hex_string(out_d.data() + 
+        varint_len, out_d.size() - varint_len, false);
 
     if (strcmp(serialized_chrs, argv[1]) != 0) {
-        fprintf(
-            stderr,
-            "parse() and serialize() result in different byte string:\nActual: %s\nExpect: %s\n",
-            serialized_chrs, argv[1]
-        );
+        fprintf(stderr, "parse() and serialize() result in different byte "
+                "string:\nActual: %s\nExpect: %s\n", serialized_chrs, argv[1]);
         ++ret_val;
     }
     free(serialized_chrs);
@@ -96,6 +94,8 @@ int main(int argc, char **argv) {
         printf("okay\n");
     } else {
         printf("error\n");
-    }    
+    }
+    
+    cmds = my_script.get_cmds();
     return ret_val;
 }

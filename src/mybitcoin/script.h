@@ -17,13 +17,10 @@ private:
     vector<vector<uint8_t>> cmds;
     vector<bool> is_opcode;
     /*
-        Store the nominal length (i.e., the length as specified by raw Bitcoin block byte stream) of the
-        last operand. Following Bitcoin's Script serialization protocol is relatively straightforward until
-        we reach the end of the byte stream. As the byte stream may be shorter than the length specified
-        by the serialization protocol, creating the need of a few special treatment, including the
-        introduction of this variable.
+        If last_operand is preceded by an OP_PUSHDATA, last_operand includes
+        the bytes used to specify the length of "real operand".
     */
-    size_t last_operand_nominal_len;
+    vector<uint8_t> last_operand;
     /**
      * @brief get the number of bytes next to OP_PUSHDATA operations to store
      * the length of the incoming operand
@@ -32,6 +29,17 @@ private:
      * (i.e., 1, 2 or 4) or -1 if an invalid opcode is passed
     */
     int get_op_pushdata_size(uint8_t opcode);
+    /**
+     * @brief Get the nominal operand len after an OP_PUSHDATA opcode, EXcluding
+     * the bytes used to store the length of the operand
+     * 
+     * @param opcode can only be 76, 77 or 78 per Bitcoin's specs
+     * @param byte_stream the raw bytes series, can be shorter than specified
+     * by Bitcoin's spec.
+     * @return the nominal length of the operand or -1 if an invalid opcode is 
+     * passed.
+     */
+    int64_t get_nominal_operand_len_after_op_pushdata(uint8_t opcode, vector<uint8_t> byte_stream);
 protected:
 public:
     
