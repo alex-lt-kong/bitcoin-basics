@@ -23,12 +23,14 @@ private:
     vector<uint8_t> last_operand;
     /**
      * @brief get the number of bytes next to OP_PUSHDATA operations to store
-     * the length of the incoming operand
+     * the length of the incoming operand. Note that this method only returns
+     * the number of bytes, not the value represented by these bytes.
+     * For example, 0x02 is one-byte long but it represents 2.
      * @param opcode opcode, can only be 76, 77 or 78 per Bitcoin's specs
      * @returns the number of bytes used to store operand's length
      * (i.e., 1, 2 or 4) or -1 if an invalid opcode is passed
     */
-    int get_op_pushdata_size(uint8_t opcode);
+    int get_nominal_operand_len_byte_count_after_op_pushdata(uint8_t opcode);
     /**
      * @brief Get the nominal operand len after an OP_PUSHDATA opcode, EXcluding
      * the bytes used to store the length of the operand

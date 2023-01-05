@@ -29,7 +29,6 @@ vector<uint8_t> Script::serialize() {
             if (cmds[idx][0] > 78 || cmds[idx][0] == 0) {
                 d.push_back(cmds[idx][0]);
             } else if (cmds[idx][0] >= 76 && cmds[idx][0] <= 78) {
-                // raw bytes: 4c 01 0a
                 d.push_back(cmds[idx][0]);
 
                 ++idx;
@@ -52,24 +51,30 @@ vector<uint8_t> Script::serialize() {
                             */
                         operand_len = 0;
                     }
+                } else if (idx >= cmds.size()) {
+                    fprintf(stderr, "access violation, this is FATAL.\n");
+                    return vector<uint8_t>(0);
                 } else {
                     operand_len = last_operand.size();
-                    if (last_operand.size() > 0) {
+                    if (operand_len > 0) {
                         d.push_back(last_operand[0]);
-                        if (cmds[idx-1][0] >= 77 && (last_operand.size() > 1)) {
+                        if (cmds[idx-1][0] >= 77 && (operand_len > 1)) {
                             d.push_back((last_operand[1]));
-                            if (cmds[idx-1][0] >= 78 && (last_operand.size() > 2)) {
-                                d.push_back((uint8_t)(last_operand[2])); // for 0x0A0B0C0D, it extracts 0B at 2
-                                if (last_operand.size() > 3) {
-                                    d.push_back((uint8_t)(last_operand[3])); // for 0x0A0B0C0D, it extracts 0A at 3
+                            if (cmds[idx-1][0] >= 78 && (operand_len > 2)) {
+                                d.push_back((uint8_t)(last_operand[2]));
+                                if (operand_len > 3) {
+                                    d.push_back((uint8_t)(last_operand[3]));
                                 }
                             }
                         }
                     }
                 }
-                if (operand_len != cmds[idx].size()) {
-                    fprintf(stderr, "Non-standard Script: operand_len is "
-                            "different from operand.size()\n");
+                if (operand_len != cmds[idx].size() + get_nominal_operand_len_byte_count_after_op_pushdata(cmds[idx-1][0])) {
+                    fprintf(stderr, "Non-standard Script: operand_len (%lu) is "
+                            "different from operand.size() + bytes used to "
+                            "store operand_len (%lu+%lu)\n", operand_len,
+                            cmds[idx].size(),
+                            get_nominal_operand_len_byte_count_after_op_pushdata(cmds[idx-1][0]));
                 }
                 for (size_t j = 0; j < operand_len && j < cmds[idx].size(); ++j) {
                     d.push_back(cmds[idx][j]);
@@ -77,7 +82,7 @@ vector<uint8_t> Script::serialize() {
                 if (is_opcode[idx] == true) {
                     /*
                     It is a bit difficult to explain the case succinctly,
-                    it is needed to parse the following test case:
+                    it is needed to serialize() the following test case:
                     "03cf760b1b4d696e656420627920416e74506f6f6c383738be00010045bd3903fabe6d6d8dee9c6ded1bbc251c0bdf56784cd8e32dc6c6448186a124ffdda854c54ff1eb02000000000000009b4c0000abc8000000000000"
                     "OP_PUSHBYTES_3 cf760b OP_PUSHBYTES_27 4d696e656420627920416e74506f6f6c383738be00010045bd3903 OP_RETURN_250 OP_RETURN_190 OP_2DROP OP_2DROP OP_2MUL OP_RETURN_238 OP_NUMEQUAL OP_2DROP OP_RETURN_237 OP_PUSHBYTES_27 bc251c0bdf56784cd8e32dc6c6448186a124ffdda854c54ff1eb02 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0 OP_BOOLOR OP_PUSHDATA1 OP_0 OP_CODESEPARATOR OP_RETURN_200 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0"
                     */
@@ -161,10 +166,10 @@ bool Script::parse(vector<uint8_t> byte_stream) {
             cmds.push_back(vector<uint8_t>{ cb });
             is_opcode.push_back(true);
             size_t OP_PUSHDATA_size = (
-                byte_stream.size() > (size_t)get_op_pushdata_size(cb) ?
-                get_op_pushdata_size(cb) : byte_stream.size()
+                byte_stream.size() > (size_t)get_nominal_operand_len_byte_count_after_op_pushdata(cb) ?
+                get_nominal_operand_len_byte_count_after_op_pushdata(cb) : byte_stream.size()
             );
-            if ((int)OP_PUSHDATA_size < get_op_pushdata_size(cb)) {
+            if ((int)OP_PUSHDATA_size < get_nominal_operand_len_byte_count_after_op_pushdata(cb)) {
                 // Will only enter this branch if the coming operand is the last one.
                 // It also implies that OP_PUSHDATA pushes nothing at all! (as it has already reached the end of d.)
                 fprintf(stderr, "Non-standard Script: %lu too short for %s and "
@@ -183,7 +188,8 @@ bool Script::parse(vector<uint8_t> byte_stream) {
             if (actual_operand_len > 520) {
                 fprintf(stderr, "Non-standard Script: actual_operand_len > 520\n");
                 if (actual_operand_len > 4096) {
-                    fprintf(stderr, "Non-standard Script: actual_operand_len > 4096, FATAL\n");
+                    fprintf(stderr, "Non-standard Script: actual_operand_len "
+                            "> 4096, FATAL\n");
                     return false;
                 }
             }
@@ -193,7 +199,8 @@ bool Script::parse(vector<uint8_t> byte_stream) {
                               byte_stream.begin() + OP_PUSHDATA_size);
             vector<uint8_t> cmd(actual_operand_len);
             memcpy(cmd.data(), byte_stream.data(), actual_operand_len);
-            memcpy(last_operand.data() + OP_PUSHDATA_size * sizeof(uint8_t), byte_stream.data(), actual_operand_len);
+            memcpy(last_operand.data() + OP_PUSHDATA_size * sizeof(uint8_t),
+                   byte_stream.data(), actual_operand_len);
             byte_stream.erase(
                 byte_stream.begin(), byte_stream.begin() + actual_operand_len
             );
@@ -219,7 +226,7 @@ vector<bool> Script::get_is_opcode() {
     return is_opcode;
 }
 
-int Script::get_op_pushdata_size(uint8_t opcode) {
+int Script::get_nominal_operand_len_byte_count_after_op_pushdata(uint8_t opcode) {
     const size_t operand_lengths[] = {1, 2, 4};
     if (opcode < 76 || opcode > 78) {
         return -1;
@@ -228,7 +235,7 @@ int Script::get_op_pushdata_size(uint8_t opcode) {
 }
 
 int64_t Script::get_nominal_operand_len_after_op_pushdata(uint8_t opcode, vector<uint8_t> byte_stream) {
-    int nominal_operand_len_byte_count = get_op_pushdata_size(opcode);
+    int nominal_operand_len_byte_count = get_nominal_operand_len_byte_count_after_op_pushdata(opcode);
     if (nominal_operand_len_byte_count == -1) {
         return -1;
     }
@@ -242,6 +249,7 @@ int64_t Script::get_nominal_operand_len_after_op_pushdata(uint8_t opcode, vector
     int64_t nominal_operand_len = buf[0] << 0 | buf[1] << 8 | buf[2] << 16 | buf[3] << 24;
     return nominal_operand_len;
 }
+
 string Script::get_asm() {
     string script_asm = "";
     char* hex_str;
@@ -279,7 +287,8 @@ string Script::get_asm() {
             if (i+1 >= cmds.size() || is_opcode[i+1]) {
                 // Case I:  cmds reaches its end
                 // Case II: next cmd is still an opcode, not data.
-                fprintf(stderr, "Non-standard Script: OP_PUSHDATA followed by no data\n");
+                fprintf(stderr, "Non-standard Script: OP_PUSHDATA followed by "
+                        "no data\n");
                 continue;
             }
             ++i;
@@ -290,7 +299,7 @@ string Script::get_asm() {
             }
             if (i == cmds.size() - 1) {
                 if (last_operand.size() < 
-                    (size_t)get_op_pushdata_size(cmds[i-1][0])) {
+                    (size_t)get_nominal_operand_len_byte_count_after_op_pushdata(cmds[i-1][0])) {
                     // This is how blockstream.info handles this case:
                     // we need to dial back the "OP_PUSHDATA" opcode to match 
                     // its.
@@ -299,13 +308,15 @@ string Script::get_asm() {
                     );
                     script_asm += "<unexpected end>";
                     continue;
-                } else if (get_nominal_operand_len_after_op_pushdata(cmds[i-1][0], last_operand) > cmds[i].size()) {
+                } else if (get_nominal_operand_len_after_op_pushdata(
+                    cmds[i-1][0], last_operand) > cmds[i].size()) {
                     script_asm += "<push past end>"; 
                     continue;
                 }
             }
             if (cmds[i].size() > 0) {
-                hex_str = bytes_to_hex_string(cmds[i].data(), cmds[i].size(), false);
+                hex_str = bytes_to_hex_string(cmds[i].data(),
+                                              cmds[i].size(), false);
                 script_asm += hex_str;
                 script_asm += " ";
                 free(hex_str);
@@ -319,8 +330,3 @@ string Script::get_asm() {
 }
 
 Script::~Script() {}
-/*
-
-4c525221020561ef602a5d29c9aa1007772c1799b3802df9a1995ea7aae06d3cc81ba254ad21026b29b39135808c8480cf17b1e0b383588e9301f5c6242f77ca6276a4345f5c8e2102f8b708a979928d301cbb697217385a287f1dcae6f7f0b51321e58e0f8e04cc1c21032c6023144a138c31b3b5f4aec7a84d9b71a4c6ceaa7abe3f9311071407541be554ae
-4c8b5221020561ef602a5d29c9aa1007772c1799b3802df9a1995ea7aae06d3cc81ba254ad21026b29b39135808c8480cf17b1e0b383588e9301f5c6242f77ca6276a4345f5c8e2102f8b708a979928d301cbb697217385a287f1dcae6f7f0b51321e58e0f8e04cc1c21032c6023144a138c31b3b5f4aec7a84d9b71a4c6ceaa7abe3f9311071407541be554ae
-*/
