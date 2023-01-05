@@ -41,7 +41,8 @@ private:
      * @return the nominal length of the operand or -1 if an invalid opcode is 
      * passed.
      */
-    int64_t get_nominal_operand_len_after_op_pushdata(uint8_t opcode, vector<uint8_t> byte_stream);
+    int64_t get_nominal_operand_len_after_op_pushdata(
+        uint8_t opcode, vector<uint8_t> byte_stream);
 protected:
 public:
     
