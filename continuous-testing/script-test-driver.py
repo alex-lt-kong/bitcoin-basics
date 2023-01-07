@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 
 from confluent_kafka import Producer
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad
 
 import argparse
 import json
@@ -23,11 +25,11 @@ lgr.addHandler(file_handler)
 lgr.setLevel(logging.INFO)
 
 if (
-    os.getenv('BITCOIN_INTERNALS_KAFKA_BROKERS') is not None and
-    os.getenv('BITCOIN_INTERNALS_KAFKA_TOPIC') is not None
+    os.getenv('LIBMYBITCOIN_KAFKA_BROKERS') is not None and
+    os.getenv('LIBMYBITCOIN_KAFKA_TOPIC') is not None
 ):
     producer = Producer({
-        'bootstrap.servers': os.getenv('BITCOIN_INTERNALS_KAFKA_BROKERS'),
+        'bootstrap.servers': os.getenv('LIBMYBITCOIN_KAFKA_BROKERS'),
         'client.id': socket.getfqdn()
     })
 else:
@@ -40,18 +42,30 @@ def kafka_cb(err, msg):
 
 
 def send_to_kafka(block_metadata: object, status: str) -> None:
+
+    def aes_encrypt(raw):
+        key = os.getenv('LIBMYBITCOIN_KAFKA_32BYTE_ENC_KEY')
+        if key is not None:
+            lgr.info('AES applied!')
+            raw = pad(raw.encode(),16)
+            cipher = AES.new(key.encode('utf-8'), AES.MODE_ECB)
+            return cipher.encrypt(raw)
+        else:
+            lgr.warning('AES encryption is not enabled')
+            return raw
+
     if producer is None:
         return
     producer.produce(
-        os.getenv('BITCOIN_INTERNALS_KAFKA_TOPIC'),
-        value=json.dumps({
+        os.getenv('LIBMYBITCOIN_KAFKA_TOPIC'),
+        value=aes_encrypt(json.dumps({
             'host': socket.getfqdn(),
             'unix_ts': time.time(),
             'block_height': block_metadata['height'],
             'block_ts': block_metadata['timestamp'],
             'tx_count': block_metadata['tx_count'],
             'status': status
-        }),
+        })),
         callback=kafka_cb
     )
     producer.poll(timeout=1)
@@ -198,7 +212,9 @@ def main() -> None:
         send_to_kafka(block_metadata, 'okay')            
         height += 1
 
+
     lgr.info(f'All scripts are tested by [{test_program}] and no errors are reported')
+
 
 if __name__ == '__main__':
     main()
