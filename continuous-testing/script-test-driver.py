@@ -46,7 +46,6 @@ def send_to_kafka(block_metadata: object, status: str) -> None:
     def aes_encrypt(raw):
         key = os.getenv('LIBMYBITCOIN_KAFKA_32BYTE_ENC_KEY')
         if key is not None:
-            lgr.info('AES applied!')
             raw = pad(raw.encode(),16)
             cipher = AES.new(key.encode('utf-8'), AES.MODE_ECB)
             return cipher.encrypt(raw)
@@ -79,9 +78,10 @@ def test_script(script_hex: str, script_asm: str) -> None:
     stdout, stderr = p.communicate()
     # stderr could contain some warning info, we will ignore them.
     retval = p.wait()
-    if stdout.decode('utf8') == 'okay\n' and retval == 0:
-        lgr.info(f'test program reports okay.')    
-    else:
+    if stderr is not None and stderr.decode('utf8') != '':
+        # stderr is considered information only.
+        lgr.warning(f'stderr from test program: {stderr}')
+    if stdout.decode('utf8') != 'okay\n' and retval != 0:
         err_msg = (
             f'Test program [{test_program}] reports error. stdout: '
             f'{stdout.decode("utf8")}, stderr: {stderr.decode("utf8")}, '
@@ -90,8 +90,6 @@ def test_script(script_hex: str, script_asm: str) -> None:
         )
         lgr.error(err_msg)
         raise RuntimeError(err_msg)
-    if stderr is not None and stderr.decode('utf8') != '':
-        lgr.warning(f'stderr from test program: {stderr}')
 
 
 def main() -> None:
@@ -187,6 +185,7 @@ def main() -> None:
                     lgr.debug(f'[{total_idx+i}] testing {j}-th input...')
                     try:
                         test_script(str(tx_in['scriptsig']), str(tx_in['scriptsig_asm']))
+                        lgr.info(f'{j + 1:02}-th in  of {total_idx + i:,}-th tx: test program reports okay.')
                     except Exception as ex:
                         err_msg = f'testing {str(tx_in["scriptsig"])} (ASM: {str(tx_in["scriptsig_asm"])}),'
                         err_msg += f'height: {height}, transaction idx: {total_idx+i}: {ex}'
@@ -201,6 +200,7 @@ def main() -> None:
                     lgr.debug(f'[{total_idx+i}] testing {j+1}-th output...')
                     try:
                         test_script(str(tx_out['scriptpubkey']), str(tx_out['scriptpubkey_asm']))
+                        lgr.info(f'{j + 1:02}-th out of {total_idx + i:,}-th tx: test program reports okay.')
                     except Exception as ex:
                         err_msg = f'testing {str(tx_out["scriptpubkey"])} (ASM: {str(tx_out["scriptpubkey_asm"])}),'
                         err_msg += f'height: {height}, transaction idx: {total_idx+i}: {ex}'
