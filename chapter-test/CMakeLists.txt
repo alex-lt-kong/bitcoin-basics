@@ -7,7 +7,7 @@ add_executable(test_ch04 ./test_ch04.cpp)
 add_executable(test_ch05 ./test_ch05.cpp)
 add_executable(test_ch06 ./test_ch06.cpp)
 
-target_link_libraries(test_ch01 boost_random criterion mycrypto mybitcoin)
+target_link_libraries(test_ch01 boost_random mycrypto mybitcoin)
 target_link_libraries(test_ch02)
 target_link_libraries(test_ch03 boost_random mycrypto mybitcoin)
 target_link_libraries(test_ch04 boost_random mycrypto mybitcoin)
