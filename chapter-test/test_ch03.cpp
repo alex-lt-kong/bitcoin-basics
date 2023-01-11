@@ -486,38 +486,37 @@ int testSignatureCreation() {
 }
 
 int main() {
-      int retval = 0;
-
-      struct Test_Suite {
-          char test_name[128];
-          int (*test_func)(void);
-      };
+    int retval = 0;
+    struct Test_Suite {
+        char test_name[128];
+        int (*test_func)(void);
+    };
       
-      struct Test_Suite test_suites[] = {
-          {"testIfPointsOnCurve()", &testIfPointsOnCurve},
-          {"testIfPointsNotOnCurve()", &testIfPointsNotOnCurve},
-          {"findOrderOfGroup()", &findOrderOfGroup},
-          {"testFieldElementPointScalarMultiplication()", &testFieldElementPointScalarMultiplication},
-          {"testSecp256k1()", &testSecp256k1},
-          {"testS256SubClass()", &testS256SubClass},
-          {"testS256Verification()", &testS256Verification},
-          {"testBytesToInt512()", &testBytesToInt512},
-          {"testSignatureCreation()", &testSignatureCreation},
-          {"testFieldElementPointAddition()", &testFieldElementPointAddition}
-      };
+    struct Test_Suite test_suites[] = {
+        {"testIfPointsOnCurve()", &testIfPointsOnCurve},
+        {"testIfPointsNotOnCurve()", &testIfPointsNotOnCurve},
+        {"findOrderOfGroup()", &findOrderOfGroup},
+        {"testFieldElementPointScalarMultiplication()", &testFieldElementPointScalarMultiplication},
+        {"testSecp256k1()", &testSecp256k1},
+        {"testS256SubClass()", &testS256SubClass},
+        {"testS256Verification()", &testS256Verification},
+        {"testBytesToInt512()", &testBytesToInt512},
+        {"testSignatureCreation()", &testSignatureCreation},
+        {"testFieldElementPointAddition()", &testFieldElementPointAddition}
+    };
 
-      for (uint32_t i = 0; i < sizeof(test_suites)/sizeof(test_suites[0]); ++i) {
-          printf("testing %s...\n", test_suites[i].test_name);
-          if (test_suites[i].test_func() != 0) {
-              ++retval;
-              fprintf(stderr, "FAILED!!!\n");
-          }
-      }
+    for (uint32_t i = 0; i < sizeof(test_suites)/sizeof(test_suites[0]); ++i) {
+        printf("testing %s...\n", test_suites[i].test_name);
+        if (test_suites[i].test_func() != 0) {
+            ++retval;
+            fprintf(stderr, "FAILED!!!\n");
+        }
+    }
 
-      if (retval != 0) {
-          fprintf(stderr, "===== %d TEST(s) FAILED!!! =====\n", retval);
-      } else {
-          printf("All tests passed\n");
-      }
-      return retval;
+    if (retval != 0) {
+        fprintf(stderr, "===== %d TEST(s) FAILED!!! =====\n", retval);
+    } else {
+        printf("All tests passed\n");
+    }
+    return retval;
 }
