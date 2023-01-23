@@ -269,7 +269,10 @@ int test_script_parsing_and_serialization6_special_cases() {
         // Tx in block 500531
         "1f0333a307122f3538636f696e2e636f6d2f16205a3cfb3dbe4f0000d84e0100",
         // Tx in block 500000
-        "4b0320a107046f0a385a632f4254432e434f4d2ffabe6d6dbdd0ee86f9a1badfd0aa1b3c9dac8d90840cf973f7b2590d6c9adde1a6e0974a010000000000000001283da9a172020000000000"
+        "4b0320a107046f0a385a632f4254432e434f4d2ffabe6d6dbdd0ee86f9a1badfd0aa1b3c9dac8d90840cf973f7b2590d6c9adde1a6e0974a010000000000000001283da9a172020000000000",
+        // Tx in block 265458
+        "014c"
+
     };
     // Should be the scriptpubkey_asm or scriptsig_asm value from
     // blockstream.info
@@ -280,17 +283,19 @@ int test_script_parsing_and_serialization6_special_cases() {
         "OP_RETURN OP_PUSHDATA1 52534b424c4f434b3a3f6536dbb51cbe76519e0cd70480cf7f07da4ae2334cac402ef18329004681c4",
         // OP_PUSHDATA that pushes more bytes than available
         "OP_PUSHBYTES_3 d67e0b OP_PUSHBYTES_19 62696e616e63652f38303499008301359ed78e OP_RETURN_250 OP_RETURN_190 OP_2DROP OP_2DROP OP_RSHIFT OP_RETURN_254 OP_PUSHDATA4 <push past end>",
-        // OP_PUSHDATA only
+        // valid OP_PUSHDATA only
         "OP_PUSHDATA2",
         // OP_PUSHDATA that pushes nothing
         "OP_PUSHBYTES_3 acb70b OP_PUSHBYTES_17 627463636f6d383930e1023b025de50deb OP_RETURN_250 OP_RETURN_190 OP_2DROP OP_2DROP OP_PUSHBYTES_16 5d17bbc86f999c3b578d9696815d8bba OP_PUSHBYTES_19 2206863eceebaf339f9bbc01486b0400000000 OP_0 OP_0 OP_0 OP_0 OP_0 OP_WITHIN OP_RETURN_250 OP_PUSHDATA1 OP_0 OP_0 OP_0 OP_0 OP_0 OP_0",
         // Combination of <unexpected end> and less bytes for OP_PUSHDATA than expected
         "OP_PUSHBYTES_3 33a307 OP_PUSHBYTES_18 2f3538636f696e2e636f6d2f16205a3cfb3d OP_RETURN_190 OP_PUSHNUM_NEG1 OP_0 OP_0 OP_RETURN_216<unexpected end>",
         // <push past end> without OP_PUSHDATA
-        "OP_PUSHBYTES_3 20a107 OP_PUSHBYTES_4 6f0a385a OP_IF OP_PUSHBYTES_47 4254432e434f4d2ffabe6d6dbdd0ee86f9a1badfd0aa1b3c9dac8d90840cf973f7b2590d6c9adde1a6e0974a010000 OP_0 OP_0 OP_0 OP_0 OP_0 OP_PUSHBYTES_1 28 OP_PUSHBYTES_61 <push past end>"
+        "OP_PUSHBYTES_3 20a107 OP_PUSHBYTES_4 6f0a385a OP_IF OP_PUSHBYTES_47 4254432e434f4d2ffabe6d6dbdd0ee86f9a1badfd0aa1b3c9dac8d90840cf973f7b2590d6c9adde1a6e0974a010000 OP_0 OP_0 OP_0 OP_0 OP_0 OP_PUSHBYTES_1 28 OP_PUSHBYTES_61 <push past end>",
+        // OP_PUSHDATA followed by nothing
+        "<unexpected end>"
         
     };
-    const size_t expected_cmds_size[] = {9, 3, 10, 2, 23, 9, 11};
+    const size_t expected_cmds_size[] = {9, 3, 10, 2, 23, 9, 11, 2};
     // Should exclude the length of operand (e.g., OP_PUSHBYTES_3) but
     // include the last operand even if its length is not expected.
     char expected_str_outs[][32][2048] = {
@@ -300,8 +305,8 @@ int test_script_parsing_and_serialization6_special_cases() {
         {"4d", ""},
         {"acb70b", "627463636f6d383930e1023b025de50deb", "fa", "be", "6d", "6d", "5d17bbc86f999c3b578d9696815d8bba", "2206863eceebaf339f9bbc01486b0400000000", "00", "00", "00", "00", "00", "a5", "fa", "4c", "", "00", "00", "00", "00", "00", "00"},
         {"33a307", "2f3538636f696e2e636f6d2f16205a3cfb3d", "be", "4f", "00", "00", "d8", "4e", ""},
-        {"20a107", "6f0a385a", "63", "4254432e434f4d2ffabe6d6dbdd0ee86f9a1badfd0aa1b3c9dac8d90840cf973f7b2590d6c9adde1a6e0974a010000", "00", "00", "00", "00", "00", "28", "a9a172020000000000"}
-
+        {"20a107", "6f0a385a", "63", "4254432e434f4d2ffabe6d6dbdd0ee86f9a1badfd0aa1b3c9dac8d90840cf973f7b2590d6c9adde1a6e0974a010000", "00", "00", "00", "00", "00", "28", "a9a172020000000000"},
+        {"4c", ""}
     };
     for (size_t i = 0; i < sizeof(hex_str_in)/sizeof(hex_str_in[0]); ++i) {
         int retval = test_parsing_and_serialization_and_get_asm(hex_str_in[i],

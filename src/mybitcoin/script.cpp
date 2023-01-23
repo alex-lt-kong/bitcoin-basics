@@ -317,8 +317,12 @@ string Script::get_asm() {
                     // we need to dial back the "OP_PUSHDATA" opcode to match 
                     // its.
                     script_asm = script_asm.substr(
-                        0, script_asm.size() - strlen(" OP_PUSHDATA_ ")
+                        0, script_asm.size() - strlen("OP_PUSHDATA_ ")
                     );
+                    if (script_asm.size() > 0 && script_asm[script_asm.size() - 1] == ' ') {
+                        script_asm.pop_back();
+                    }
+
                     script_asm += "<unexpected end>";
                     continue;
                 } else if (get_nominal_operand_len_after_op_pushdata(
