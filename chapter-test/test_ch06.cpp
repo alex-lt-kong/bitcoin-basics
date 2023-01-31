@@ -268,9 +268,9 @@ int test_script_parsing_and_serialization6_special_cases() {
         "4e03acb70b11627463636f6d383930e1023b025de50debfabe6d6d105d17bbc86f999c3b578d9696815d8bba132206863eceebaf339f9bbc01486b04000000000000000000a5fa4c00000000000000",
         // Tx in block 500531
         "1f0333a307122f3538636f696e2e636f6d2f16205a3cfb3dbe4f0000d84e0100",
-        // Tx in block 500000
+        // Tx[0].inputs[0] in block 500000
         "4b0320a107046f0a385a632f4254432e434f4d2ffabe6d6dbdd0ee86f9a1badfd0aa1b3c9dac8d90840cf973f7b2590d6c9adde1a6e0974a010000000000000001283da9a172020000000000",
-        // Tx in block 265458
+        // Tx[1].outputs[2] in block 265458
         "014c"
 
     };

@@ -8,7 +8,7 @@ and it evolves to be a full-fledged bitcoin library.
 * It differs from Jimmy's book in many ways, including:
 
     1. The book's implementation is in Python, which hides a lot of interesting
-    (or gory if you prefer)details. This repo implements everything in C++--
+    (or gory if you prefer) details. This repo implements everything in C++--
     thus we can get down to the nitty-gritty of Bitcoin.
     1. The book's implementation includes minimal test cases, which only
     aim to demonstrate the basic idea of Bitcoin's design. These tests fail to
@@ -25,16 +25,23 @@ and it evolves to be a full-fledged bitcoin library.
     [libmycrypto](https://github.com/alex-lt-kong/libmycrypto) repo.
 
 * Other points to note:
-  * The book's analogy on ECDSA makes the thing even more difficult to understand, may use
-  [this](https://cryptobook.nakov.com/digital-signatures/ecdsa-sign-verify-messages) instead.
-  * The project is developed on little-endian architectures, some bitwise operations will definitely **not** work on big-endian architectures.
+  * The book's analogy on ECDSA makes the thing even more difficult to
+  understand, may use [this](https://cryptobook.nakov.com/digital-signatures/ecdsa-sign-verify-messages)
+  instead.
+  * The project is developed on little-endian architectures, some bitwise
+  operations will definitely **not** work on big-endian architectures.
   Fortunately, Intel, AMD and most ARM CPUs are little-endian.
 
-## Dependancies:
+## Dependencies
 
 * Boost for 256-bit integer support: `apt install libboost-all-dev` 
 * cURL for network communication: `apt-get install libcurl4-gnutls-dev`
 * [libmycrypto](https://github.com/alex-lt-kong/libmycrypto) for cryptographic algorithms.
+
+### Dev dependencies
+* [blockstream](https://blockstream.info/api/)'s RESTful API services, used to
+perform continuous testing.
+
 
 ## Repo structure
 
