@@ -102,5 +102,6 @@
     "criterion.h": "c"
   },
   "python.pythonPath": "/usr/bin/python3",
-  "C_Cpp.errorSquiggles": "Disabled"
+  "C_Cpp.errorSquiggles": "Disabled",
+  "jupyter.sendSelectionToInteractiveWindow": true
 }

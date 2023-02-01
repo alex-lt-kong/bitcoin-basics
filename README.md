@@ -39,7 +39,12 @@ and it evolves to be a full-fledged bitcoin library.
 * [libmycrypto](https://github.com/alex-lt-kong/libmycrypto) for cryptographic algorithms.
 
 ### Dev dependencies
-* [blockstream](https://blockstream.info/api/)'s RESTful API services, used to
+* [Bitcoin Core](https://github.com/bitcoin/bitcoin), the official Bitcoin
+client/library: used to perform continuous testing.
+  * As `bitcoind` is exposed to localhost by default, `rpcuser` and
+  `rpcpassword` are hard coded in this repo, one needs to set them
+  in [`bitcoin.conf` accordingly](https://manpages.org/bitcoinconf/5).
+* [blockstream](https://blockstream.info/api/)'s RESTful API services: used to
 perform continuous testing.
 
 
@@ -60,3 +65,7 @@ against the result from a Bitcoin blockchain explorer called
   * `script-test-driver.py`: Parse all Script components of Bitcoin blocks
   against Blockstream exlporer. Apache Kafka is supported to send real-time
   test results to any interested clients.
+
+## `bitcoin-cli` useful commands
+
+* Get transaction details by hash: `bitcoin-cli getblock <tx_hash> [0,1,2]`

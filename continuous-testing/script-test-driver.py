@@ -116,7 +116,7 @@ def main() -> None:
 
     height = since_block_height
     retry, max_retry = 0, 30
-    while height < latest_height:
+    while height <= latest_height:
 
         url_block_by_height = f'https://blockstream.info/api/block-height/{height}'        
         block_metadata = None
@@ -124,12 +124,12 @@ def main() -> None:
             f'Requesting transactions in the block {height} '
             f'through [{url_block_by_height}]'
         )
-        block_id = ''
+        block_hash = ''
         try:
             resp = requests.get(url_block_by_height)
-            block_id = resp.text
-            lgr.info(f'block_id fetched: {block_id}')
-            url_block_metadata = f'https://blockstream.info/api/block/{block_id}'
+            block_hash = resp.text
+            lgr.info(f'block_id fetched: {block_hash}')
+            url_block_metadata = f'https://blockstream.info/api/block/{block_hash}'
             lgr.info(f'HTTP GETing block metadata through {url_block_metadata}')
             resp = requests.get(url_block_metadata)
             block_metadata = resp.json()
@@ -159,7 +159,7 @@ def main() -> None:
         
         while total_idx < tx_count:
             paged_txes = None
-            paged_tx_url = f'https://blockstream.info/api/block/{block_id}/txs/{total_idx}'
+            paged_tx_url = f'https://blockstream.info/api/block/{block_hash}/txs/{total_idx}'
 
             try:                
                 lgr.info(f'HTTP GETing tx [{total_idx}, {total_idx+25}]through {paged_tx_url}')
