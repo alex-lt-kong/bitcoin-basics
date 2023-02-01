@@ -13,7 +13,7 @@ import subprocess
 import time
 import os
 
-test_program = os.path.join(os.path.dirname(__file__), 'script-test')
+test_program = os.path.join(os.path.dirname(__file__), 'tx-test')
 lgr = logging.getLogger()
 #stream_handler = logging.StreamHandler(sys.stdout)
 file_handler = logging.FileHandler('/var/log/bitcoin-internals/block-test.log')
@@ -168,9 +168,35 @@ def main() -> None:
         if resp.json()['result'] is None or  resp.json()['error'] is not None:
             raise RuntimeError(f'Failed to call bitcoind: {resp.text}')
         block_data = resp.json()['result']
-        print(f'block_data: {block_data}')
-        print(block_data)
+        for i in range(block_data['nTx']):
+            tx = block_data['tx'][i]
+            # print(f'tx: {json.dumps(tx, indent=4)}')
+            test_cmd = [test_program, tx['hex'], 'get_tx_in_count']
+            p = subprocess.Popen(
+                test_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
+            stdout, stderr = p.communicate()
+            retval = p.wait()
+            actual_tx_in_count = int(stdout.decode("utf8"))
+            expect_tx_in_count = len(tx["vin"])
+            if actual_tx_in_count != expect_tx_in_count:
+                raise ValueError(
+                    f'actual tx_in_count: {actual_tx_in_count}\n'
+                    f'expect tx_in_count: {expect_tx_in_count}\n'
+                )
+                
+            
+            test_cmd = [test_program, tx['hex'], 'get_tx_out_count']
+            p = subprocess.Popen(
+                test_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
+            stdout, stderr = p.communicate()
+            retval = p.wait()
+            actual_tx_out_count = int(stdout.decode("utf8"))
+            expect_tx_out_count = len(tx["vout"])
+            assert actual_tx_out_count == expect_tx_out_count
         height += 1
+
 
 
     lgr.info(f'All scripts are tested by [{test_program}] and no errors are reported')

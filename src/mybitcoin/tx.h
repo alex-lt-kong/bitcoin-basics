@@ -110,8 +110,8 @@ public:
   Tx(int version, vector<TxIn> tx_ins, vector<TxOut> tx_outs, unsigned int locktime, bool is_testnet);
   Tx();
   /**
-   * @brief Fill in the Tx instance by parsing bytes from a stringstream.
-   * @returns whether the stringstream is parsed successfully
+   * @brief Fill in the Tx instance by parsing bytes from a vector of bytes.
+   * @returns whether the vector is parsed successfully
    */
   bool parse(vector<uint8_t>& ss);
   /**
