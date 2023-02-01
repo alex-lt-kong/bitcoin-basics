@@ -37,6 +37,8 @@ and it evolves to be a full-fledged bitcoin library.
 * Boost for 256-bit integer support: `apt install libboost-all-dev` 
 * cURL for network communication: `apt install libcurl4-gnutls-dev`
 * [libmycrypto](https://github.com/alex-lt-kong/libmycrypto) for cryptographic algorithms.
+* `nlohmann-json` for JSON support: `apt install nlohmann-json3-dev`
+
 
 ### Dev dependencies
 * [Bitcoin Core](https://github.com/bitcoin/bitcoin), the official Bitcoin
@@ -46,8 +48,6 @@ client/library: used to perform continuous testing.
   in [`bitcoin.conf` accordingly](https://manpages.org/bitcoinconf/5).
 * [blockstream](https://blockstream.info/api/)'s RESTful API services: used to
 perform continuous testing.
-* `jsoncpp`, JSON support for interacting with Bitcoin Core's RPC protocol:
-`apt install libjsoncpp-dev`
 
 
 ## Repo structure

@@ -2,8 +2,11 @@
 #define UTILS_H
 
 #include <stdint.h>
-#include <boost/multiprecision/cpp_int.hpp>
 #include <vector>
+
+#include <curl/curl.h>
+#include <nlohmann/json.hpp>
+#include <boost/multiprecision/cpp_int.hpp>
 
 #include "mycrypto/sha256.h"
 #include "mycrypto/ripemd160.h"
@@ -11,6 +14,7 @@
 
 using namespace boost::multiprecision;
 using namespace std;
+using json = nlohmann::json;
 
 /**
  * @brief Convert a byte array to an int512_t integer
@@ -88,4 +92,13 @@ uint64_t read_variable_int(vector<uint8_t>& d);
  * @note the current implementation supports little-endian architectures only
 */
 uint8_t* encode_variable_int(const uint64_t num, size_t* int_len);
+
+/**
+ * @brief Make a local RPC to bitcoind
+ * @param post_data JSON object in string POSTed to bitcoind
+ * @returns JSON object returned by bitcoind
+ * @note for detailed documentation, refer to here:
+ * https://developer.bitcoin.org/reference/rpc/index.html
+*/
+json bitcoind_rpc(string post_data);
 #endif
