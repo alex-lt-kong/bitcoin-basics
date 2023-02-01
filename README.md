@@ -43,9 +43,16 @@ and it evolves to be a full-fledged bitcoin library.
 ### Dev dependencies
 * [Bitcoin Core](https://github.com/bitcoin/bitcoin), the official Bitcoin
 client/library: used to perform continuous testing.
+  * Its [`bitcoin.conf`](https://manpages.org/bitcoinconf/5) should at least contain:
+  ```
+  rpcpassword=rpcpassword
+  rpcuser=rpcuser
+  txindex=1
+  ```
   * As `bitcoind` is exposed to localhost by default, `rpcuser` and
-  `rpcpassword` are hard coded in this repo, one needs to set them
-  in [`bitcoin.conf` accordingly](https://manpages.org/bitcoinconf/5).
+  `rpcpassword` are hard coded in this repo.
+  * We need to invoke `bitcoin-cli getrawtransaction <tx_id>`, so we want
+  to enable transaction indexing.
 * [blockstream](https://blockstream.info/api/)'s RESTful API services: used to
 perform continuous testing.
 

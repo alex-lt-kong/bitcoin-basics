@@ -11,11 +11,6 @@
 
 using namespace std;
 
-struct CurlMemBufStruct {
-  uint8_t *buf;
-  size_t size;
-};
-
 class Tx;
 
 class TxOut {
@@ -83,7 +78,7 @@ public:
    * @brief Get the output value by looking up the Tx hash.
    * @returns the amount in Satoshi.
    */
-  uint64_t get_value(const bool testnet);
+  uint64_t get_value();
   ~TxIn();
 };
 
@@ -123,7 +118,7 @@ public:
    * Given the design of the REST API, a '\0' will always be appended to make d.data() null-terminated
    * @return 0 means success, otherwise error code.
    */
-  int static fetch_tx(const uint8_t tx_id[SHA256_HASH_SIZE], const bool testnet, vector<uint8_t>& d);
+  int static fetch_tx(const uint8_t tx_id[SHA256_HASH_SIZE], vector<uint8_t>& d);
   uint32_t get_version();
   uint32_t get_tx_in_count();
   uint32_t get_tx_out_count();
