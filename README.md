@@ -36,14 +36,14 @@ and it evolves to be a full-fledged bitcoin library.
 
 * Boost for 256-bit integer support: `apt install libboost-all-dev` 
 * cURL for network communication: `apt install libcurl4-gnutls-dev`
-* [libmycrypto](https://github.com/alex-lt-kong/libmycrypto) for cryptographic algorithms.
+* [libmycrypto](https://github.com/alex-lt-kong/libmycrypto) for cryptographic
+algorithms.
 * `nlohmann-json` for JSON support: `apt install nlohmann-json3-dev`
-
-
-### Dev dependencies
 * [Bitcoin Core](https://github.com/bitcoin/bitcoin), the official Bitcoin
-client/library: used to perform continuous testing.
-  * Its [`bitcoin.conf`](https://manpages.org/bitcoinconf/5) should at least contain:
+client/library: used to query previous transactions and perform continuous
+testing.
+  * Its [`bitcoin.conf`](https://manpages.org/bitcoinconf/5) should at least
+  contain:
   ```
   rpcpassword=rpcpassword
   rpcuser=rpcuser
@@ -53,6 +53,9 @@ client/library: used to perform continuous testing.
   `rpcpassword` are hard coded in this repo.
   * We need to invoke `bitcoin-cli getrawtransaction <tx_id>`, so we want
   to enable transaction indexing.
+
+### Dev dependencies
+
 * [blockstream](https://blockstream.info/api/)'s RESTful API services: used to
 perform continuous testing.
 

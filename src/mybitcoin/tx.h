@@ -76,7 +76,7 @@ public:
   uint32_t get_sequence();
   /**
    * @brief Get the output value by looking up the Tx hash.
-   * @returns the amount in Satoshi.
+   * @returns the amount in Satoshi or 0 in case of error
    */
   uint64_t get_value();
   ~TxIn();

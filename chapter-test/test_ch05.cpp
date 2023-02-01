@@ -297,7 +297,7 @@ int test_curl_fetch_mainnet() {
     Tx my_tx = Tx();
     char tx_id_hex[] = "b1d9ceea015b06c8753f48c0a04336719f00abbcecc5c1ed11a5c3005c587a0d";
     int64_t out_len;
-    uint8_t* tx_id = hex_string_to_bytes(tx_id_hex, &out_lentest_parse_fee1);
+    uint8_t* tx_id = hex_string_to_bytes(tx_id_hex, &out_len);
     vector<uint8_t> d(64);
     bool retval = Tx::fetch_tx(tx_id, d);
     char expected[] = "01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff0804ffff001d028102ffffffff0100f2052a01000000434104a9f28305bd247981dd2a49abca2d8602110931298185128b43d7bcaea4863b93b8850cddbb7179c73d0cdccbc1623fae51f4b50b0a73d33f68f3cbe61658d96dac00000000";
@@ -321,11 +321,14 @@ int test_curl_fetch_mainnet() {
 
 int test_parse_fee1() {
     int64_t input_len;
+    // txid: 02d97b91fe9a25ae4975658e9229730491c34dae86ce87c28aaf927b32d8270c in block 205994
     uint8_t* hex_input = hex_string_to_bytes(
-        "0100000001813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1000000006b483045022100ed81ff192e75a3fd2"
-        "304004dcadb746fa5e24c5031ccfcf21320b0277457c98f02207a986d955c6e0cb35d446a89d3f56100f4d7f67801c31967743a9c8e10615b"
-        "ed01210349fc4e631e3624a545de3f89f5d8684c7b8138bd94bdd531d2e213bf016b278afeffffff02a135ef01000000001976a914bc3b654"
-        "dca7e56b04dca18f2566cdaf02e8d9ada88ac99c39800000000001976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac19430600",
+        "01000000018568a1193f014dcfe68f3546391f9edd39f9001200c7e6d04a8d0484967b5faa000000008b483045022100ebfdadcc68e"
+        "b2f6cfbecbe6cdd0b187d5e5c847b5edc1f4428a20c14449a869502207a7ead44e7b02ce3cc85fe8df11895b6d9eb0f19dd1a77a671"
+        "0779552c2e350d014104144f87282d7d7007742a012ebcf5f665e050360accf9f3d5ac1a7c42ceb0c7cb4259800ed14ae742af6cbf6"
+        "97af48f8e45474f9daa735adfee72b8ac090b6598ffffffff0240787d01000000001976a91406f1b6703d3f56427bfcfd372f952d50"
+        "d04b64bd88ac688a6b01000000001976a91435235d510bd69d2981579f01da2ca669d9e26d5688ac00000000"
+        ,
         &input_len
     );
     vector<uint8_t> d(input_len);
@@ -335,7 +338,7 @@ int test_parse_fee1() {
     if (!my_tx.parse(d)) {
         return 1;
     }
-    if (my_tx.get_fee() != 40000u) {
+    if (my_tx.get_fee() != 50000u) {
         return 1;
     }
     return 0;
