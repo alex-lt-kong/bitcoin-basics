@@ -53,8 +53,15 @@ int main(int argc, char **argv) {
             memcpy(d.data(), input_bytes.get(), input_bytes_len);
             Tx my_tx = Tx();
             bool retval = my_tx.parse(d);
+            my_tx.get_locktime();
             if (retval == false) {
                 fprintf(stderr, "Tx.parse(d) failed");
+                return EXIT_FAILURE;
+            }
+            if (my_tx.get_version() != tx["version"]) {
+                fprintf(stderr, 
+                "Actual version: %u\nExpect version: %u",
+                my_tx.get_tx_in_count(), tx["version"].get<uint32_t>());
                 return EXIT_FAILURE;
             }
             if (my_tx.get_tx_in_count() != tx["vin"].size()) {
