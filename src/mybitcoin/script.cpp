@@ -253,7 +253,7 @@ int64_t Script::get_nominal_operand_len_after_op_pushdata(uint8_t opcode, vector
         return -1;
     }
     uint8_t buf[4] = {0};
-    if (nominal_operand_len_byte_count > byte_stream.size()) {
+    if ((size_t)nominal_operand_len_byte_count > byte_stream.size()) {
         nominal_operand_len_byte_count = byte_stream.size();
         fprintf(stderr, "Non-standard Script: push past end\n");
     }
@@ -312,7 +312,7 @@ string Script::get_asm() {
             }
             if (i == cmds.size() - 1) {
                 if (last_operand.size() < 
-                    (size_t)get_nominal_operand_len_byte_count_after_op_pushdata(cmds[i-1][0])) {
+                    get_nominal_operand_len_byte_count_after_op_pushdata(cmds[i-1][0])) {
                     // This is how blockstream.info handles this case:
                     // we need to dial back the "OP_PUSHDATA" opcode to match 
                     // its.

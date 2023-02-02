@@ -144,7 +144,6 @@ uint32_t TxIn::get_sequence() {
 uint64_t TxIn::get_value() {
     Tx tx = Tx();
     vector<uint8_t> d(64);
-    printf("this->get_prev_tx_id(): %s\n", bytes_to_hex_string(this->get_prev_tx_id(), SHA256_HASH_SIZE, false));
     if (Tx::fetch_tx(this->get_prev_tx_id(), d) != 0) {
         fprintf(stderr, "Failed to Tx::fetch() tx_id\n");
         return 0;

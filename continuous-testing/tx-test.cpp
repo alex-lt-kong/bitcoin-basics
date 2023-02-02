@@ -4,7 +4,7 @@
 
 #include <nlohmann/json.hpp>
 
-#include <mycrypto/misc.h>
+#include <mycrypto/misc.hpp>
 
 #include "mybitcoin/tx.h"
 #include "mybitcoin/script.h"
@@ -47,11 +47,10 @@ int main(int argc, char **argv) {
         for (int i = 0; i < data["result"]["nTx"]; ++i) {
             json tx = data["result"]["tx"][i];
             int64_t input_bytes_len;
-            uint8_t* input_bytes = hex_string_to_bytes(
-                tx["hex"].get<std::string>().c_str(), &input_bytes_len);
+            unique_byte_ptr input_bytes(hex_string_to_bytes(
+                tx["hex"].get<std::string>().c_str(), &input_bytes_len));
             vector<uint8_t> d(input_bytes_len);
-            memcpy(d.data(), input_bytes, input_bytes_len);
-            free(input_bytes);
+            memcpy(d.data(), input_bytes.get(), input_bytes_len);
             Tx my_tx = Tx();
             bool retval = my_tx.parse(d);
             if (retval == false) {
