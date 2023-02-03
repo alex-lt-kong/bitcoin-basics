@@ -21,14 +21,14 @@ bool Tx::parse(vector<uint8_t>& d) {
     version = (d[0] << 0 | d[1] << 8 | d[2] << 16 | d[3] << 24);
     d.erase(d.begin(), d.begin() + 4);
     tx_in_count = read_variable_int(d);
-    for (size_t i = 0; i < this->tx_in_count; ++i) {
+    for (size_t i = 0; i < tx_in_count; ++i) {
         TxIn tx_in = TxIn();
         if (!tx_in.parse(d)) {
             fprintf(stderr, "Tx::parse() failed: %lu-th tx_in.parse() failed. "
             "The Tx instance is corrupted\n", i);
             return false;
         }
-        this->tx_ins.push_back(tx_in);
+        tx_ins.push_back(tx_in);
     }
     tx_out_count = read_variable_int(d);
     for (size_t i = 0; i < tx_out_count; ++i) {
@@ -50,17 +50,6 @@ bool Tx::parse(vector<uint8_t>& d) {
 
 
 int Tx::fetch_tx(const uint8_t tx_id[SHA256_HASH_SIZE], vector<uint8_t>& d) {
-    unique_char_ptr tx_id_str(bytes_to_hex_string(
-        tx_id, SHA256_HASH_SIZE, false));
-    if (tx_id_str.get() == NULL) {
-        fprintf(stderr, "Failed to get tx_id string.\n");    
-        return 1;
-    }
-    if (strlen(tx_id_str.get()) != SHA256_HASH_SIZE * 2) {
-        fprintf(stderr, "Invalid tx_id string length: %lu\n",
-            strlen(tx_id_str.get()));
-        return 2;
-    }
     unique_char_ptr tx_id_hex(bytes_to_hex_string(
         tx_id, SHA256_HASH_SIZE, false));
     json data = bitcoind_rpc(
@@ -81,36 +70,36 @@ int Tx::fetch_tx(const uint8_t tx_id[SHA256_HASH_SIZE], vector<uint8_t>& d) {
 }
 
 uint32_t Tx::get_version() {
-    return this->version;
+    return version;
 }
 
 uint32_t Tx::get_tx_in_count() {
-    return this->tx_in_count;
+    return tx_in_count;
 }
 
 uint32_t Tx::get_tx_out_count() {
-    return this->tx_out_count;
+    return tx_out_count;
 }
 
 vector<TxIn> Tx::get_tx_ins() {
-    return this->tx_ins;
+    return tx_ins;
 }
 
 vector<TxOut> Tx::get_tx_outs() {
-    return this->tx_outs;
+    return tx_outs;
 }
 
 uint32_t Tx::get_locktime() {
-    return this->locktime;
+    return locktime;
 }
 
 uint32_t Tx::get_fee() {
     uint32_t input_sum = 0, output_sum = 0;
-    for (size_t i = 0; i < this->tx_in_count; ++i) {
-        input_sum += this->tx_ins[i].get_value();
+    for (size_t i = 0; i < tx_in_count; ++i) {
+        input_sum += tx_ins[i].get_value();
     }
-    for (size_t i = 0; i < this->tx_out_count; ++i) {
-        output_sum += this->tx_outs[i].get_amount();
+    for (size_t i = 0; i < tx_out_count; ++i) {
+        output_sum += tx_outs[i].get_amount();
     }
     return input_sum - output_sum;
 }
@@ -136,17 +125,17 @@ bool TxIn::parse(vector<uint8_t>& d) {
             "instance is corrupted\n", SHA256_HASH_SIZE, d.size());
         return false;
     }
-    memcpy(this->prev_tx_id, d.data(), SHA256_HASH_SIZE);
+    memcpy(prev_tx_id, d.data(), SHA256_HASH_SIZE);
     d.erase(d.begin(), d.begin() + SHA256_HASH_SIZE);
     
-    reverse(this->prev_tx_id, this->prev_tx_id + SHA256_HASH_SIZE);
+    reverse(prev_tx_id, prev_tx_id + SHA256_HASH_SIZE);
     if (d.size() < 4) {
         fprintf(stderr, "TxIn::parse() failed: byte vector doesn't contain "
             "expected number of bytes. \nExpect: 4\nActual: %lu\n. This TxIn "
             "instance is corrupted\n", d.size());
         return false;
     }
-    this->prev_tx_idx = (d[0] << 0 | d[1] << 8 | d[2] << 16 | d[3] << 24);
+    prev_tx_idx = (d[0] << 0 | d[1] << 8 | d[2] << 16 | d[3] << 24);
     d.erase(d.begin(), d.begin() + 4);
     uint64_t script_len = read_variable_int(d);
     d.erase(d.begin(), d.begin() + script_len);
@@ -158,28 +147,28 @@ bool TxIn::parse(vector<uint8_t>& d) {
             "instance is corrupted\n", d.size());
         return false;
     }
-    this->sequence = (d[0] << 0 | d[1] << 8 | d[2] << 16 | d[3] << 24);
+    sequence = (d[0] << 0 | d[1] << 8 | d[2] << 16 | d[3] << 24);
     d.erase(d.begin(), d.begin() + 4);
     // The sequence field doesn't appears to be useful for Bitcoin's operation now due to security concerns.
     return true;
 }
 
 uint8_t* TxIn::get_prev_tx_id() {
-    return this->prev_tx_id;
+    return prev_tx_id;
 }
 
 uint32_t TxIn::get_prev_tx_idx() {
-    return this->prev_tx_idx;
+    return prev_tx_idx;
 }
 
 uint32_t TxIn::get_sequence() {
-    return this->sequence;
+    return sequence;
 }
 
 uint64_t TxIn::get_value() {
     Tx tx = Tx();
     vector<uint8_t> d(64);
-    if (Tx::fetch_tx(this->get_prev_tx_id(), d) != 0) {
+    if (Tx::fetch_tx(get_prev_tx_id(), d) != 0) {
         fprintf(stderr, "Failed to Tx::fetch() tx_id\n");
         return 0;
     }
@@ -189,7 +178,7 @@ uint64_t TxIn::get_value() {
     memcpy(d.data(), hex_input.get(), hex_len);
     tx.parse(d);
     vector<TxOut> tx_outs = tx.get_tx_outs();
-    return tx_outs[this->get_prev_tx_idx()].get_amount();
+    return tx_outs[get_prev_tx_idx()].get_amount();
 }
 
 TxIn::~TxIn() {
@@ -207,7 +196,7 @@ void TxOut::parse(vector<uint8_t>& d) {
     uint8_t buf[8];
     memcpy(buf, d.data(), 8);
     d.erase(d.begin(), d.begin() + 8);
-    this->amount = (
+    amount = (
         buf[0] << 0 | buf[1] << 8 | buf[2] << 16 | buf[3] << 24
     );
     uint64_t script_len = read_variable_int(d);
@@ -217,7 +206,7 @@ void TxOut::parse(vector<uint8_t>& d) {
 }
 
 uint64_t TxOut::get_amount() {
-    return this->amount;
+    return amount;
 }
 
 uint8_t* serialize() {

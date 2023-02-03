@@ -49,7 +49,8 @@ bool fermat_primality_test(const int512_t input, const int iterations) {
     }
 
     boost::random::random_device gen;
-    boost::random::uniform_int_distribution<uint512_t> ui(1, (uint512_t)(input - 1));
+    boost::random::uniform_int_distribution<uint512_t> ui(1,
+        (uint512_t)(input - 1));
     int512_t x = -1;
     for (int i = 0; i < iterations; i++) {
         x = (int512_t)ui(gen);
@@ -105,20 +106,23 @@ char* encode_bytes_to_base58_string(const uint8_t* input_bytes,
     return buf1;
 }
 
-char* encode_base58_checksum(const uint8_t* input_bytes, const size_t input_len) {
+char* encode_base58_checksum(const uint8_t* input_bytes,
+    const size_t input_len) {
     // return encode_base58(b + hash256(b)[:4])
     uint8_t hash[SHA256_HASH_SIZE];
     cal_sha256_hash(input_bytes, input_len, hash);
     cal_sha256_hash(hash, SHA256_HASH_SIZE, hash);  
-    uint8_t base58_input[input_len + 4];
+    vector<uint8_t> base58_input(input_len + 4);
 
-    memcpy(base58_input, input_bytes, input_len);
-    memcpy(base58_input + input_len, hash, 4);
+    memcpy(base58_input.data(), input_bytes, input_len);
+    memcpy(base58_input.data() + input_len, hash, 4);
 
-    return encode_bytes_to_base58_string(base58_input, input_len + 4, true);
+    return encode_bytes_to_base58_string(base58_input.data(),
+        input_len + 4, true);
 }
 
-void hash160(const uint8_t* input_bytes, const size_t input_len, uint8_t* hash) {
+void hash160(const uint8_t* input_bytes, const size_t input_len,
+    uint8_t* hash) {
     uint8_t sha256_hash[SHA256_HASH_SIZE];
     cal_sha256_hash(input_bytes, input_len, sha256_hash);
     cal_rpiemd160_hash(sha256_hash, SHA256_HASH_SIZE, hash);
