@@ -13,9 +13,9 @@ Tx::Tx() {}
 
 bool Tx::parse(vector<uint8_t>& d) {
     if (d.size() < 4) {
-        fprintf(stderr, "byte vector doesn't contain expected number of bytes. "
-            "\nExpect: 4\nActual: %lu\nTx::parse() failed and the Tx instance "
-            "is corrupted\n", d.size());
+        fprintf(stderr, "Tx::parse() failed: byte vector doesn't contain "
+            "expected number of bytes. \nExpect: 4\nActual: %lu\nthe Tx "
+            "instance is corrupted\n", d.size());
         return false;
     }
     version = (d[0] << 0 | d[1] << 8 | d[2] << 16 | d[3] << 24);
@@ -23,7 +23,11 @@ bool Tx::parse(vector<uint8_t>& d) {
     tx_in_count = read_variable_int(d);
     for (size_t i = 0; i < this->tx_in_count; ++i) {
         TxIn tx_in = TxIn();
-        tx_in.parse(d);
+        if (!tx_in.parse(d)) {
+            fprintf(stderr, "Tx::parse() failed: %lu-th tx_in.parse() failed. "
+            "The Tx instance is corrupted\n", i);
+            return false;
+        }
         this->tx_ins.push_back(tx_in);
     }
     tx_out_count = read_variable_int(d);
@@ -36,9 +40,9 @@ bool Tx::parse(vector<uint8_t>& d) {
         locktime = (d[0] << 0 | d[1] << 8 | d[2] << 16 | d[3] << 24);
         d.erase(d.begin(), d.begin() + 4);
     } else {
-        fprintf(stderr, "byte vector doesn't contain expected number of bytes. "
-            "\nExpect: 4\nActual: %lu\nTx::parse() failed and the Tx instance "
-            "is corrupted\n", d.size());
+        fprintf(stderr, "Tx::parse() failed: byte vector doesn't contain "
+            "expected number of bytes.\nExpect: 4\nActual: %lu\nThe Tx "
+            "instance is corrupted\n", d.size());
         return false;
     }
     return true;
@@ -46,21 +50,25 @@ bool Tx::parse(vector<uint8_t>& d) {
 
 
 int Tx::fetch_tx(const uint8_t tx_id[SHA256_HASH_SIZE], vector<uint8_t>& d) {
-    char* tx_id_str = bytes_to_hex_string(tx_id, SHA256_HASH_SIZE, false);
-    if (tx_id_str == NULL) {
+    unique_char_ptr tx_id_str(bytes_to_hex_string(
+        tx_id, SHA256_HASH_SIZE, false));
+    if (tx_id_str.get() == NULL) {
         fprintf(stderr, "Failed to get tx_id string.\n");    
         return 1;
     }
-    if (strlen(tx_id_str) != SHA256_HASH_SIZE * 2) {
-        fprintf(stderr, "Invalid tx_id string length: %lu\n", strlen(tx_id_str));
-        free(tx_id_str);
+    if (strlen(tx_id_str.get()) != SHA256_HASH_SIZE * 2) {
+        fprintf(stderr, "Invalid tx_id string length: %lu\n",
+            strlen(tx_id_str.get()));
         return 2;
     }
-    char* tx_id_hex = bytes_to_hex_string(tx_id, SHA256_HASH_SIZE, false);
+    unique_char_ptr tx_id_hex(bytes_to_hex_string(
+        tx_id, SHA256_HASH_SIZE, false));
     json data = bitcoind_rpc(
-        R"({"jsonrpc": "1.0", "method": "getrawtransaction", "params": [")" +
-        string(tx_id_hex) + "\"]}");
-    free(tx_id_hex);
+        R"({
+            "jsonrpc": "1.0",
+            "method": "getrawtransaction",
+            "params": [")" + string(tx_id_hex.get()) + R"("]
+        })");
     if (data["result"].is_null()) {
         fprintf(stderr, "bitcoind_rpc() failed: %s\n", data.dump().c_str());
         return 3;
@@ -121,21 +129,39 @@ TxIn::TxIn(const uint8_t* prev_tx_id, uint32_t prev_tx_idx,
 
 TxIn::TxIn() {}
 
-void TxIn::parse(vector<uint8_t>& d) {
+bool TxIn::parse(vector<uint8_t>& d) {
+    if (d.size() < SHA256_HASH_SIZE) {
+        fprintf(stderr, "TxIn::parse() failed: byte vector doesn't contain "
+            "expected number of bytes. \nExpect: %d\nActual: %lu\n. This TxIn "
+            "instance is corrupted\n", SHA256_HASH_SIZE, d.size());
+        return false;
+    }
     memcpy(this->prev_tx_id, d.data(), SHA256_HASH_SIZE);
     d.erase(d.begin(), d.begin() + SHA256_HASH_SIZE);
     
     reverse(this->prev_tx_id, this->prev_tx_id + SHA256_HASH_SIZE);
-    
+    if (d.size() < 4) {
+        fprintf(stderr, "TxIn::parse() failed: byte vector doesn't contain "
+            "expected number of bytes. \nExpect: 4\nActual: %lu\n. This TxIn "
+            "instance is corrupted\n", d.size());
+        return false;
+    }
     this->prev_tx_idx = (d[0] << 0 | d[1] << 8 | d[2] << 16 | d[3] << 24);
     d.erase(d.begin(), d.begin() + 4);
     uint64_t script_len = read_variable_int(d);
     d.erase(d.begin(), d.begin() + script_len);
     // The parsing of script will be skipped for the time being.
 
+    if (d.size() < 4) {
+        fprintf(stderr, "TxIn::parse() failed: byte vector doesn't contain "
+            "expected number of bytes. \nExpect: 4\nActual: %lu\n. This TxIn "
+            "instance is corrupted\n", d.size());
+        return false;
+    }
     this->sequence = (d[0] << 0 | d[1] << 8 | d[2] << 16 | d[3] << 24);
     d.erase(d.begin(), d.begin() + 4);
     // The sequence field doesn't appears to be useful for Bitcoin's operation now due to security concerns.
+    return true;
 }
 
 uint8_t* TxIn::get_prev_tx_id() {

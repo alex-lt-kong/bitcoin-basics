@@ -62,8 +62,9 @@ public:
   TxIn();
   /**
    * @brief Fill in the TxIn instance by parsing bytes from a stringstream.
+   * @returns whether the vector is parsed to a TxIn successfully
    */
-  void parse(vector<uint8_t>& ss);
+  bool parse(vector<uint8_t>& d);
   /**
    * @brief get the ID of the previous transaction
    * @returns the ID of the previous transaction. As specified in Bitcoin's protocol, the ID is a SHA256_HASH
