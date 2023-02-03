@@ -80,4 +80,6 @@ against the result from a Bitcoin blockchain explorer called
 
 ## `bitcoin-cli` useful commands
 
-* Get transaction details by hash: `bitcoin-cli getblock <tx_hash> [0,1,2]`
+* Get block hash by block height: `bitcoin-cli getblockhash 481824`
+* Get block content by block hash: `bitcoin-cli getblock 0000000000000000001c8018d9cb3b742ef25114f27563e3fc4a1902167f9893 [0,1,2]`
+* Get transaction by transaction id: `bitcoin-cli getrawtransaction da917699942e4a96272401b534381a75512eeebe8403084500bd637bd47168b3`

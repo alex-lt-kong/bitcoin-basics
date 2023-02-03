@@ -76,8 +76,9 @@ char* encode_base58_checksum(const uint8_t* input_bytes, const size_t input_len)
 void hash160(const uint8_t* input_bytes, const size_t input_len, uint8_t* hash);
 
 /**
- * @brief Read a variable integer from a pointer
- * @param d a stringstream from which bytes will be read from.
+ * @brief Read a variable integer from a vector and then remove the read bytes
+ * from the vector
+ * @param d a vector from which bytes will be read from.
  * @returns the uint64 decoded from a variable integer
  * @note the current implementation supports little-endian architectures only
 */

@@ -184,16 +184,15 @@ int test_varint_encoding_decoding8() {
 int test_parse1() {
     int64_t input_len;
     // The input hex string is from the book
-    uint8_t* hex_input = hex_string_to_bytes(
+    unique_byte_ptr hex_input(hex_string_to_bytes(
         "0100000001813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1000000006b483045022100ed81ff192e75a3fd2"
         "304004dcadb746fa5e24c5031ccfcf21320b0277457c98f02207a986d955c6e0cb35d446a89d3f56100f4d7f67801c31967743a9c8e10615b"
         "ed01210349fc4e631e3624a545de3f89f5d8684c7b8138bd94bdd531d2e213bf016b278afeffffff02a135ef01000000001976a914bc3b654"
         "dca7e56b04dca18f2566cdaf02e8d9ada88ac99c39800000000001976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac19430600",
         &input_len
-    );
+    ));
     vector<uint8_t> d(input_len);
-    memcpy(d.data(), hex_input, input_len);
-    free(hex_input);    
+    memcpy(d.data(), hex_input.get(), input_len);
     Tx my_tx = Tx();
     my_tx.parse(d);
     if (my_tx.get_version() != 1u) {
@@ -239,7 +238,7 @@ int test_parse1() {
 
 int test_parse2() {
     int64_t input_len;
-    uint8_t* hex_input = hex_string_to_bytes(
+    unique_byte_ptr hex_input(hex_string_to_bytes(
         "010000000456919960ac691763688d3d3bcea9ad6ecaf875df5339e148a1fc61c6ed7a069e010000006a47304402204585bcdef85e6b1c6af"
         "5c2669d4830ff86e42dd205c0e089bc2a821657e951c002201024a10366077f87d6bce1f7100ad8cfa8a064b39d4e8fe4ea13a7b71aa8180f"
         "012102f0da57e85eec2934a82a585ea337ce2f4998b50ae699dd79f5880e253dafafb7feffffffeb8f51f4038dc17e6313cf831d4f02281c2"
@@ -253,10 +252,9 @@ int test_parse2() {
         "53a00882e563ff2722eb4cff0ad6006e86ee20dfe7520d55feffffff0251430f00000000001976a914ab0c0b2e98b1ab6dbf67d4750b0a562"
         "44948a87988ac005a6202000000001976a9143c82d7df364eb6c75be8c80df2b3eda8db57397088ac46430600",
         &input_len
-    );
+    ));
     vector<uint8_t> d(input_len);
-    memcpy(d.data(), hex_input, input_len);
-    free(hex_input);
+    memcpy(d.data(), hex_input.get(), input_len);
 
     Tx my_tx = Tx();
     my_tx.parse(d);
@@ -271,13 +269,12 @@ int test_parse2() {
 int test_parse3() {
     // txid: 50ef8c53f217198bbd50e77a7a080d3ccb46d08780cd8c2e270068026a60840b
     int64_t input_len;
-    uint8_t* hex_input = hex_string_to_bytes(
+    unique_byte_ptr hex_input(hex_string_to_bytes(
         "0100000004ed9bb5c1db8934939485b58f88f71b4977d58a9ef280dd45e29f8c177d080c2d010000006a473044022003cb49c9efd0f502e6ec41716b597ef6e6b007b6a9b7ebceb6c4419f3d98402d0220682899d703bd87a98b0b44ca617d1e9f68f3db13846b200fd36200157425ae5c012103481e3e7638e2c72f38a2cb21e81ac8206d9f2139c8376fca0a39c589ba0ae921ffffffffe58f1bee7f37ddf6ae23edfea86ab1e8f27331571dea7accc4258c26ed894d7d000000006a47304402206f0c159409be058069abb23fb8fedc165378ec50816fabbaa2b78519b0ba2e10022073e12cee385e6dda6b8b000f26f31f82c9ddd5488066a464b16f8c0642836fa50121031dfdd2c5618576996447ce0edbc3233ee7c278397dc586f9b33b72e87993cbf0ffffffffc5f0521022ac0d34d1002c64ebb42d425ae7bfc0d0a6b4fbed8ded7c7059d7b5010000006b483045022100ffba5b12f23c68ce456d128aa4117614b7a6441730eed2e6c60de5909f267046022024cd8fcfd12b14865bb781c3331bc20028f8aeeec5d89a7f7d32d68aaec5dbb3012103cd16e93c90bc8df69f714ad9e06cbb895062ac3546562a442d93fc757c156abfffffffff9ddc36c0b70c6ddf502aa18c8d622155ca93bd685deabe1b5b4cf82abf580950010000006a47304402202749576a899347ca6136e76f17390c91509393c23f412a731fc115fd8a77cd99022048536fcadc36d7ed67d2770ff602afd98d40225f5175640183e9d4e241c187b3012102df879c70e18abd9c40646b474d3c1520eb0fa7bc1e22d5f6e0ff02f34850771bffffffff02c4feef00000000001976a914129244290468fddfdf2f64abca98b7d687930baa88ac304cb7ee000000001976a914cabf367d97c39ffb8946273591bb40100c200a8d88ac00000000",
         &input_len
-    );
+    ));
     vector<uint8_t> d(input_len);
-    memcpy(d.data(), hex_input, input_len);
-    free(hex_input);
+    memcpy(d.data(), hex_input.get(), input_len);
 
     Tx my_tx = Tx();
     my_tx.parse(d);

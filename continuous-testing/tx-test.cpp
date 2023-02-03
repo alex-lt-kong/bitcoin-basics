@@ -23,26 +23,41 @@ int main(int argc, char **argv) {
     }
     int since_block_height = atoi(argv[1]);
 
-    string post_data = R"({"jsonrpc": "1.0", "method": "getbestblockhash", "params": []})";
+    string post_data = R"(
+        {"jsonrpc": "1.0", "method": "getbestblockhash", "params": []}
+    )";
     curl_global_init(CURL_GLOBAL_ALL);
     json data = bitcoind_rpc(post_data);
     string latest_block_hash = data["result"];
-    post_data = R"({"jsonrpc": "1.0", "method": "getblock", "params": [")" + latest_block_hash + "\"]}";
+    post_data = R"({
+        "jsonrpc": "1.0",
+        "method": "getblock",
+        "params": [")" + latest_block_hash + R"("]
+    })";
     
     data = bitcoind_rpc(post_data);
     int latest_height = data["result"]["height"];
 
-    cout << latest_block_hash << endl;
-    cout << latest_height << endl;
+    cout << "latest_block_hash: "<< latest_block_hash << endl;
+    cout << "latest_height: " << latest_height << endl;
 
     int block_height = since_block_height;
     while (block_height <= latest_height) {
-        post_data = R"({"jsonrpc": "1.0", "method": "getblockhash", "params": [)" + to_string(block_height) + "]}";    
+        post_data = R"({
+            "jsonrpc": "1.0", "method":
+            "getblockhash",
+            "params": [)" + to_string(block_height) +
+        "]}";    
         data = bitcoind_rpc(post_data);
         string block_hash = data["result"];
-        post_data = R"({"jsonrpc": "1.0", "method": "getblock", "params": [")" + block_hash + "\", 2]}";    
+        post_data = R"({
+            "jsonrpc": "1.0",
+            "method": "getblock",
+            "params": [")" + block_hash + R"(", 2]
+        })";
         data = bitcoind_rpc(post_data);
-        cout << "Testing block " << block_height << " (nTx: " << data["result"]["nTx"] << ")" << endl;
+        cout << "Testing block " << block_height
+             << " (nTx: " << data["result"]["nTx"] << ")" << endl;
         
         for (int i = 0; i < data["result"]["nTx"]; ++i) {
             json tx = data["result"]["tx"][i];
@@ -53,27 +68,26 @@ int main(int argc, char **argv) {
             memcpy(d.data(), input_bytes.get(), input_bytes_len);
             Tx my_tx = Tx();
             bool retval = my_tx.parse(d);
-            my_tx.get_locktime();
             if (retval == false) {
                 fprintf(stderr, "Tx.parse(d) failed");
                 return EXIT_FAILURE;
             }
             if (my_tx.get_version() != tx["version"]) {
                 fprintf(stderr, 
-                "Actual version: %u\nExpect version: %u",
-                my_tx.get_tx_in_count(), tx["version"].get<uint32_t>());
+                "%d-th tx:\nActual version: %u\nExpect version: %u",
+                i, my_tx.get_tx_in_count(), tx["version"].get<uint32_t>());
                 return EXIT_FAILURE;
             }
             if (my_tx.get_tx_in_count() != tx["vin"].size()) {
                 fprintf(stderr, 
-                "Actual tx_in_count: %u\nExpect tx_in_count: %lu",
-                my_tx.get_tx_in_count(), tx["vin"].size());
+                "%d-th tx:\nActual tx_in_count: %u\nExpect tx_in_count: %lu",
+                i, my_tx.get_tx_in_count(), tx["vin"].size());
                 return EXIT_FAILURE;
             }
             if (my_tx.get_tx_out_count() != tx["vout"].size()) {
                 fprintf(stderr, 
-                "Actual tx_out_count: %u\nExpect tx_out_count: %lu",
-                my_tx.get_tx_out_count(), tx["vout"].size());
+                "%d-th tx:\nActual tx_out_count: %u\nExpect tx_out_count: %lu",
+                i, my_tx.get_tx_out_count(), tx["vout"].size());
                 return EXIT_FAILURE;
             }
         }

@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <mycrypto/sha256.h>
+#include <mycrypto/misc.hpp>
 
 #include "utils.h"
 
