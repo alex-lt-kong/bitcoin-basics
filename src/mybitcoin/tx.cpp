@@ -12,14 +12,25 @@ Tx::Tx(int version, vector<TxIn> tx_ins, vector<TxOut> tx_outs,
 Tx::Tx() {}
 
 bool Tx::parse(vector<uint8_t>& d) {
-    if (d.size() < 4) {
-        fprintf(stderr, "Tx::parse() failed: byte vector doesn't contain "
-            "expected number of bytes. \nExpect: 4\nActual: %lu\nthe Tx "
-            "instance is corrupted\n", d.size());
+    // https://en.bitcoin.it/wiki/Protocol_documentation#tx
+    if (d.size() < 60) {
+        cerr << "Tx::parse() failed: byte vector doesn't contain "
+             << "expected number of bytes. \n"
+             << "Expect: >= 60\n"
+             << "Actual: " << d.size() << "\n"
+             << "the Tx instance is corrupted\n";
         return false;
     }
     version = (d[0] << 0 | d[1] << 8 | d[2] << 16 | d[3] << 24);
     d.erase(d.begin(), d.begin() + 4);
+
+    if (d[0] == 0 && d[1] == 1) {
+        // BIP141
+        witness_flag = true;
+        d.erase(d.begin(), d.begin() + 2);
+        cout << "witness flag set" << endl;
+    }
+
     tx_in_count = read_variable_int(d);
     for (size_t i = 0; i < tx_in_count; ++i) {
         TxIn tx_in = TxIn();
@@ -36,6 +47,18 @@ bool Tx::parse(vector<uint8_t>& d) {
         tx_out.parse(d);
         tx_outs.push_back(tx_out);
     }
+
+    if (witness_flag) {
+        witeness_count = read_variable_int(d);
+        witenesses = vector<vector<uint8_t>>(witeness_count);
+        for (size_t i = 0; i < witeness_count; ++i) {
+            size_t witeness_size = read_variable_int(d);
+            witenesses[i] = vector<uint8_t>(witeness_size);
+            memcpy(witenesses[i].data(), d.data(), witeness_size);
+            d.erase(d.begin(), d.begin() + witeness_size);
+        }
+    }
+
     if (d.size() == 4) {        
         locktime = (d[0] << 0 | d[1] << 8 | d[2] << 16 | d[3] << 24);
         d.erase(d.begin(), d.begin() + 4);

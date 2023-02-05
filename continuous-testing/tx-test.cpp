@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
             Tx my_tx = Tx();
             bool retval = my_tx.parse(d);
             if (retval == false) {
-                fprintf(stderr, "Tx.parse(d) failed");
+                cerr << "Tx.parse(d) failed" << endl;
                 return EXIT_FAILURE;
             }
             if (my_tx.get_version() != tx["version"]) {
