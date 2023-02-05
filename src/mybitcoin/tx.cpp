@@ -25,18 +25,17 @@ bool Tx::parse(vector<uint8_t>& d) {
     d.erase(d.begin(), d.begin() + 4);
 
     if (d[0] == 0 && d[1] == 1) {
-        // BIP141
+        // BIP141, first block with witness_flag enabled: 481824
         witness_flag = true;
         d.erase(d.begin(), d.begin() + 2);
-        cout << "witness flag set" << endl;
     }
 
     tx_in_count = read_variable_int(d);
     for (size_t i = 0; i < tx_in_count; ++i) {
         TxIn tx_in = TxIn();
         if (!tx_in.parse(d)) {
-            fprintf(stderr, "Tx::parse() failed: %lu-th tx_in.parse() failed. "
-            "The Tx instance is corrupted\n", i);
+            cerr << "Tx::parse() failed:" << i << "-th tx_in.parse() failed. "
+                 << "The Tx instance is corrupted\n";
             return false;
         }
         tx_ins.push_back(tx_in);
@@ -49,13 +48,32 @@ bool Tx::parse(vector<uint8_t>& d) {
     }
 
     if (witness_flag) {
-        witeness_count = read_variable_int(d);
-        witenesses = vector<vector<uint8_t>>(witeness_count);
-        for (size_t i = 0; i < witeness_count; ++i) {
-            size_t witeness_size = read_variable_int(d);
-            witenesses[i] = vector<uint8_t>(witeness_size);
-            memcpy(witenesses[i].data(), d.data(), witeness_size);
-            d.erase(d.begin(), d.begin() + witeness_size);
+        if (d.size() < tx_in_count) {
+            cerr << "Tx::parse() failed: byte vector doesn't contain "
+                << "expected number of bytes. \n"
+                << "Expect: >= " << tx_in_count << "\n"
+                << "Actual: " << d.size() << "\n"
+                << "the Tx instance is corrupted\n";
+            return false;
+        }
+        for (size_t i = 0; i < tx_in_count; ++i) {
+            witeness_count = read_variable_int(d);
+            witenesses = vector<vector<uint8_t>>(witeness_count);
+            if (d.size() < witeness_count * 2) {
+                // each witness needs one single-digit varint + a byte of data
+                cerr << "Tx::parse() failed: byte vector doesn't contain "
+                    << "expected number of bytes. \n"
+                    << "Expect: >= " << witeness_count * 2 << "\n"
+                    << "Actual: " << d.size() << "\n"
+                    << "the Tx instance is corrupted\n";
+                return false;
+            }
+            for (size_t j = 0; j < witeness_count; ++j) {
+                size_t witeness_size = read_variable_int(d);
+                witenesses[j] = vector<uint8_t>(witeness_size);
+                memcpy(witenesses[j].data(), d.data(), witeness_size);
+                d.erase(d.begin(), d.begin() + witeness_size);
+            }
         }
     }
 
