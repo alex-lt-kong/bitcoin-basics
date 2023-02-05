@@ -128,39 +128,41 @@ void hash160(const uint8_t* input_bytes, const size_t input_len,
     cal_rpiemd160_hash(sha256_hash, SHA256_HASH_SIZE, hash);
 }
 
-uint64_t read_variable_int(vector<uint8_t>& d) {
+bool read_variable_int(vector<uint8_t>& d, uint64_t* val) {
     // Per C standard, shifting by a negative value or a value greater than or equal to the number of bits of
     // the left operand is undefined. We need to cast the left operand to a bigger type of integer to make it work.
     // I believe prt[1] does not need to be casted, just casting it make the code a bit prettier... 
-
-    uint8_t buf[8] = {0}; // defining buf as char[] seems to trigger UB
-    buf[0] = d[0];
-    d.erase(d.begin());
-    
-    if (buf[0] == 0xfd) {
-        // the next two bytes are the number
-        memcpy(buf, d.data(), 2);
-        d.erase(d.begin(), d.begin() + 2);
-        return (buf[0] << 0) | (buf[1] << 8);
-    } else if (buf[0] == 0xfe) {
-        // the next four bytes are the number
-        memcpy(buf, d.data(), 4);
-        d.erase(d.begin(), d.begin() + 4);
-        return ((uint64_t)buf[0] << 0) | ((uint64_t)buf[1] << 8) | 
-            ((uint64_t)buf[2] << 16) | ((uint64_t)buf[3] << 24);
-    } else if (buf[0] == 0xff) {
-        // the next eight bytes are the number
-        memcpy(buf, d.data(), 8);
-        d.erase(d.begin(), d.begin() + 8);
-        return (
-        ((uint64_t)buf[1] << 0)  | ((uint64_t)buf[1] << 8)  | 
-        ((uint64_t)buf[2] << 16) | ((uint64_t)buf[3] << 24) |
-        ((uint64_t)buf[4] << 32) | ((uint64_t)buf[5] << 40) | 
-        ((uint64_t)buf[6] << 48) | ((uint64_t)buf[7] << 56)
-        );
-    } else {
-        return buf[0];
+    if (d.size() == 0) {
+        cerr << "Failed to read varint from vector: vector is empty\n";
+        return false;
     }
+    if (d[0] == 0xfd) {
+        // the next two bytes are the number      
+        *val = (d[1] << 0) | (d[2] << 8);
+        d.erase(d.begin(), d.begin() + 3);
+        return true;
+    } else if (d[0] == 0xfe) {
+        // the next four bytes are the number 
+        *val = ((uint64_t)d[1] << 0) | ((uint64_t)d[2] << 8) | 
+            ((uint64_t)d[3] << 16) | ((uint64_t)d[4] << 24);
+        d.erase(d.begin(), d.begin() + 5);
+        return true;
+    } else if (d[0] == 0xff) {
+        // the next eight bytes are the number        
+        *val = (
+        ((uint64_t)d[1] << 0)  | ((uint64_t)d[2] << 8)  | 
+        ((uint64_t)d[3] << 16) | ((uint64_t)d[4] << 24) |
+        ((uint64_t)d[5] << 32) | ((uint64_t)d[6] << 40) | 
+        ((uint64_t)d[7] << 48) | ((uint64_t)d[8] << 56)
+        );
+        d.erase(d.begin(), d.begin() + 9);
+        return true;
+    } else {
+        *val = d[0];
+        d.erase(d.begin(), d.begin() + 1);
+        return true;
+    }
+    return true;
 }
 
 uint8_t* encode_variable_int(const uint64_t num, size_t* int_len) {

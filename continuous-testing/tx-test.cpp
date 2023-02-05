@@ -73,21 +73,29 @@ int main(int argc, char **argv) {
                 return EXIT_FAILURE;
             }
             if (my_tx.get_version() != tx["version"]) {
-                fprintf(stderr, 
-                "%d-th tx:\nActual version: %u\nExpect version: %u",
-                i, my_tx.get_tx_in_count(), tx["version"].get<uint32_t>());
+                cerr << i << "-th tx:\n"
+                     << "Actual version: " << my_tx.get_version() << "\n"
+                     << "Expect version: " << tx["version"] << "\n";
+                return EXIT_FAILURE;
+            }
+            if (my_tx.get_locktime() != tx["locktime"]) {
+                cerr << i << "-th tx:\n"
+                     << "Actual locktime: " << my_tx.get_locktime() << "\n"
+                     << "Expect locktime: " << tx["locktime"] << "\n";
                 return EXIT_FAILURE;
             }
             if (my_tx.get_tx_in_count() != tx["vin"].size()) {
-                fprintf(stderr, 
-                "%d-th tx:\nActual tx_in_count: %u\nExpect tx_in_count: %lu",
-                i, my_tx.get_tx_in_count(), tx["vin"].size());
+                cerr << i << "-th tx:\n"
+                     << "Actual tx_in_count: " << my_tx.get_tx_in_count()
+                     << "\n"
+                     << "Expect tx_in_count: " << tx["vin"].size() << "\n";
                 return EXIT_FAILURE;
             }
             if (my_tx.get_tx_out_count() != tx["vout"].size()) {
-                fprintf(stderr, 
-                "%d-th tx:\nActual tx_out_count: %u\nExpect tx_out_count: %lu",
-                i, my_tx.get_tx_out_count(), tx["vout"].size());
+                cerr << i << "-th tx:\n"
+                     << "Actual tx_in_count: " << my_tx.get_tx_out_count()
+                     << "\n"
+                     << "Expect tx_in_count: " << tx["vout"].size() << "\n";
                 return EXIT_FAILURE;
             }
         }

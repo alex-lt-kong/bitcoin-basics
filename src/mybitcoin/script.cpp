@@ -124,7 +124,8 @@ vector<uint8_t> Script::serialize() {
 
 bool Script::parse(vector<uint8_t> byte_stream) {
     // https://en.bitcoin.it/wiki/Script
-    uint64_t script_len = read_variable_int(byte_stream);
+    uint64_t script_len;
+    read_variable_int(byte_stream, &script_len);
     size_t count = 0;
     uint8_t cb = 0; // current byte
     size_t actual_operand_len = 0;

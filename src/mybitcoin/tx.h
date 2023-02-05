@@ -46,42 +46,43 @@ private:
     uint8_t prev_tx_id[SHA256_HASH_SIZE];
     uint32_t prev_tx_idx;
     void* script_sig;
-    uint32_t sequence;
+    uint32_t sequence;    
 protected:
 public:
-  
-  /**
-   * @brief Constructor
-   * @param version
-   * @param tx_ins the memory will be managed by this Tx instance after being passed to it
-   * @param tx_outs the memory will be managed by this Tx instance after being passed to it
-   * @param locktime
-   * @param is_testnet
-   */
-  TxIn(const uint8_t* prev_tx_id, uint32_t prev_tx_idx, void* script_sig, uint32_t sequence);
-  TxIn();
-  /**
-   * @brief Fill in the TxIn instance by parsing bytes from a stringstream.
-   * @returns whether the vector is parsed to a TxIn successfully
-   */
-  bool parse(vector<uint8_t>& d);
-  /**
-   * @brief get the ID of the previous transaction
-   * @returns the ID of the previous transaction. As specified in Bitcoin's protocol, the ID is a SHA256_HASH
-   */
-  uint8_t* get_prev_tx_id();
-  /**
-   * @brief get the index of the previous transaction 
-   * (i.e., the transaction that specified by the previous transaction's ID)
-   */
-  uint32_t get_prev_tx_idx();
-  uint32_t get_sequence();
-  /**
-   * @brief Get the output value by looking up the Tx hash.
-   * @returns the amount in Satoshi or 0 in case of error
-   */
-  uint64_t get_value();
-  ~TxIn();
+    vector<vector<uint8_t>> witenesses;
+    /**
+     * @brief Constructor
+     * @param version
+     * @param tx_ins the memory will be managed by this Tx instance after being passed to it
+     * @param tx_outs the memory will be managed by this Tx instance after being passed to it
+     * @param locktime
+     * @param is_testnet
+     */
+    TxIn(const uint8_t* prev_tx_id, uint32_t prev_tx_idx, void* script_sig, uint32_t sequence);
+    TxIn();
+    /**
+     * @brief Fill in the TxIn instance by parsing bytes from a vector of bytes.
+     * Bytes read from the vector will be removed from it.
+     * @returns whether the vector is parsed to a TxIn successfully
+     */
+    bool parse(vector<uint8_t>& d);
+    /**
+     * @brief get the ID of the previous transaction
+     * @returns the ID of the previous transaction. As specified in Bitcoin's protocol, the ID is a SHA256_HASH
+     */
+    uint8_t* get_prev_tx_id();
+    /**
+     * @brief get the index of the previous transaction 
+     * (i.e., the transaction that specified by the previous transaction's ID)
+     */
+    uint32_t get_prev_tx_idx();
+    uint32_t get_sequence();
+    /**
+     * @brief Get the output value by looking up the Tx hash.
+     * @returns the amount in Satoshi or 0 in case of error
+     */
+    uint64_t get_value();
+    ~TxIn();
 };
 
 class Tx {
@@ -91,30 +92,26 @@ private:
     bool witness_flag = false;
     size_t tx_in_count = 0;
     size_t tx_out_count = 0;
-    size_t witeness_count = 0;
     vector<TxIn> tx_ins;
     vector<TxOut> tx_outs;
-    vector<vector<uint8_t>> witenesses;
-    uint32_t locktime = -1;
+    // Designed by Satoshi as a way to achieve "high-frequency" transaction
+    // but is later proved to be insecure, not in use.
+    uint32_t locktime = 0;
     bool is_testnet = false;
-    static size_t fetch_tx_cb(char *content, size_t size, size_t nmemb, void *userp);
 protected:
 public:
     /**
-     * @brief Constructor
-     * @param version
-     * @param tx_ins the memory will be managed by this Tx instance after being passed to it
-     * @param tx_outs the memory will be managed by this Tx instance after being passed to it
-     * @param locktime
-     * @param is_testnet
-     */
-    Tx(int version, vector<TxIn> tx_ins, vector<TxOut> tx_outs, unsigned int locktime, bool is_testnet);
+     * @brief Initialize an empty Transaction object. The object should usually
+     * be filled by calling Tx::parse() or optionally by copy from an existing
+     * Tx object.
+    */
     Tx();
     /**
      * @brief Fill in the Tx instance by parsing bytes from a vector of bytes.
+     * Bytes read from the vector will be removed from it.
      * @returns whether the vector is parsed successfully
      */
-    bool parse(vector<uint8_t>& ss);
+    bool parse(vector<uint8_t>& d);
     /**
      * @brief Fetch transaction data (essentially a series of bytes) from a remote URL and deliver them to a vector.
      * 

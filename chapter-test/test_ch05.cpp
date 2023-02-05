@@ -23,7 +23,7 @@ int test_varint_encoding_decoding1() {
         return 1;
     }
     memcpy(bytes.data(), var_int, int_len);
-    result = read_variable_int(bytes);
+    read_variable_int(bytes, &result);
     free(var_int);
     if (result != 0) {
         return 1;
@@ -48,7 +48,7 @@ int test_varint_encoding_decoding2() {
         }
     }
     memcpy(bytes.data(), var_int, int_len);
-    result = read_variable_int(bytes);
+    read_variable_int(bytes, &result);
     free(var_int);
     if (result != 1234) {
       return 1;
@@ -73,7 +73,7 @@ int test_varint_encoding_decoding4() {
         }
     }
     memcpy(bytes.data(), var_int, int_len);
-    result = read_variable_int(bytes);
+    read_variable_int(bytes, &result);
     free(var_int);
     if (result != 1048575) {
         return 1;
@@ -98,7 +98,7 @@ int test_varint_encoding_decoding5() {
         }
     }
     memcpy(bytes.data(), var_int, int_len);
-    result = read_variable_int(bytes);
+    read_variable_int(bytes, &result);
     free(var_int);
     if (result != 31415926) {
         return 1;
@@ -123,7 +123,7 @@ int test_varint_encoding_decoding6() {
         }
     }
     memcpy(bytes.data(), var_int, int_len);
-    result = read_variable_int(bytes);
+    read_variable_int(bytes, &result);
     free(var_int);
     if (result != 2147483648) {
         return 1;
@@ -148,7 +148,7 @@ int test_varint_encoding_decoding7() {
         }
     }
     memcpy(bytes.data(), var_int, int_len);
-    result = read_variable_int(bytes);
+    read_variable_int(bytes, &result);
     free(var_int);
     if (result != 4294967296) {
         return 1;
@@ -173,7 +173,7 @@ int test_varint_encoding_decoding8() {
         }
     }
     memcpy(bytes.data(), var_int, int_len);
-    result = read_variable_int(bytes);
+    read_variable_int(bytes, &result);
     free(var_int);
     if (result != 18446744073709551615u) {
         return 1;

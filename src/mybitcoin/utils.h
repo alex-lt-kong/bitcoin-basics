@@ -79,10 +79,11 @@ void hash160(const uint8_t* input_bytes, const size_t input_len, uint8_t* hash);
  * @brief Read a variable integer from a vector and then remove the read bytes
  * from the vector
  * @param d a vector from which bytes will be read from.
- * @returns the uint64 decoded from a variable integer
+ * @param val an int64_t pointer where result will be saved to
+ * @returns whether or not the decoding is a success
  * @note the current implementation supports little-endian architectures only
 */
-uint64_t read_variable_int(vector<uint8_t>& d);
+bool read_variable_int(vector<uint8_t>& d, uint64_t* val);
 
 /**
  * @brief Encode an uint64 to a variable integer

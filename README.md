@@ -61,7 +61,8 @@ testing.
 
 * [blockstream](https://blockstream.info/api/)'s RESTful API services: used to
 perform continuous testing.
-
+* `confluent_kafka` for Kafka client: `pip3 install confluent_kafka`
+* `pycryptodome` for Kafka encryption: `pip3 install pycryptodome`
 
 ## Repo structure
 

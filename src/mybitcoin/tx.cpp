@@ -1,14 +1,5 @@
 #include "tx.h"
 
-Tx::Tx(int version, vector<TxIn> tx_ins, vector<TxOut> tx_outs,
-    unsigned int locktime, bool is_testnet) {
-    this->version = version;
-    this->tx_ins = tx_ins;
-    this->tx_outs = tx_outs;
-    this->locktime = locktime;
-    this->is_testnet = is_testnet;
-}
-
 Tx::Tx() {}
 
 bool Tx::parse(vector<uint8_t>& d) {
@@ -30,7 +21,7 @@ bool Tx::parse(vector<uint8_t>& d) {
         d.erase(d.begin(), d.begin() + 2);
     }
 
-    tx_in_count = read_variable_int(d);
+    read_variable_int(d, &tx_in_count);
     for (size_t i = 0; i < tx_in_count; ++i) {
         TxIn tx_in = TxIn();
         if (!tx_in.parse(d)) {
@@ -40,7 +31,7 @@ bool Tx::parse(vector<uint8_t>& d) {
         }
         tx_ins.push_back(tx_in);
     }
-    tx_out_count = read_variable_int(d);
+    read_variable_int(d, &tx_out_count);
     for (size_t i = 0; i < tx_out_count; ++i) {
         TxOut tx_out = TxOut();
         tx_out.parse(d);
@@ -57,8 +48,9 @@ bool Tx::parse(vector<uint8_t>& d) {
             return false;
         }
         for (size_t i = 0; i < tx_in_count; ++i) {
-            witeness_count = read_variable_int(d);
-            witenesses = vector<vector<uint8_t>>(witeness_count);
+            size_t witeness_count;
+            read_variable_int(d, &witeness_count);
+            tx_ins[i].witenesses = vector<vector<uint8_t>>(witeness_count);
             if (d.size() < witeness_count * 2) {
                 // each witness needs one single-digit varint + a byte of data
                 cerr << "Tx::parse() failed: byte vector doesn't contain "
@@ -69,9 +61,10 @@ bool Tx::parse(vector<uint8_t>& d) {
                 return false;
             }
             for (size_t j = 0; j < witeness_count; ++j) {
-                size_t witeness_size = read_variable_int(d);
-                witenesses[j] = vector<uint8_t>(witeness_size);
-                memcpy(witenesses[j].data(), d.data(), witeness_size);
+                size_t witeness_size;
+                read_variable_int(d, &witeness_size);
+                tx_ins[i].witenesses[j] = vector<uint8_t>(witeness_size);
+                memcpy(tx_ins[i].witenesses[j].data(), d.data(), witeness_size);
                 d.erase(d.begin(), d.begin() + witeness_size);
             }
         }
@@ -178,7 +171,8 @@ bool TxIn::parse(vector<uint8_t>& d) {
     }
     prev_tx_idx = (d[0] << 0 | d[1] << 8 | d[2] << 16 | d[3] << 24);
     d.erase(d.begin(), d.begin() + 4);
-    uint64_t script_len = read_variable_int(d);
+    uint64_t script_len;
+    read_variable_int(d, &script_len);
     d.erase(d.begin(), d.begin() + script_len);
     // The parsing of script will be skipped for the time being.
 
@@ -240,7 +234,8 @@ void TxOut::parse(vector<uint8_t>& d) {
     amount = (
         buf[0] << 0 | buf[1] << 8 | buf[2] << 16 | buf[3] << 24
     );
-    uint64_t script_len = read_variable_int(d);
+    uint64_t script_len;
+    read_variable_int(d, &script_len);
 
     d.erase(d.begin(), d.begin() + script_len);
     // The parsing of script will be skipped for the time being.
