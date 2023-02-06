@@ -19,8 +19,8 @@ and it evolves to be a full-fledged bitcoin library.
     mainnet blockchain, making sure that it is fully compatible with Bitcoin
     in as we know in real life.
     1. The book's version of "Bitcoin" is not up-to-date and misses a few
-    patches to it, such as [BIP141](https://en.wikipedia.org/wiki/SegWit),
-    which are fully implemented in this repo.
+    patches to it, such as [BIP141](https://en.wikipedia.org/wiki/SegWit). They
+    are fully implemented in this repo.
     1. The book implements ECDSA only--all other cryptographic algorithms
     are from Python libraries. This repo does not use any third-party
     cryptography libraries. All the necessary cryptographic algorithms are
@@ -81,6 +81,8 @@ against the result from a Bitcoin blockchain explorer called
   * `script-test-driver.py`: Parse all Script components of Bitcoin blocks
   against Blockstream exlporer. Apache Kafka is supported to send real-time
   test results to any interested clients.
+  * `tx-text.cpp`: Parse transactions from Bitcoin blocks against Bitcoin Core's
+  `bitcoind` daemon.
 
 ## `bitcoin-cli` useful commands
 

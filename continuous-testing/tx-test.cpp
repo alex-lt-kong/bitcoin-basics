@@ -3,13 +3,11 @@
 #include <stdlib.h>
 
 #include <nlohmann/json.hpp>
-
 #include <mycrypto/misc.hpp>
 
 #include "mybitcoin/tx.h"
 #include "mybitcoin/script.h"
 #include "mybitcoin/utils.h"
-#include "script-test.h"
 
 
 using namespace std;

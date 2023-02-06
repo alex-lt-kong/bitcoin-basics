@@ -96,7 +96,10 @@ bool read_variable_int(vector<uint8_t>& d, uint64_t* val);
 uint8_t* encode_variable_int(const uint64_t num, size_t* int_len);
 
 /**
- * @brief Make a local RPC to bitcoind
+ * @brief Make a local RPC to bitcoind. Given the C nature of cURL, one must
+ * call `curl_global_init(CURL_GLOBAL_ALL)` exactly once before using this
+ * function and call `curl_global_cleanup()` exactly once before the end of
+ * the program.
  * @param post_data JSON object in string POSTed to bitcoind
  * @returns JSON object returned by bitcoind
  * @note for detailed documentation, refer to here:
