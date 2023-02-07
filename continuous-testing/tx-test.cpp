@@ -1,6 +1,7 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <vector>
 
 #include <nlohmann/json.hpp>
 #include <mycrypto/misc.hpp>
@@ -89,12 +90,45 @@ int main(int argc, char **argv) {
                      << "Expect tx_in_count: " << tx["vin"].size() << "\n";
                 return EXIT_FAILURE;
             }
+            
+            vector<TxIn> tx_ins = my_tx.get_tx_ins();
+            if (my_tx.get_tx_in_count() != tx_ins.size()) {
+                cerr << i << "-th tx:\n"
+                     << "get_tx_in_count(): " << my_tx.get_tx_in_count()
+                     << "\n"
+                     << "tx_ins.size(): " << tx_ins.size() << "\n";
+                return EXIT_FAILURE;
+            }
+            for (size_t j = 0; j < tx_ins.size(); ++j) {
+                if (tx_ins[j].get_sequence() != tx["vin"][j]["sequence"]) {
+                    cerr << i << "-th tx:\n"
+                         << "Actual value: " << tx_ins[j].get_sequence() << "\n"
+                         << "Expect value: " << tx["vin"][j]["sequence"] << "\n";
+                    return EXIT_FAILURE;
+                }
+            }
             if (my_tx.get_tx_out_count() != tx["vout"].size()) {
                 cerr << i << "-th tx:\n"
                      << "Actual tx_in_count: " << my_tx.get_tx_out_count()
                      << "\n"
                      << "Expect tx_in_count: " << tx["vout"].size() << "\n";
                 return EXIT_FAILURE;
+            }
+            vector<TxOut> tx_outs = my_tx.get_tx_outs();
+            if (my_tx.get_tx_out_count() != tx_outs.size()) {
+                cerr << i << "-th tx:\n"
+                     << "get_tx_out_count(): " << my_tx.get_tx_out_count()
+                     << "\n"
+                     << "tx_outs.size(): " << tx_outs.size() << "\n";
+                return EXIT_FAILURE;
+            }
+            for (size_t j = 0; j < tx_outs.size(); ++j) {
+              /*  if (tx_outs[j].get_value() != tx["vout"][j]["value"]) {
+                    cerr << i << "-th tx:\n"
+                         << "Actual value: " << tx_outs[j].get_amount() << "\n"
+                         << "Expect value: " << tx["vout"][j]["value"] << "\n";
+                    return EXIT_FAILURE;
+                }*/
             }
         }
         ++block_height;

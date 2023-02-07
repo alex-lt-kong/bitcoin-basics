@@ -2,6 +2,7 @@
 
 Tx::Tx() {}
 
+
 bool Tx::parse(vector<uint8_t>& d) {
     // https://en.bitcoin.it/wiki/Protocol_documentation#tx
     if (d.size() < 60) {
@@ -74,9 +75,11 @@ bool Tx::parse(vector<uint8_t>& d) {
         locktime = (d[0] << 0 | d[1] << 8 | d[2] << 16 | d[3] << 24);
         d.erase(d.begin(), d.begin() + 4);
     } else {
-        fprintf(stderr, "Tx::parse() failed: byte vector doesn't contain "
-            "expected number of bytes.\nExpect: 4\nActual: %lu\nThe Tx "
-            "instance is corrupted\n", d.size());
+        cerr << "Tx::parse() failed: byte vector doesn't contain "
+             << "expected number of bytes.\n"
+             << "Expect: 4\n"
+             << "Actual: " << d.size() << "\nThe Tx instance is corrupted"
+             << endl;
         return false;
     }
     return true;
@@ -93,7 +96,7 @@ int Tx::fetch_tx(const uint8_t tx_id[SHA256_HASH_SIZE], vector<uint8_t>& d) {
             "params": [")" + string(tx_id_hex.get()) + R"("]
         })");
     if (data["result"].is_null()) {
-        fprintf(stderr, "bitcoind_rpc() failed: %s\n", data.dump().c_str());
+        cerr << "bitcoind_rpc() failed: " << data.dump().c_str() << endl;
         return 3;
     }
     string tx_hex = data["result"].get<string>();
@@ -204,7 +207,7 @@ uint64_t TxIn::get_value() {
     Tx tx = Tx();
     vector<uint8_t> d(64);
     if (Tx::fetch_tx(get_prev_tx_id(), d) != 0) {
-        fprintf(stderr, "Failed to Tx::fetch() tx_id\n");
+        cerr << "Failed to Tx::fetch() tx_id\n";
         return 0;
     }
     int64_t hex_len;

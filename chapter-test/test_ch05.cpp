@@ -411,7 +411,7 @@ int main() {
         {"test_parse_fee3()", &test_parse_fee3}
         
     };
-
+    curl_global_init(CURL_GLOBAL_ALL);
     for (uint32_t i = 0; i < sizeof(test_suites)/sizeof(test_suites[0]); ++i) {
         printf("testing %s...\n", test_suites[i].test_name);
         if (test_suites[i].test_func() != 0) {
@@ -425,5 +425,6 @@ int main() {
     } else {
         printf("All tests passed\n");
     }
+    curl_global_cleanup();
     return retval;
 }

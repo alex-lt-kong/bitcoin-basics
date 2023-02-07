@@ -5,6 +5,7 @@
 #include <sstream>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdexcept>
 #include <mycrypto/sha256.h>
 #include <mycrypto/misc.hpp>
 
