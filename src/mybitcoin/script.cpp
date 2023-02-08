@@ -7,28 +7,27 @@ Script::Script() {}
 
 Script::Script(vector<uint8_t>& d) {
     // https://en.bitcoin.it/wiki/Script
-    uint64_t script_len = read_variable_int(d);
-    size_t count = 0;
+    uint64_t remaining_script_len = read_variable_int(d);
     uint8_t cb = 0; // current byte
     cmds.clear();
     is_opcode.clear();
     const char cmd_names[][13] = {"OP_PUSHDATA1", "OP_PUSHDATA2", "OP_PUSHDATA4"};
-    while (count < script_len) {
+    while (remaining_script_len > 0) {
         if (d.size() == 0) {
             throw invalid_argument("byte_stream ends unexpectedly");
         }
         cb = d[0];
         d.erase(d.begin());
-        ++ count;
+        -- remaining_script_len;
         if (cb >= 1 && cb <= 75) {
             // an ordinary element should be between 1 to 75 bytes. If cb is smaller then 75, it implies this component
             // is an ordinary element (i.e., an operand, not an opcode)
             uint8_t nominal_len = cb;
             uint8_t actual_len = cb;
-            if (actual_len > (script_len - count)) {
+            if (actual_len > remaining_script_len) {
                 // Will only enter this branch if the current operand is the last one.
                 fprintf(stderr, "Non-standard Script: push past end\n");
-                actual_len = (script_len - count);
+                actual_len = remaining_script_len;
             }
             last_operand = vector<uint8_t>(1 + actual_len);
             last_operand[0] = nominal_len;
@@ -50,7 +49,7 @@ Script::Script(vector<uint8_t>& d) {
             */
             cmds.push_back(cmd);
             is_opcode.push_back(false);
-            count += actual_len; // curr_byte stores the size of the operand
+            remaining_script_len -= actual_len; // curr_byte stores the size of the operand
         } else if (cb >= 76 && cb <= 78) {
             // 76,77,78 corresponds to OP_PUSHDATA1/OP_PUSHDATA2/OP_PUSHDATA4,
             // meaning that we read the next 1,2,4 bytes
@@ -58,23 +57,23 @@ Script::Script(vector<uint8_t>& d) {
             cmds.push_back(vector<uint8_t>{ cb });
             is_opcode.push_back(true);
             size_t OP_PUSHDATA_size = (
-                (script_len - count) > (size_t)get_nominal_operand_len_byte_count_after_op_pushdata(cb) ?
-                get_nominal_operand_len_byte_count_after_op_pushdata(cb) : (script_len - count)
+                remaining_script_len > (size_t)get_nominal_operand_len_byte_count_after_op_pushdata(cb) ?
+                get_nominal_operand_len_byte_count_after_op_pushdata(cb) : remaining_script_len
             );
             if (OP_PUSHDATA_size < get_nominal_operand_len_byte_count_after_op_pushdata(cb)) {
                 // Will only enter this branch if the coming operand is the last one.
                 // It also implies that OP_PUSHDATA pushes nothing at all! (as it has already reached the end of d.)
                 fprintf(stderr, "Non-standard Script: %lu too short for %s and "
-                        "it pushes no data at all\n", (script_len - count),
+                        "it pushes no data at all\n", remaining_script_len,
                         cmd_names[cb-76]);
             }
 
             size_t actual_operand_len = get_nominal_operand_len_after_op_pushdata(cb, d);            
-            if (actual_operand_len > (script_len - count) - OP_PUSHDATA_size) {
+            if (actual_operand_len > remaining_script_len - OP_PUSHDATA_size) {
                 // Though not explicitly put in if, program will only enter this
                 // branch if the coming operand is the last one.
                 fprintf(stderr, "Non-standard Script: push past end\n");
-                actual_operand_len = (script_len - count) - OP_PUSHDATA_size;
+                actual_operand_len = remaining_script_len - OP_PUSHDATA_size;
             }
 
             if (actual_operand_len > 520) {
@@ -98,7 +97,7 @@ Script::Script(vector<uint8_t>& d) {
             cmds.push_back(cmd);
             is_opcode.push_back(false);
             
-            count += last_operand.size();
+            remaining_script_len -= last_operand.size();
         } else {
             // otherwise it is an opcode
             vector<uint8_t> cmd{ cb };
