@@ -97,8 +97,8 @@ int main(int argc, char **argv) {
             for (size_t j = 0; j < tx_ins.size(); ++j) {
                 if (tx_ins[j].get_sequence() != tx["vin"][j]["sequence"]) {
                     cerr << i << "-th tx:\n"
-                         << "Actual value: " << tx_ins[j].get_sequence() << "\n"
-                         << "Expect value: " << tx["vin"][j]["sequence"] << "\n";
+                         << "Actual sequence: " << tx_ins[j].get_sequence() << "\n"
+                         << "Expect sequence: " << tx["vin"][j]["sequence"] << "\n";
                     return EXIT_FAILURE;
                 }
             }

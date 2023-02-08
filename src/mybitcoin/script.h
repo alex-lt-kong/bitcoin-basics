@@ -50,11 +50,6 @@ private:
 protected:
 public:
     /**
-     * @brief Initialize a Script instance by providing a vector of parsed 
-     * commands
-    */
-    Script(vector<vector<uint8_t>> cmds);
-    /**
      * @brief Initialize a Script instance by providing a vector of bytes and
      * remove the bytes being read from the vector. The first 2-4 bytes of
      * the vector shall indicate the length of the Script.

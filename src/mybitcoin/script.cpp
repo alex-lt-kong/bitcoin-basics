@@ -3,16 +3,11 @@
 #include "script.h"
 #include "utils.h"
 
-Script::Script(vector<vector<uint8_t>> cmds) {
-    this->cmds = cmds; // this makes a copy of cmds.
-}
-
 Script::Script() {}
 
 Script::Script(vector<uint8_t>& d) {
     // https://en.bitcoin.it/wiki/Script
-    uint64_t script_len;
-    script_len = read_variable_int(d);
+    uint64_t script_len = read_variable_int(d);
     size_t count = 0;
     uint8_t cb = 0; // current byte
     cmds.clear();
@@ -30,10 +25,10 @@ Script::Script(vector<uint8_t>& d) {
             // is an ordinary element (i.e., an operand, not an opcode)
             uint8_t nominal_len = cb;
             uint8_t actual_len = cb;
-            if (actual_len > d.size()) {
+            if (actual_len > (script_len - count)) {
                 // Will only enter this branch if the current operand is the last one.
                 fprintf(stderr, "Non-standard Script: push past end\n");
-                actual_len = d.size();
+                actual_len = (script_len - count);
             }
             last_operand = vector<uint8_t>(1 + actual_len);
             last_operand[0] = nominal_len;
@@ -63,23 +58,23 @@ Script::Script(vector<uint8_t>& d) {
             cmds.push_back(vector<uint8_t>{ cb });
             is_opcode.push_back(true);
             size_t OP_PUSHDATA_size = (
-                d.size() > (size_t)get_nominal_operand_len_byte_count_after_op_pushdata(cb) ?
-                get_nominal_operand_len_byte_count_after_op_pushdata(cb) : d.size()
+                (script_len - count) > (size_t)get_nominal_operand_len_byte_count_after_op_pushdata(cb) ?
+                get_nominal_operand_len_byte_count_after_op_pushdata(cb) : (script_len - count)
             );
             if (OP_PUSHDATA_size < get_nominal_operand_len_byte_count_after_op_pushdata(cb)) {
                 // Will only enter this branch if the coming operand is the last one.
                 // It also implies that OP_PUSHDATA pushes nothing at all! (as it has already reached the end of d.)
                 fprintf(stderr, "Non-standard Script: %lu too short for %s and "
-                        "it pushes no data at all\n", d.size(),
+                        "it pushes no data at all\n", (script_len - count),
                         cmd_names[cb-76]);
             }
 
             size_t actual_operand_len = get_nominal_operand_len_after_op_pushdata(cb, d);            
-            if (actual_operand_len > d.size() - OP_PUSHDATA_size) {
+            if (actual_operand_len > (script_len - count) - OP_PUSHDATA_size) {
                 // Though not explicitly put in if, program will only enter this
                 // branch if the coming operand is the last one.
                 fprintf(stderr, "Non-standard Script: push past end\n");
-                actual_operand_len = d.size() - OP_PUSHDATA_size;
+                actual_operand_len = (script_len - count) - OP_PUSHDATA_size;
             }
 
             if (actual_operand_len > 520) {

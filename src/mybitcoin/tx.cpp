@@ -35,8 +35,9 @@ Tx::Tx(vector<uint8_t>& d) {
 
     if (witness_flag) {
         if (d.size() < tx_in_count) {
-            throw invalid_argument(
-                "byte vector doesn't contain expected number of bytes");
+            throw invalid_argument("byte vector doesn't contain expected "
+                "number of bytes, expecting " + std::to_string(tx_in_count) +
+                " but gets " + std::to_string(d.size()));
         }
         for (size_t i = 0; i < tx_in_count; ++i) {
             size_t witeness_count = read_variable_int(d);
@@ -58,9 +59,12 @@ Tx::Tx(vector<uint8_t>& d) {
     if (d.size() == 4) {        
         locktime = (d[0] << 0 | d[1] << 8 | d[2] << 16 | d[3] << 24);
         d.erase(d.begin(), d.begin() + 4);
+    } else if (d.size() < 4) {
+        throw invalid_argument("byte vector doesn't contain expected number of "
+            "bytes, expecting 4 but gets " + std::to_string(d.size()));
     } else {
-        throw invalid_argument(
-            "byte vector doesn't contain expected number of bytes.");
+        cerr << "byte vector has extra bytes. "
+             << "This implies that something could be wrong" << endl;
     }
 }
 
@@ -139,9 +143,10 @@ TxIn::TxIn(vector<uint8_t>& d) {
         throw invalid_argument("byte vector doesn't contain expected number of "
             "bytes. Expect: 4, actual: " + to_string(d.size()) + ".");
     }
+
     prev_tx_idx = (d[0] << 0 | d[1] << 8 | d[2] << 16 | d[3] << 24);
-    
     d.erase(d.begin(), d.begin() + 4);
+
     script_sig = Script(d);
     if (d.size() < 4) {
         throw invalid_argument("byte vector doesn't contain expected number of "
