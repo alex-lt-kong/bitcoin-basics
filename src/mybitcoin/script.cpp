@@ -10,6 +10,113 @@ Script::Script(vector<vector<uint8_t>> cmds) {
 Script::Script() {}
 
 
+Script::Script(vector<uint8_t> byte_stream) {
+    // https://en.bitcoin.it/wiki/Script
+    uint64_t script_len;
+    read_variable_int(byte_stream, &script_len);
+    size_t count = 0;
+    uint8_t cb = 0; // current byte
+    size_t actual_operand_len = 0;
+    cmds.clear();
+    is_opcode.clear();
+    const char cmd_names[][13] = {"OP_PUSHDATA1", "OP_PUSHDATA2", "OP_PUSHDATA4"};
+    while (count < script_len) {
+        if (byte_stream.size() == 0) {
+            throw invalid_argument("byte_stream ends unexpectedly");
+        }
+        cb = byte_stream[0];
+        byte_stream.erase(byte_stream.begin());
+        ++ count;
+        if (cb >= 1 && cb <= 75) {
+            // an ordinary element should be between 1 to 75 bytes. If cb is smaller then 75, it implies this component
+            // is an ordinary element (i.e., an operand, not an opcode)
+            uint8_t nominal_len = cb;
+            uint8_t actual_len = cb;
+            if (actual_len > byte_stream.size()) {
+                // Will only enter this branch if the current operand is the last one.
+                fprintf(stderr, "Non-standard Script: push past end\n");
+                actual_len = byte_stream.size();
+            }
+            last_operand = vector<uint8_t>(1 + actual_len);
+            last_operand[0] = nominal_len;
+            vector<uint8_t> cmd(actual_len);
+            memcpy(cmd.data(), byte_stream.data(), actual_len);
+            memcpy(last_operand.data() + 1 * sizeof(uint8_t),
+                   byte_stream.data(), actual_len);
+            byte_stream.erase(byte_stream.begin(), byte_stream.begin() + actual_len);
+            
+            /*
+                What if actual_len == 0?
+                According to: https://en.cppreference.com/w/cpp/container/vector/erase
+                If last == end() prior to removal, then the updated end() iterator is returned.
+                If [first, last) is an empty range, then last is returned. 
+
+                end() returns an iterator referring to the past-the-end element in the vector container. The
+                past-the-end element is the theoretical element that would follow the last element in the vector.
+                It does not point to any element, and thus shall not be dereferenced. 
+
+                Therefore, it seems that actual_len == 0 and d.begin() == end() are both valid.
+            */
+            cmds.push_back(cmd);
+            is_opcode.push_back(false);
+            count += actual_len; // curr_byte stores the size of the operand
+        } else if (cb >= 76 && cb <= 78) {
+            // 76,77,78 corresponds to OP_PUSHDATA1/OP_PUSHDATA2/OP_PUSHDATA4,
+            // meaning that we read the next 1,2,4 bytes
+            // which, in little endian order, specify how many bytes the element has.
+            cmds.push_back(vector<uint8_t>{ cb });
+            is_opcode.push_back(true);
+            size_t OP_PUSHDATA_size = (
+                byte_stream.size() > (size_t)get_nominal_operand_len_byte_count_after_op_pushdata(cb) ?
+                get_nominal_operand_len_byte_count_after_op_pushdata(cb) : byte_stream.size()
+            );
+            if ((int)OP_PUSHDATA_size < get_nominal_operand_len_byte_count_after_op_pushdata(cb)) {
+                // Will only enter this branch if the coming operand is the last one.
+                // It also implies that OP_PUSHDATA pushes nothing at all! (as it has already reached the end of d.)
+                fprintf(stderr, "Non-standard Script: %lu too short for %s and "
+                        "it pushes no data at all\n", byte_stream.size(),
+                        cmd_names[cb-76]);
+            }
+
+            int64_t actual_operand_len = get_nominal_operand_len_after_op_pushdata(cb, byte_stream);            
+            if (actual_operand_len > byte_stream.size() - OP_PUSHDATA_size) {
+                // Though not explicitly put in if, program will only enter this
+                // branch if the coming operand is the last one.
+                fprintf(stderr, "Non-standard Script: push past end\n");
+                actual_operand_len = byte_stream.size() - OP_PUSHDATA_size;
+            }
+
+            if (actual_operand_len > 520) {
+                fprintf(stderr, "Non-standard Script: actual_operand_len > 520\n");
+                if (actual_operand_len > 4096) {
+                    throw invalid_argument("Non-standard Script: "
+                    "actual_operand_len > 4096");
+                }
+            }
+            last_operand = vector<uint8_t>(OP_PUSHDATA_size + actual_operand_len);
+            memcpy(last_operand.data(), byte_stream.data(), OP_PUSHDATA_size);
+            byte_stream.erase(byte_stream.begin(), 
+                              byte_stream.begin() + OP_PUSHDATA_size);
+            vector<uint8_t> cmd(actual_operand_len);
+            memcpy(cmd.data(), byte_stream.data(), actual_operand_len);
+            memcpy(last_operand.data() + OP_PUSHDATA_size * sizeof(uint8_t),
+                   byte_stream.data(), actual_operand_len);
+            byte_stream.erase(
+                byte_stream.begin(), byte_stream.begin() + actual_operand_len
+            );
+            cmds.push_back(cmd);
+            is_opcode.push_back(false);
+            
+            count += last_operand.size();
+        } else {
+            // otherwise it is an opcode
+            vector<uint8_t> cmd{ cb };
+            cmds.push_back(cmd);
+            is_opcode.push_back(true);
+        }
+    }
+}
+
 vector<uint8_t> Script::serialize() {
     vector<uint8_t> d(0);
     if (cmds.size() == 0) {
@@ -120,116 +227,6 @@ vector<uint8_t> Script::serialize() {
     }
     free(varint_bytes_size);
     return d;
-}
-
-bool Script::parse(vector<uint8_t> byte_stream) {
-    // https://en.bitcoin.it/wiki/Script
-    uint64_t script_len;
-    read_variable_int(byte_stream, &script_len);
-    size_t count = 0;
-    uint8_t cb = 0; // current byte
-    size_t actual_operand_len = 0;
-    cmds.clear();
-    is_opcode.clear();
-    const char cmd_names[][13] = {"OP_PUSHDATA1", "OP_PUSHDATA2", "OP_PUSHDATA4"};
-    while (count < script_len) {
-        if (byte_stream.size() == 0) {
-            fprintf(stderr, "Fatal: byte_stream ends unexpectedly\n");
-            return false;
-        }
-        cb = byte_stream[0];
-        byte_stream.erase(byte_stream.begin());
-        ++ count;
-        if (cb >= 1 && cb <= 75) {
-            // an ordinary element should be between 1 to 75 bytes. If cb is smaller then 75, it implies this component
-            // is an ordinary element (i.e., an operand, not an opcode)
-            uint8_t nominal_len = cb;
-            uint8_t actual_len = cb;
-            if (actual_len > byte_stream.size()) {
-                // Will only enter this branch if the current operand is the last one.
-                fprintf(stderr, "Non-standard Script: push past end\n");
-                actual_len = byte_stream.size();
-            }
-            last_operand = vector<uint8_t>(1 + actual_len);
-            last_operand[0] = nominal_len;
-            vector<uint8_t> cmd(actual_len);
-            memcpy(cmd.data(), byte_stream.data(), actual_len);
-            memcpy(last_operand.data() + 1 * sizeof(uint8_t),
-                   byte_stream.data(), actual_len);
-            byte_stream.erase(byte_stream.begin(), byte_stream.begin() + actual_len);
-            
-            /*
-                What if actual_len == 0?
-                According to: https://en.cppreference.com/w/cpp/container/vector/erase
-                If last == end() prior to removal, then the updated end() iterator is returned.
-                If [first, last) is an empty range, then last is returned. 
-
-                end() returns an iterator referring to the past-the-end element in the vector container. The
-                past-the-end element is the theoretical element that would follow the last element in the vector.
-                It does not point to any element, and thus shall not be dereferenced. 
-
-                Therefore, it seems that actual_len == 0 and d.begin() == end() are both valid.
-            */
-            cmds.push_back(cmd);
-            is_opcode.push_back(false);
-            count += actual_len; // curr_byte stores the size of the operand
-        } else if (cb >= 76 && cb <= 78) {
-            // 76,77,78 corresponds to OP_PUSHDATA1/OP_PUSHDATA2/OP_PUSHDATA4,
-            // meaning that we read the next 1,2,4 bytes
-            // which, in little endian order, specify how many bytes the element has.
-            cmds.push_back(vector<uint8_t>{ cb });
-            is_opcode.push_back(true);
-            size_t OP_PUSHDATA_size = (
-                byte_stream.size() > (size_t)get_nominal_operand_len_byte_count_after_op_pushdata(cb) ?
-                get_nominal_operand_len_byte_count_after_op_pushdata(cb) : byte_stream.size()
-            );
-            if ((int)OP_PUSHDATA_size < get_nominal_operand_len_byte_count_after_op_pushdata(cb)) {
-                // Will only enter this branch if the coming operand is the last one.
-                // It also implies that OP_PUSHDATA pushes nothing at all! (as it has already reached the end of d.)
-                fprintf(stderr, "Non-standard Script: %lu too short for %s and "
-                        "it pushes no data at all\n", byte_stream.size(),
-                        cmd_names[cb-76]);
-            }
-
-            int64_t actual_operand_len = get_nominal_operand_len_after_op_pushdata(cb, byte_stream);            
-            if (actual_operand_len > byte_stream.size() - OP_PUSHDATA_size) {
-                // Though not explicitly put in if, program will only enter this
-                // branch if the coming operand is the last one.
-                fprintf(stderr, "Non-standard Script: push past end\n");
-                actual_operand_len = byte_stream.size() - OP_PUSHDATA_size;
-            }
-
-            if (actual_operand_len > 520) {
-                fprintf(stderr, "Non-standard Script: actual_operand_len > 520\n");
-                if (actual_operand_len > 4096) {
-                    fprintf(stderr, "Non-standard Script: actual_operand_len "
-                            "> 4096, FATAL\n");
-                    return false;
-                }
-            }
-            last_operand = vector<uint8_t>(OP_PUSHDATA_size + actual_operand_len);
-            memcpy(last_operand.data(), byte_stream.data(), OP_PUSHDATA_size);
-            byte_stream.erase(byte_stream.begin(), 
-                              byte_stream.begin() + OP_PUSHDATA_size);
-            vector<uint8_t> cmd(actual_operand_len);
-            memcpy(cmd.data(), byte_stream.data(), actual_operand_len);
-            memcpy(last_operand.data() + OP_PUSHDATA_size * sizeof(uint8_t),
-                   byte_stream.data(), actual_operand_len);
-            byte_stream.erase(
-                byte_stream.begin(), byte_stream.begin() + actual_operand_len
-            );
-            cmds.push_back(cmd);
-            is_opcode.push_back(false);
-            
-            count += last_operand.size();
-        } else {
-            // otherwise it is an opcode
-            vector<uint8_t> cmd{ cb };
-            cmds.push_back(cmd);
-            is_opcode.push_back(true);
-        }
-    }
-    return true;
 }
 
 vector<vector<uint8_t>> Script::get_cmds() {

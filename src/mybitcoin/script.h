@@ -50,16 +50,18 @@ private:
         uint8_t opcode, vector<uint8_t> byte_stream);
 protected:
 public:
-    
-    Script(vector<vector<uint8_t>> cmds);
-    Script();
     /**
-     * @brief Fill in the Script instance by parsing bytes from a stringstream. Script object has an is_nonstandard 
-     * member variable, it will be set to true if parse() method consider the input bytes are non-standard.
-     * @param d a vector from which bytes will be read from. Passing NULL/nullptr triggers undefined behaviors
-     * @returns whether the stringstream is parsed successfully
-     */
-    bool parse(vector<uint8_t> d);
+     * @brief Initialize a Script instance by providing a vector of parsed 
+     * commands
+    */
+    Script(vector<vector<uint8_t>> cmds);
+    /**
+     * @brief Initialize a Script instance by providing a vector of bytes
+     * @param d a vector from which bytes will be read from. Passing
+     * NULL/nullptr triggers undefined behaviors
+    */
+    Script(vector<uint8_t> d);
+    Script();
     /**
      * @brief Generate a series of bytes representing the cmds we parse()
      * @returns a vector contains bytes or an empty vector on error. Error info will be sent to stderr.

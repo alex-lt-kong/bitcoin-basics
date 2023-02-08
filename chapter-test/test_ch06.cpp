@@ -22,12 +22,7 @@ int test_parsing_and_serialization_and_get_asm(const char* hex_str_in, const siz
     vector<uint8_t> d(input_len);
     memcpy(d.data(), hex_input, input_len);
     free(hex_input);
-    Script my_script = Script();
-    bool ret_val = my_script.parse(d);
-    if (ret_val != 1) {
-        fprintf(stderr, "parse() failed\n");
-        return 1;
-    }
+    Script my_script = Script(d);
     if (my_script.get_cmds().size() != expected_cmds_size) {
         fprintf(stderr, "get_cmds().size():\nActual: %lu\nExpect: %lu\n", my_script.get_cmds().size(), expected_cmds_size);
         return 1;

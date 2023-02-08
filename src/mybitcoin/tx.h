@@ -52,21 +52,10 @@ protected:
 public:
     vector<vector<uint8_t>> witenesses;
     /**
-     * @brief Constructor
-     * @param version
-     * @param tx_ins the memory will be managed by this Tx instance after being passed to it
-     * @param tx_outs the memory will be managed by this Tx instance after being passed to it
-     * @param locktime
-     * @param is_testnet
+     * @brief Initialize a TxIn instance from a vector of bytes
      */
-    TxIn(const uint8_t* prev_tx_id, uint32_t prev_tx_idx, void* script_sig, uint32_t sequence);
+    TxIn(vector<uint8_t>& d);
     TxIn();
-    /**
-     * @brief Fill in the TxIn instance by parsing bytes from a vector of bytes.
-     * Bytes read from the vector will be removed from it.
-     * @returns whether the vector is parsed to a TxIn successfully
-     */
-    bool parse(vector<uint8_t>& d);
     /**
      * @brief get the ID of the previous transaction
      * @returns the ID of the previous transaction. As specified in Bitcoin's protocol, the ID is a SHA256_HASH
