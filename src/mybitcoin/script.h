@@ -32,10 +32,9 @@ private:
      * the number of bytes, not the value represented by these bytes.
      * For example, 0x02 is one-byte long but it represents 2.
      * @param opcode opcode, can only be 76, 77 or 78 per Bitcoin's specs
-     * @returns the number of bytes used to store operand's length
-     * (i.e., 1, 2 or 4) or -1 if an invalid opcode is passed
+     * @throws invalid_argument if opcode is not among 76, 77, 78
     */
-    int get_nominal_operand_len_byte_count_after_op_pushdata(uint8_t opcode);
+    size_t get_nominal_operand_len_byte_count_after_op_pushdata(uint8_t opcode);
     /**
      * @brief Get the nominal operand len after an OP_PUSHDATA opcode, EXcluding
      * the bytes used to store the length of the operand
@@ -43,10 +42,10 @@ private:
      * @param opcode can only be 76, 77 or 78 per Bitcoin's specs
      * @param byte_stream the raw bytes series, can be shorter than specified
      * by Bitcoin's spec.
-     * @return the nominal length of the operand or -1 if an invalid opcode is 
-     * passed.
+     * @return the nominal length of the operand
+     * @throws invalid_argument if opcode is not among 76, 77, 78
      */
-    int64_t get_nominal_operand_len_after_op_pushdata(
+    size_t get_nominal_operand_len_after_op_pushdata(
         uint8_t opcode, vector<uint8_t> byte_stream);
 protected:
 public:

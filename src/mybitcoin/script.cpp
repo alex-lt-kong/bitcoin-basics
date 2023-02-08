@@ -16,7 +16,6 @@ Script::Script(vector<uint8_t> byte_stream) {
     read_variable_int(byte_stream, &script_len);
     size_t count = 0;
     uint8_t cb = 0; // current byte
-    size_t actual_operand_len = 0;
     cmds.clear();
     is_opcode.clear();
     const char cmd_names[][13] = {"OP_PUSHDATA1", "OP_PUSHDATA2", "OP_PUSHDATA4"};
@@ -70,7 +69,7 @@ Script::Script(vector<uint8_t> byte_stream) {
                 byte_stream.size() > (size_t)get_nominal_operand_len_byte_count_after_op_pushdata(cb) ?
                 get_nominal_operand_len_byte_count_after_op_pushdata(cb) : byte_stream.size()
             );
-            if ((int)OP_PUSHDATA_size < get_nominal_operand_len_byte_count_after_op_pushdata(cb)) {
+            if (OP_PUSHDATA_size < get_nominal_operand_len_byte_count_after_op_pushdata(cb)) {
                 // Will only enter this branch if the coming operand is the last one.
                 // It also implies that OP_PUSHDATA pushes nothing at all! (as it has already reached the end of d.)
                 fprintf(stderr, "Non-standard Script: %lu too short for %s and "
@@ -78,7 +77,7 @@ Script::Script(vector<uint8_t> byte_stream) {
                         cmd_names[cb-76]);
             }
 
-            int64_t actual_operand_len = get_nominal_operand_len_after_op_pushdata(cb, byte_stream);            
+            size_t actual_operand_len = get_nominal_operand_len_after_op_pushdata(cb, byte_stream);            
             if (actual_operand_len > byte_stream.size() - OP_PUSHDATA_size) {
                 // Though not explicitly put in if, program will only enter this
                 // branch if the coming operand is the last one.
@@ -237,28 +236,25 @@ vector<bool> Script::get_is_opcode() {
     return is_opcode;
 }
 
-int Script::get_nominal_operand_len_byte_count_after_op_pushdata(uint8_t opcode) {
+size_t Script::get_nominal_operand_len_byte_count_after_op_pushdata(uint8_t opcode) {
     const size_t operand_lengths[] = {1, 2, 4};
     if (opcode < 76 || opcode > 78) {
-        return -1;
+        throw invalid_argument("Invalid opcode: " + to_string(opcode));
     }
     return operand_lengths[opcode - 76];
 }
 
-int64_t Script::get_nominal_operand_len_after_op_pushdata(uint8_t opcode, vector<uint8_t> byte_stream) {
-    int nominal_operand_len_byte_count = get_nominal_operand_len_byte_count_after_op_pushdata(opcode);
-    if (nominal_operand_len_byte_count == -1) {
-        return -1;
-    }
+uint64_t Script::get_nominal_operand_len_after_op_pushdata(uint8_t opcode, vector<uint8_t> byte_stream) {
+    
+    size_t nominal_operand_len_byte_count = get_nominal_operand_len_byte_count_after_op_pushdata(opcode);
     uint8_t buf[4] = {0};
-    if ((size_t)nominal_operand_len_byte_count > byte_stream.size()) {
+    if (nominal_operand_len_byte_count > byte_stream.size()) {
         nominal_operand_len_byte_count = byte_stream.size();
         fprintf(stderr, "Non-standard Script: push past end\n");
     }
     memcpy(buf, byte_stream.data(), nominal_operand_len_byte_count);
-    // OP_PUSHDATA_size == 0 and byte_stream.begin() == end() are both valid.   
-    int64_t nominal_operand_len = buf[0] << 0 | buf[1] << 8 | buf[2] << 16 | buf[3] << 24;
-    return nominal_operand_len;
+    // OP_PUSHDATA_size == 0 and byte_stream.begin() == end() are both valid.
+    return buf[0] << 0 | buf[1] << 8 | buf[2] << 16 | buf[3] << 24;
 }
 
 string Script::get_asm() {
