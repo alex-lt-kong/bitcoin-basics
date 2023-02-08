@@ -583,7 +583,7 @@ int512_t ECDSAKey::get_deterministic_k(uint8_t* msgHashBytes, size_t msgHashLen)
     hmac_sha256(kBytes, SHA256_HASH_SIZE, vBytes, SHA256_HASH_SIZE, vBytes);
     int512_t candidate = get_int512_from_bytes(vBytes, SHA256_HASH_SIZE);
     if (candidate >= 1 && candidate < G.order()) {
-      delete[] data;
+      free(data);
       return candidate;
     }
     cout << "\n\n\n=====WARNING=====\nThis is a route that seldom tested, result may well be wrong!!\n\n\n" << endl;
