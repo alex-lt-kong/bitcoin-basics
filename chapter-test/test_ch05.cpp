@@ -23,7 +23,7 @@ int test_varint_encoding_decoding1() {
         return 1;
     }
     memcpy(bytes.data(), var_int, int_len);
-    read_variable_int(bytes, &result);
+    result = read_variable_int(bytes);
     free(var_int);
     if (result != 0) {
         return 1;
@@ -48,7 +48,7 @@ int test_varint_encoding_decoding2() {
         }
     }
     memcpy(bytes.data(), var_int, int_len);
-    read_variable_int(bytes, &result);
+    result = read_variable_int(bytes);
     free(var_int);
     if (result != 1234) {
       return 1;
@@ -73,7 +73,7 @@ int test_varint_encoding_decoding4() {
         }
     }
     memcpy(bytes.data(), var_int, int_len);
-    read_variable_int(bytes, &result);
+    result = read_variable_int(bytes);
     free(var_int);
     if (result != 1048575) {
         return 1;
@@ -98,7 +98,7 @@ int test_varint_encoding_decoding5() {
         }
     }
     memcpy(bytes.data(), var_int, int_len);
-    read_variable_int(bytes, &result);
+    result = read_variable_int(bytes);
     free(var_int);
     if (result != 31415926) {
         return 1;
@@ -123,7 +123,7 @@ int test_varint_encoding_decoding6() {
         }
     }
     memcpy(bytes.data(), var_int, int_len);
-    read_variable_int(bytes, &result);
+    result = read_variable_int(bytes);
     free(var_int);
     if (result != 2147483648) {
         return 1;
@@ -148,7 +148,7 @@ int test_varint_encoding_decoding7() {
         }
     }
     memcpy(bytes.data(), var_int, int_len);
-    read_variable_int(bytes, &result);
+    result = read_variable_int(bytes);
     free(var_int);
     if (result != 4294967296) {
         return 1;
@@ -173,7 +173,7 @@ int test_varint_encoding_decoding8() {
         }
     }
     memcpy(bytes.data(), var_int, int_len);
-    read_variable_int(bytes, &result);
+    result = read_variable_int(bytes);
     free(var_int);
     if (result != 18446744073709551615u) {
         return 1;
@@ -191,10 +191,13 @@ int test_parse1() {
         "dca7e56b04dca18f2566cdaf02e8d9ada88ac99c39800000000001976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac19430600",
         &input_len
     ));
+    if (hex_input == NULL) {     
+        return 1;
+    }
+    
     vector<uint8_t> d(input_len);
     memcpy(d.data(), hex_input.get(), input_len);
-    Tx my_tx = Tx();
-    my_tx.parse(d);
+    Tx my_tx = Tx(d);
     if (my_tx.get_version() != 1u) {
         return 1;
     }
@@ -256,8 +259,7 @@ int test_parse2() {
     vector<uint8_t> d(input_len);
     memcpy(d.data(), hex_input.get(), input_len);
 
-    Tx my_tx = Tx();
-    my_tx.parse(d);
+    Tx my_tx = Tx(d);
 
     vector<TxOut> tx_outs = my_tx.get_tx_outs();
     if (tx_outs[1].get_amount() != 40000000u) {
@@ -276,8 +278,7 @@ int test_parse3() {
     vector<uint8_t> d(input_len);
     memcpy(d.data(), hex_input.get(), input_len);
 
-    Tx my_tx = Tx();
-    my_tx.parse(d);
+    Tx my_tx = Tx(d);
 
     vector<TxOut> tx_outs = my_tx.get_tx_outs();
     if (tx_outs.size() != 2) {
@@ -330,10 +331,7 @@ int test_parse_fee1() {
     vector<uint8_t> d(input_len);
     memcpy(d.data(), hex_input.get(), input_len);
 
-    Tx my_tx = Tx();
-    if (!my_tx.parse(d)) {
-        return 1;
-    }
+    Tx my_tx = Tx(d);
     if (my_tx.get_fee() != 50000u) {
         return 1;
     }
@@ -360,8 +358,7 @@ int test_parse_fee2() {
     ));
     vector<uint8_t> d(input_len);
     memcpy(d.data(), hex_input.get(), input_len);
-    Tx my_tx = Tx();
-    my_tx.parse(d);    
+    Tx my_tx = Tx(d);    
     if (my_tx.get_fee() != 140500u) {
         return 1;
     }
@@ -378,8 +375,7 @@ int test_parse_fee3() {
     vector<uint8_t> d(input_len);
     memcpy(d.data(), hex_input.get(), input_len);
 
-    Tx my_tx = Tx();
-    my_tx.parse(d);    
+    Tx my_tx = Tx(d);    
     if (my_tx.get_fee() != 30000u) {
         return 1;
     }

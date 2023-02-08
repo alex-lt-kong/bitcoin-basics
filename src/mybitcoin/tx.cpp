@@ -3,15 +3,11 @@
 Tx::Tx() {}
 
 
-bool Tx::parse(vector<uint8_t>& d) {
+Tx::Tx(vector<uint8_t>& d) {
     // https://en.bitcoin.it/wiki/Protocol_documentation#tx
     if (d.size() < 60) {
-        cerr << "Tx::parse() failed: byte vector doesn't contain "
-             << "expected number of bytes. \n"
-             << "Expect: >= 60\n"
-             << "Actual: " << d.size() << "\n"
-             << "the Tx instance is corrupted\n";
-        return false;
+        throw invalid_argument(
+            "byte vector doesn't contain expected number of bytes.");
     }
     version = (d[0] << 0 | d[1] << 8 | d[2] << 16 | d[3] << 24);
     d.erase(d.begin(), d.begin() + 4);
@@ -20,44 +16,38 @@ bool Tx::parse(vector<uint8_t>& d) {
         // BIP141, first block with witness_flag enabled: 481824
         witness_flag = true;
         d.erase(d.begin(), d.begin() + 2);
+    } else {
+        witness_flag = false;
     }
-
-    read_variable_int(d, &tx_in_count);
+    
+    tx_in_count = read_variable_int(d);
     for (size_t i = 0; i < tx_in_count; ++i) {
         TxIn tx_in = TxIn(d);
         tx_ins.push_back(tx_in);
     }
-    read_variable_int(d, &tx_out_count);
+
+    tx_out_count = read_variable_int(d);
     for (size_t i = 0; i < tx_out_count; ++i) {
         TxOut tx_out = TxOut(d);
         tx_outs.push_back(tx_out);
     }
+    
 
     if (witness_flag) {
         if (d.size() < tx_in_count) {
-            cerr << "Tx::parse() failed: byte vector doesn't contain "
-                << "expected number of bytes. \n"
-                << "Expect: >= " << tx_in_count << "\n"
-                << "Actual: " << d.size() << "\n"
-                << "the Tx instance is corrupted\n";
-            return false;
+            throw invalid_argument(
+                "byte vector doesn't contain expected number of bytes");
         }
         for (size_t i = 0; i < tx_in_count; ++i) {
-            size_t witeness_count;
-            read_variable_int(d, &witeness_count);
+            size_t witeness_count = read_variable_int(d);
             tx_ins[i].witenesses = vector<vector<uint8_t>>(witeness_count);
             if (d.size() < witeness_count * 2) {
                 // each witness needs one single-digit varint + a byte of data
-                cerr << "Tx::parse() failed: byte vector doesn't contain "
-                    << "expected number of bytes. \n"
-                    << "Expect: >= " << witeness_count * 2 << "\n"
-                    << "Actual: " << d.size() << "\n"
-                    << "the Tx instance is corrupted\n";
-                return false;
+                throw invalid_argument("byte vector doesn't contain expected "
+                    "number of bytes");
             }
             for (size_t j = 0; j < witeness_count; ++j) {
-                size_t witeness_size;
-                read_variable_int(d, &witeness_size);
+                size_t witeness_size = read_variable_int(d);
                 tx_ins[i].witenesses[j] = vector<uint8_t>(witeness_size);
                 memcpy(tx_ins[i].witenesses[j].data(), d.data(), witeness_size);
                 d.erase(d.begin(), d.begin() + witeness_size);
@@ -69,14 +59,9 @@ bool Tx::parse(vector<uint8_t>& d) {
         locktime = (d[0] << 0 | d[1] << 8 | d[2] << 16 | d[3] << 24);
         d.erase(d.begin(), d.begin() + 4);
     } else {
-        cerr << "Tx::parse() failed: byte vector doesn't contain "
-             << "expected number of bytes.\n"
-             << "Expect: 4\n"
-             << "Actual: " << d.size() << "\nThe Tx instance is corrupted"
-             << endl;
-        return false;
+        throw invalid_argument(
+            "byte vector doesn't contain expected number of bytes.");
     }
-    return true;
 }
 
 
@@ -140,6 +125,7 @@ Tx::~Tx() {}
 TxIn::TxIn() {}
 
 TxIn::TxIn(vector<uint8_t>& d) {
+    // https://en.bitcoin.it/wiki/Protocol_documentation#tx
     if (d.size() < SHA256_HASH_SIZE) {
         throw invalid_argument("byte vector doesn't contain "
             "expected number of bytes. Expect: " + to_string(SHA256_HASH_SIZE) +
@@ -154,12 +140,9 @@ TxIn::TxIn(vector<uint8_t>& d) {
             "bytes. Expect: 4, actual: " + to_string(d.size()) + ".");
     }
     prev_tx_idx = (d[0] << 0 | d[1] << 8 | d[2] << 16 | d[3] << 24);
+    
     d.erase(d.begin(), d.begin() + 4);
-    uint64_t script_len;
-    read_variable_int(d, &script_len);
-    d.erase(d.begin(), d.begin() + script_len);
-    // The parsing of script will be skipped for the time being.
-
+    script_sig = Script(d);
     if (d.size() < 4) {
         throw invalid_argument("byte vector doesn't contain expected number of "
             "bytes. \nExpect: 4\nActual: " + to_string(d.size()) + ".");
@@ -181,7 +164,7 @@ uint32_t TxIn::get_sequence() {
 }
 
 uint64_t TxIn::get_value() {
-    Tx tx = Tx();
+    
     vector<uint8_t> d(64);
     if (Tx::fetch_tx(get_prev_tx_id(), d) != 0) {
         cerr << "Failed to Tx::fetch() tx_id\n";
@@ -191,9 +174,13 @@ uint64_t TxIn::get_value() {
     unique_byte_ptr hex_input(hex_string_to_bytes((char*)d.data(), &hex_len));
     d.resize(hex_len); // let's re-use the same vector...
     memcpy(d.data(), hex_input.get(), hex_len);
-    tx.parse(d);
+    Tx tx = Tx(d);
     vector<TxOut> tx_outs = tx.get_tx_outs();
     return tx_outs[get_prev_tx_idx()].get_amount();
+}
+
+Script TxIn::get_script_sig() {
+    return script_sig;
 }
 
 TxIn::~TxIn() {
@@ -202,21 +189,21 @@ TxIn::~TxIn() {
 TxOut::TxOut() {}
 
 TxOut::TxOut(vector<uint8_t>& d) {
-    uint8_t buf[8];
-    memcpy(buf, d.data(), 8);
-    d.erase(d.begin(), d.begin() + 8);
-    amount = (
-        buf[0] << 0 | buf[1] << 8 | buf[2] << 16 | buf[3] << 24
+    // https://en.bitcoin.it/wiki/Protocol_documentation#tx
+    value = (
+        (uint64_t)d[0] <<  0 | (uint64_t)d[1] <<  8 |
+        (uint64_t)d[2] << 16 | (uint64_t)d[3] << 24 |
+        (uint64_t)d[4] << 32 | (uint64_t)d[5] << 40 |
+        (uint64_t)d[6] << 48 | (uint64_t)d[7] << 56
     );
-    uint64_t script_len;
-    read_variable_int(d, &script_len);
-
+    d.erase(d.begin(), d.begin() + 8);
+    uint64_t script_len = read_variable_int(d);
     d.erase(d.begin(), d.begin() + script_len);
     // The parsing of script will be skipped for the time being.
 }
 
 uint64_t TxOut::get_amount() {
-    return amount;
+    return value;
 }
 
 uint8_t* serialize() {

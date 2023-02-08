@@ -10,6 +10,7 @@
 #include <mycrypto/misc.hpp>
 
 #include "utils.h"
+#include "script.h"
 
 using namespace std;
 
@@ -17,7 +18,7 @@ class Tx;
 
 class TxOut {
 private:
-    uint64_t amount;
+    uint64_t value;
     void* script_pubkey;
 protected:
 public:
@@ -38,7 +39,7 @@ class TxIn {
 private:
     uint8_t prev_tx_id[SHA256_HASH_SIZE];
     uint32_t prev_tx_idx;
-    void* script_sig;
+    Script script_sig;
     uint32_t sequence;    
 protected:
 public:
@@ -64,6 +65,7 @@ public:
      * @returns the amount in Satoshi or 0 in case of error
      */
     uint64_t get_value();
+    Script get_script_sig();
     ~TxIn();
 };
 
@@ -91,9 +93,8 @@ public:
     /**
      * @brief Fill in the Tx instance by parsing bytes from a vector of bytes.
      * Bytes read from the vector will be removed from it.
-     * @returns whether the vector is parsed successfully
      */
-    bool parse(vector<uint8_t>& d);
+    Tx(vector<uint8_t>& d);
     /**
      * @brief Fetch transaction data (essentially a series of bytes) from a remote URL and deliver them to a vector.
      * 

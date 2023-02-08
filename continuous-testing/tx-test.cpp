@@ -65,12 +65,7 @@ int main(int argc, char **argv) {
                 tx["hex"].get<std::string>().c_str(), &input_bytes_len));
             vector<uint8_t> d(input_bytes_len);
             memcpy(d.data(), input_bytes.get(), input_bytes_len);
-            Tx my_tx = Tx();
-            bool retval = my_tx.parse(d);
-            if (retval == false) {
-                cerr << "Tx.parse(d) failed" << endl;
-                return EXIT_FAILURE;
-            }
+            Tx my_tx = Tx(d);
             if (my_tx.get_version() != tx["version"]) {
                 cerr << i << "-th tx:\n"
                      << "Actual version: " << my_tx.get_version() << "\n"

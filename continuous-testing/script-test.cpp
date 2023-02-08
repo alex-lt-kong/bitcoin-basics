@@ -1,7 +1,7 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <mycrypto/misc.h>
+#include <mycrypto/misc.hpp>
 
 #include "mybitcoin/tx.h"
 #include "mybitcoin/script.h"
@@ -19,16 +19,15 @@ int main(int argc, char **argv) {
     }
     int64_t input_bytes_len;
     size_t varint_len;
-    uint8_t* input_bytes = hex_string_to_bytes(argv[1], &input_bytes_len);
-    if (input_bytes == NULL) {
+    unique_byte_ptr input_bytes(hex_string_to_bytes(argv[1], &input_bytes_len));
+    if (input_bytes.get() == NULL) {
         fprintf(stderr, "invalid script_hex: %s\n", argv[1]);
         return 1;
     }
 
     vector<uint8_t> d(input_bytes_len);
-    memcpy(d.data(), input_bytes, input_bytes_len);
+    memcpy(d.data(), input_bytes.get(), input_bytes_len);
     uint8_t* input_len_varint = encode_variable_int(input_bytes_len, &varint_len);
-    free(input_bytes);
     for (int i = varint_len - 1; i >= 0; --i) {
         d.insert(d.begin(), input_len_varint[i]);
     }
