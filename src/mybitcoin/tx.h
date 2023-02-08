@@ -23,19 +23,11 @@ protected:
 public:
     
     /**
-     * @brief Constructor
-     * @param version
-     * @param tx_ins the memory will be managed by this Tx instance after being passed to it
-     * @param tx_outs the memory will be managed by this Tx instance after being passed to it
-     * @param locktime
-     * @param is_testnet
+     * @brief Initialize a TxOut instance by parsing bytes from a vector
+     * of bytes.
      */
-    TxOut(const uint64_t amount, void* script_pubkey);
+    TxOut(vector<uint8_t>& d);
     TxOut();
-    /**
-     * @brief Fill in the TxOut instance by parsing bytes from a stringstream.
-     */
-    void parse(vector<uint8_t>& ss);
     uint8_t* serialize();
     uint64_t get_amount();
 

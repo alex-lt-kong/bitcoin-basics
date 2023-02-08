@@ -34,12 +34,7 @@ int main(int argc, char **argv) {
     }
     free(input_len_varint);
     
-    Script my_script = Script();
-    bool retval = my_script.parse(d);    
-    if (retval != true) {
-        fprintf(stderr, "parse() failed\n");
-        return 1;
-    }
+    Script my_script = Script(d);
     size_t cmds_size = my_script.get_cmds().size();
     if (cmds_size < 1) {
         fprintf(stderr, "unexpected cmds_size: %lu\n", cmds_size);

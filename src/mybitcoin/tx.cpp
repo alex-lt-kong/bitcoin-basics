@@ -29,8 +29,7 @@ bool Tx::parse(vector<uint8_t>& d) {
     }
     read_variable_int(d, &tx_out_count);
     for (size_t i = 0; i < tx_out_count; ++i) {
-        TxOut tx_out = TxOut();
-        tx_out.parse(d);
+        TxOut tx_out = TxOut(d);
         tx_outs.push_back(tx_out);
     }
 
@@ -200,15 +199,9 @@ uint64_t TxIn::get_value() {
 TxIn::~TxIn() {
 }
 
-
-TxOut::TxOut(const uint64_t amount, void* script_pubkey) {
-    this->amount = amount;
-    this->script_pubkey = script_pubkey;
-}
-
 TxOut::TxOut() {}
 
-void TxOut::parse(vector<uint8_t>& d) {
+TxOut::TxOut(vector<uint8_t>& d) {
     uint8_t buf[8];
     memcpy(buf, d.data(), 8);
     d.erase(d.begin(), d.begin() + 8);
