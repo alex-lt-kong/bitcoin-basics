@@ -118,12 +118,18 @@ int main(int argc, char **argv) {
                 return EXIT_FAILURE;
             }
             for (size_t j = 0; j < tx_outs.size(); ++j) {
-              /*  if (tx_outs[j].get_value() != tx["vout"][j]["value"]) {
+                if (tx_outs[j].get_value() -
+                    tx["vout"][j]["value"].get<double>() * 100000000 > 1) {
                     cerr << i << "-th tx:\n"
-                         << "Actual value: " << tx_outs[j].get_amount() << "\n"
-                         << "Expect value: " << tx["vout"][j]["value"] << "\n";
+                         << "Actual value: " << tx_outs[j].get_value() << "\n"
+                         << "Expect value: "
+                         << tx["vout"][j]["value"].get<double>() * 100000000
+                         << "\nDiff: "
+                         << tx_outs[j].get_value() - (tx["vout"][j]["value"].get<double>() * 100000000)
+                         << "\n";
+                    cerr << "tx_id: " << tx["txid"] << endl;
                     return EXIT_FAILURE;
-                }*/
+                }
             }
         }
         ++block_height;

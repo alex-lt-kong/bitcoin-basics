@@ -30,7 +30,7 @@ public:
     TxOut(vector<uint8_t>& d);
     TxOut();
     uint8_t* serialize();
-    uint64_t get_amount();
+    uint64_t get_value();
 
     ~TxOut();
 };

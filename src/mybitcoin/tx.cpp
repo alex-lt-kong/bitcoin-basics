@@ -127,7 +127,7 @@ uint32_t Tx::get_fee() {
         input_sum += tx_ins[i].get_value();
     }
     for (size_t i = 0; i < tx_out_count; ++i) {
-        output_sum += tx_outs[i].get_amount();
+        output_sum += tx_outs[i].get_value();
     }
     return input_sum - output_sum;
 }
@@ -189,7 +189,7 @@ uint64_t TxIn::get_value() {
     memcpy(d.data(), hex_input.get(), hex_len);
     Tx tx = Tx(d);
     vector<TxOut> tx_outs = tx.get_tx_outs();
-    return tx_outs[get_prev_tx_idx()].get_amount();
+    return tx_outs[get_prev_tx_idx()].get_value();
 }
 
 Script TxIn::get_script_sig() {
@@ -215,7 +215,7 @@ TxOut::TxOut(vector<uint8_t>& d) {
     // The parsing of script will be skipped for the time being.
 }
 
-uint64_t TxOut::get_amount() {
+uint64_t TxOut::get_value() {
     return value;
 }
 

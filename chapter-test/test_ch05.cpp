@@ -227,10 +227,10 @@ int test_parse1() {
     }
     
     vector<TxOut> tx_outs = my_tx.get_tx_outs();
-    if (tx_outs[0].get_amount() != 32454049u) {
+    if (tx_outs[0].get_value() != 32454049u) {
         return 1;
     }
-    if (tx_outs[1].get_amount() != 10011545) {
+    if (tx_outs[1].get_value() != 10011545) {
         return 1;
     }
     if (my_tx.get_locktime() != 410393u) {
@@ -262,7 +262,7 @@ int test_parse2() {
     Tx my_tx = Tx(d);
 
     vector<TxOut> tx_outs = my_tx.get_tx_outs();
-    if (tx_outs[1].get_amount() != 40000000u) {
+    if (tx_outs[1].get_value() != 40000000u) {
         return 1;
     }
     return 0;
@@ -284,7 +284,7 @@ int test_parse3() {
     if (tx_outs.size() != 2) {
         return 1;
     }
-    if (tx_outs[0].get_amount() !=   15728324u) {
+    if (tx_outs[0].get_value() !=   15728324u) {
         return 1;
     }
      

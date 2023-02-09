@@ -20,7 +20,8 @@ Script::Script(vector<uint8_t>& d) {
         d.erase(d.begin());
         -- remaining_script_len;
         if (cb >= 1 && cb <= 75) {
-            // an ordinary element should be between 1 to 75 bytes. If cb is smaller then 75, it implies this component
+            // an ordinary element should be between 1 to 75 bytes. If cb is
+            // smaller then 75, it implies this component
             // is an ordinary element (i.e., an operand, not an opcode)
             uint8_t nominal_len = cb;
             uint8_t actual_len = cb;
