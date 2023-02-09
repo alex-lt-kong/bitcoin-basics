@@ -42,13 +42,21 @@ Tx::Tx(vector<uint8_t>& d) {
         for (size_t i = 0; i < tx_in_count; ++i) {
             size_t witeness_count = read_variable_int(d);
             tx_ins[i].witenesses = vector<vector<uint8_t>>(witeness_count);
-            if (d.size() < witeness_count * 2) {
+            if (d.size() < witeness_count) {
                 // each witness needs one single-digit varint + a byte of data
                 throw invalid_argument("byte vector doesn't contain expected "
-                    "number of bytes");
+                    "number of bytes, expecting >= " +
+                    std::to_string(witeness_count) +
+                    ", but gets" + std::to_string(d.size()));
             }
             for (size_t j = 0; j < witeness_count; ++j) {
                 size_t witeness_size = read_variable_int(d);
+                if (d.size() < witeness_size) {
+                    throw invalid_argument("byte vector doesn't contain "
+                        "expected number of bytes, expecting " +
+                        std::to_string(witeness_size) +
+                        " but gets " + std::to_string(d.size()));
+                }
                 tx_ins[i].witenesses[j] = vector<uint8_t>(witeness_size);
                 memcpy(tx_ins[i].witenesses[j].data(), d.data(), witeness_size);
                 d.erase(d.begin(), d.begin() + witeness_size);
