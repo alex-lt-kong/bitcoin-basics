@@ -19,7 +19,7 @@ class Tx;
 class TxOut {
 private:
     uint64_t value;
-    void* script_pubkey;
+    Script script_pubkey;
 protected:
 public:
     
@@ -31,6 +31,7 @@ public:
     TxOut();
     uint8_t* serialize();
     uint64_t get_value();
+    Script get_script_pubkey();
 
     ~TxOut();
 };

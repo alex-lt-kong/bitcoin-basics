@@ -97,8 +97,10 @@ int main(int argc, char **argv) {
             for (size_t j = 0; j < tx_ins.size(); ++j) {
                 if (tx_ins[j].get_sequence() != tx["vin"][j]["sequence"]) {
                     cerr << i << "-th tx:\n"
-                         << "Actual sequence: " << tx_ins[j].get_sequence() << "\n"
-                         << "Expect sequence: " << tx["vin"][j]["sequence"] << "\n";
+                         << "Actual sequence: " << tx_ins[j].get_sequence()
+                         << "\n"
+                         << "Expect sequence: " << tx["vin"][j]["sequence"]
+                         << "\n";
                     return EXIT_FAILURE;
                 }
             }
@@ -125,9 +127,26 @@ int main(int argc, char **argv) {
                          << "Expect value: "
                          << tx["vout"][j]["value"].get<double>() * 100000000
                          << "\nDiff: "
-                         << tx_outs[j].get_value() - (tx["vout"][j]["value"].get<double>() * 100000000)
-                         << "\n";
-                    cerr << "tx_id: " << tx["txid"] << endl;
+                         << tx_outs[j].get_value() - (
+                            tx["vout"][j]["value"].get<double>() * 100000000)
+                         << "\n"
+                         << "tx_id: " << tx["txid"] << endl;
+                    return EXIT_FAILURE;
+                }
+                vector<uint8_t> script_pk_bytes = tx_outs[j].get_script_pubkey(
+                    ).serialize();
+                read_variable_int(script_pk_bytes);
+                unique_char_ptr script_pk_hex(bytes_to_hex_string(
+                    script_pk_bytes.data(), script_pk_bytes.size(), false));
+                if (strcmp(script_pk_hex.get(),
+                    tx["vout"][j]["scriptPubKey"]["hex"].get<string>().c_str())
+                    != 0) {
+                    cerr << i << "-th tx:\n"
+                         << "Actual value: " << script_pk_hex.get() << "\n"
+                         << "Expect value: "
+                         << tx["vout"][j]["scriptPubKey"]["hex"].get<string>()
+                         << "\n"
+                         << "tx_id: " << tx["txid"] << endl;
                     return EXIT_FAILURE;
                 }
             }

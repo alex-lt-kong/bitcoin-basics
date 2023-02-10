@@ -210,9 +210,7 @@ TxOut::TxOut(vector<uint8_t>& d) {
         (uint64_t)d[6] << 48 | (uint64_t)d[7] << 56
     );
     d.erase(d.begin(), d.begin() + 8);
-    uint64_t script_len = read_variable_int(d);
-    d.erase(d.begin(), d.begin() + script_len);
-    // The parsing of script will be skipped for the time being.
+    script_pubkey = Script(d);
 }
 
 uint64_t TxOut::get_value() {
@@ -221,6 +219,10 @@ uint64_t TxOut::get_value() {
 
 uint8_t* serialize() {
     return (uint8_t*)nullptr;
+}
+
+Script TxOut::get_script_pubkey() {
+    return script_pubkey;
 }
 
 TxOut::~TxOut() {
