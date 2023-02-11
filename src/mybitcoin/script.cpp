@@ -111,9 +111,7 @@ Script::Script(vector<uint8_t>& d) {
 vector<uint8_t> Script::serialize() {
     vector<uint8_t> d(0);
     if (cmds.size() == 0) {
-        fprintf(stderr, "Fatal: cmds is empty, serialize() is not "
-                "supposed to be called!\n");
-        return vector<uint8_t>(0);
+        return vector<uint8_t>{0};
     }
     size_t idx = 0;
     while (idx < cmds.size()) {
