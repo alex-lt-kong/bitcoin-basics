@@ -95,6 +95,26 @@ int main(int argc, char **argv) {
                 return EXIT_FAILURE;
             }
             for (size_t j = 0; j < tx_ins.size(); ++j) {
+                vector<uint8_t> ss_bytes = tx_ins[j].get_script_sig(
+                    ).serialize();
+                read_variable_int(ss_bytes);
+                unique_char_ptr ss_hex(bytes_to_hex_string(
+                    ss_bytes.data(), ss_bytes.size(), false));
+                string expected_hex;
+                if (i == 0 && j == 0) { // coinbase tx
+                    expected_hex = tx["vin"][j]["coinbase"].get<string>();
+                } else {
+                    expected_hex = tx["vin"][j]["scriptSig"]["hex"].get<string>();
+                }
+                if (strcmp(ss_hex.get(), expected_hex.c_str()) != 0) {
+                    cerr << i << "-th tx:\n"
+                         << "Actual value: " << ss_hex.get() << "\n"
+                         << "Expect value: "
+                         << expected_hex
+                         << "\n"
+                         << "tx_id: " << tx["txid"] << endl;
+                    return EXIT_FAILURE;
+                }
                 if (tx_ins[j].get_sequence() != tx["vin"][j]["sequence"]) {
                     cerr << i << "-th tx:\n"
                          << "Actual sequence: " << tx_ins[j].get_sequence()

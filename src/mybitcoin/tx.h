@@ -38,7 +38,9 @@ public:
 
 class TxIn {
 private:
+    // The hash of the referenced transaction. 
     uint8_t prev_tx_id[SHA256_HASH_SIZE];
+    // The index of the specific output in the transaction.
     uint32_t prev_tx_idx;
     Script script_sig;
     uint32_t sequence;    
