@@ -78,7 +78,7 @@ Tx::Tx(vector<uint8_t>& d) {
 
 
 int Tx::fetch_tx(const uint8_t tx_id[SHA256_HASH_SIZE], vector<uint8_t>& d) {
-    unique_char_ptr tx_id_hex(bytes_to_hex_string(
+    unique_fptr<char[]>  tx_id_hex(bytes_to_hex_string(
         tx_id, SHA256_HASH_SIZE, false));
     json data = bitcoind_rpc(
         R"({
@@ -184,7 +184,7 @@ uint64_t TxIn::get_value() {
         return 0;
     }
     int64_t hex_len;
-    unique_byte_ptr hex_input(hex_string_to_bytes((char*)d.data(), &hex_len));
+    unique_fptr<uint8_t[]>  hex_input(hex_string_to_bytes((char*)d.data(), &hex_len));
     d.resize(hex_len); // let's re-use the same vector...
     memcpy(d.data(), hex_input.get(), hex_len);
     Tx tx = Tx(d);

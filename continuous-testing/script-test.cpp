@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
     }
     int64_t input_bytes_len;
     size_t varint_len;
-    unique_byte_ptr input_bytes(hex_string_to_bytes(argv[1], &input_bytes_len));
+    unique_fptr<uint8_t[]>  input_bytes(hex_string_to_bytes(argv[1], &input_bytes_len));
     if (input_bytes.get() == NULL) {
         fprintf(stderr, "invalid script_hex: %s\n", argv[1]);
         return 1;

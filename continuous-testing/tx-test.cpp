@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
         for (int i = 0; i < data["result"]["nTx"]; ++i) {
             json tx = data["result"]["tx"][i];
             int64_t input_bytes_len;
-            unique_byte_ptr input_bytes(hex_string_to_bytes(
+            unique_fptr<uint8_t[]>  input_bytes(hex_string_to_bytes(
                 tx["hex"].get<std::string>().c_str(), &input_bytes_len));
             vector<uint8_t> d(input_bytes_len);
             memcpy(d.data(), input_bytes.get(), input_bytes_len);
@@ -98,7 +98,7 @@ int main(int argc, char **argv) {
                 vector<uint8_t> ss_bytes = tx_ins[j].get_script_sig(
                     ).serialize();
                 read_variable_int(ss_bytes);
-                unique_char_ptr ss_hex(bytes_to_hex_string(
+                unique_fptr<char[]> ss_hex(bytes_to_hex_string(
                     ss_bytes.data(), ss_bytes.size(), false));
                 string expected_hex;
                 if (i == 0 && j == 0) { // coinbase tx
@@ -156,7 +156,7 @@ int main(int argc, char **argv) {
                 vector<uint8_t> script_pk_bytes = tx_outs[j].get_script_pubkey(
                     ).serialize();
                 read_variable_int(script_pk_bytes);
-                unique_char_ptr script_pk_hex(bytes_to_hex_string(
+                unique_fptr<char[]>  script_pk_hex(bytes_to_hex_string(
                     script_pk_bytes.data(), script_pk_bytes.size(), false));
                 if (strcmp(script_pk_hex.get(),
                     tx["vout"][j]["scriptPubKey"]["hex"].get<string>().c_str())

@@ -60,8 +60,8 @@ public:
     Script();
     /**
      * @brief Generate a series of bytes representing the cmds we parse()
-     * @returns a vector contains bytes or an empty vector on error. Error
-     * info will be sent to stderr.
+     * @returns a vector contains bytes.
+     * @throws invalid_argument on error
     */
     vector<uint8_t> serialize();
     /**

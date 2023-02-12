@@ -110,9 +110,6 @@ Script::Script(vector<uint8_t>& d) {
 
 vector<uint8_t> Script::serialize() {
     vector<uint8_t> d(0);
-    if (cmds.size() == 0) {
-        return vector<uint8_t>{0};
-    }
     size_t idx = 0;
     while (idx < cmds.size()) {
         if (is_opcode[idx] != true) {
@@ -123,8 +120,8 @@ vector<uint8_t> Script::serialize() {
                 operand_len = cmds[idx].size();
             }
             if (operand_len >= 75) {
-                fprintf(stderr, "Non-standard Script: operand longer than "
-                "75 bytes without OP_PUSHDATA\n");
+                cout << "Non-standard Script: operand longer than "
+                     << "75 bytes without OP_PUSHDATA" << endl;
             }
             d.push_back(operand_len);
             for (size_t j = 0; j < cmds[idx].size(); ++j) {
@@ -135,9 +132,8 @@ vector<uint8_t> Script::serialize() {
         }
         // is_opcode == true:
         if (cmds[idx].size() != 1) {
-            fprintf(stderr, "Fatal: opcode occupied more "
-                    "than one byte, which is supposed to be impossible\n");
-            return vector<uint8_t>(0);
+            throw invalid_argument("Opcode occupies more "
+                "than one byte, which is supposed to be impossible");
         }
 
         if (cmds[idx][0] > 78 || cmds[idx][0] == 0) {
@@ -206,8 +202,8 @@ vector<uint8_t> Script::serialize() {
                 --idx;
             }
         } else {
-            fprintf(stderr, "Invalid opcode: %d\n", cmds[idx][0]);
-            return vector<uint8_t>(0);
+            throw invalid_argument("Invalid opcode: " +
+                to_string(cmds[idx][0]));
         }
         ++idx;
     }
@@ -240,7 +236,8 @@ size_t Script::get_nominal_operand_len_byte_count_after_op_pushdata(
 uint64_t Script::get_nominal_operand_len_after_op_pushdata(uint8_t opcode,
     vector<uint8_t> byte_stream) {
     
-    size_t nominal_operand_len_byte_count = get_nominal_operand_len_byte_count_after_op_pushdata(opcode);
+    size_t nominal_operand_len_byte_count = 
+        get_nominal_operand_len_byte_count_after_op_pushdata(opcode);
     uint8_t buf[4] = {0};
     if (nominal_operand_len_byte_count > byte_stream.size()) {
         nominal_operand_len_byte_count = byte_stream.size();
@@ -268,7 +265,7 @@ string Script::get_asm() {
                 script_asm += "<push past end>";
             } else {
                 script_asm += "OP_PUSHBYTES_" + to_string(cmds[i].size()) + " ";
-                unique_char_ptr hex_str(bytes_to_hex_string(cmds[i].data(),
+                unique_fptr<char[]>  hex_str(bytes_to_hex_string(cmds[i].data(),
                     cmds[i].size(), false));
                 script_asm += hex_str.get();
                 script_asm += " ";
@@ -320,7 +317,7 @@ string Script::get_asm() {
                 }
             }
             if (cmds[i].size() > 0) {
-                unique_char_ptr hex_str(bytes_to_hex_string(cmds[i].data(),
+                unique_fptr<char[]>  hex_str(bytes_to_hex_string(cmds[i].data(),
                     cmds[i].size(), false));
                 script_asm += hex_str.get();
                 script_asm += " ";
