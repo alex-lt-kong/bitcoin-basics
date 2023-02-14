@@ -63,6 +63,7 @@ testing.
 perform continuous testing.
 * `confluent_kafka` for Kafka client: `pip3 install confluent_kafka`
 * `pycryptodome` for Kafka encryption: `pip3 install pycryptodome`
+* `crypto++` for encrypting data over Kafka: `apt install libcrypto++-dev`
 
 ## Repo structure
 
