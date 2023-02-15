@@ -89,7 +89,8 @@ against the result from a Bitcoin blockchain explorer called
 
 
 * Instead of `cmake ../`, run `cmake .. -DBUILD_ASAN=ON` then `make test` to
-test memory error with AddressSanitizer
+test memory error with
+[AddressSanitizer](https://github.com/google/sanitizers/wiki/AddressSanitizer).
 * The repo is also tested with `Valgrind` from time to time:
 `valgrind --leak-check=yes --log-file=valgrind.rpt ./build/chapter-test/test_ch01`.
 Unfortunately, this part is not automated.
