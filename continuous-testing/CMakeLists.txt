@@ -12,4 +12,5 @@ if(NOT CRYPTOPP_LIB)
     message(FATAL_ERROR "crypto++ library not found, install it with 'apt install libcrypto++-dev'")
 endif()
 
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/script-test-driver.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/script-test-driver.py
+     DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)

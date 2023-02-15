@@ -85,6 +85,16 @@ against the result from a Bitcoin blockchain explorer called
   * `tx-text.cpp`: Parse transactions from Bitcoin blocks against Bitcoin Core's
   `bitcoind` daemon.
 
+## Quality assurance
+
+
+* Instead of `cmake ../`, run `cmake .. -DBUILD_ASAN=ON` then `make test` to
+test memory error with AddressSanitizer
+* The repo is also tested with `Valgrind` from time to time:
+`valgrind --leak-check=yes --log-file=valgrind.rpt ./build/chapter-test/test_ch01`.
+Unfortunately, this part is not automated.
+
+
 ## `bitcoin-cli` useful commands
 
 * Get block hash by block height: `bitcoin-cli getblockhash 481824`

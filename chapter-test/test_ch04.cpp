@@ -239,10 +239,11 @@ int test_privkey_wif_address() {
     uint8_t priv_key[] = {0x05, 0x43, 0x21, 0xde, 0xad, 0xbe, 0xef};
     key = ECDSAKey(priv_key, sizeof(priv_key) / sizeof(priv_key[0]));
     addr = key.get_wif_private_key(true, false);
-     if (strcmp(addr, "KwDiBf89QgGbjEhKnhXJuH7LrciVrZi3qYjgiuQJv1h8Ytr2S53a")) {
+    if (strcmp(addr, "KwDiBf89QgGbjEhKnhXJuH7LrciVrZi3qYjgiuQJv1h8Ytr2S53a")) {
         free(addr);
         return 1;
-     }
+    }
+    free(addr);
     return 0;
 }
 
