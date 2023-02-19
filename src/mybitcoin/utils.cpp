@@ -243,12 +243,17 @@ json bitcoind_rpc(string post_data) {
         curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
 
         res = curl_easy_perform(curl);
+        char err_msg[PATH_MAX] = {0};
         if(res != CURLE_OK) {
-            fprintf(stderr, "curl_easy_perform() failed: %s\n",
+            snprintf(err_msg, PATH_MAX - 1, "curl_easy_perform() failed: %s\n",
                 curl_easy_strerror(res));
+            fprintf(stderr, err_msg);
         }
         /* always cleanup */
         curl_easy_cleanup(curl);
+        if (strlen(err_msg) > 0) {
+            throw runtime_error(string(err_msg));
+        }
     }
     
 

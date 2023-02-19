@@ -16,7 +16,7 @@ import os
 test_program = os.path.join(os.path.dirname(__file__), 'script-test')
 lgr = logging.getLogger()
 #stream_handler = logging.StreamHandler(sys.stdout)
-file_handler = logging.FileHandler('/var/log/bitcoin-internals/script-test.log')
+file_handler = logging.FileHandler('/var/log/libmybitcoin/script-test.log')
 file_handler.setFormatter(
     fmt=logging.Formatter('%(asctime)s | %(levelname)s | %(message)s',
     datefmt='%Y-%m-%d %H:%M'
@@ -151,7 +151,7 @@ def main() -> None:
         formatter = logging.Formatter(
             fmt=f'%(asctime)s | %(levelname)7s | {height},{tx_count} | %(message)s', datefmt='%Y-%m-%d %H:%M'
         )
-        file_handler = logging.FileHandler('/var/log/bitcoin-internals/script-test.log')
+        file_handler = logging.FileHandler('/var/log/libmybitcoin/script-test.log')
         file_handler.setFormatter(formatter)
         lgr.addHandler(file_handler)
 
