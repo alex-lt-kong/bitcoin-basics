@@ -27,7 +27,7 @@ Point::Point(float x, float y, float a, float b) {
   if (this->x == FLT_MAX && this->y == FLT_MAX) { return; }
 
   if (pow(y, 2) != pow(x, 3) + a * x + b) {
-    throw std::invalid_argument(
+    throw invalid_argument(
       "(" + std::to_string(x) + ", " + std::to_string(y) + ") is not on the curve"
     );
   }
@@ -106,7 +106,7 @@ void testPointAddinitionSamePoint() {
 
 int main() {
   Point p1 = Point(-1, -1, 5, 7);
-  cout << "p1: "<< p1.to_string() << endl;
+  cout << "p1: " << p1.to_string() << endl;
   try{
     Point p2 = Point(-1, -2, 5, 7); 
     printf("%s\n", p2.to_string().c_str());

@@ -247,7 +247,6 @@ json bitcoind_rpc(string post_data) {
         if(res != CURLE_OK) {
             snprintf(err_msg, PATH_MAX - 1, "curl_easy_perform() failed: %s\n",
                 curl_easy_strerror(res));
-            fprintf(stderr, "%s\n", err_msg);
         }
         /* always cleanup */
         curl_easy_cleanup(curl);
