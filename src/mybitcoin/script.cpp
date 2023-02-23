@@ -85,16 +85,17 @@ Script::Script(vector<uint8_t>& d) {
                 }
             }
             last_operand = vector<uint8_t>(OP_PUSHDATA_size + actual_operand_len);
-            memcpy(last_operand.data(), d.data(), OP_PUSHDATA_size);
-            d.erase(d.begin(), 
-                              d.begin() + OP_PUSHDATA_size);
+            if (OP_PUSHDATA_size > 0) {
+                memcpy(last_operand.data(), d.data(), OP_PUSHDATA_size);
+                d.erase(d.begin(), d.begin() + OP_PUSHDATA_size);
+            }
             vector<uint8_t> cmd(actual_operand_len);
-            memcpy(cmd.data(), d.data(), actual_operand_len);
-            memcpy(last_operand.data() + OP_PUSHDATA_size * sizeof(uint8_t),
-                   d.data(), actual_operand_len);
-            d.erase(
-                d.begin(), d.begin() + actual_operand_len
-            );
+            if (actual_operand_len > 0) {
+                memcpy(cmd.data(), d.data(), actual_operand_len);
+                memcpy(last_operand.data() + OP_PUSHDATA_size * sizeof(uint8_t),
+                    d.data(), actual_operand_len);
+                d.erase(d.begin(), d.begin() + actual_operand_len);
+            }
             cmds.push_back(cmd);
             is_opcode.push_back(false);
             
@@ -241,10 +242,12 @@ uint64_t Script::get_nominal_operand_len_after_op_pushdata(uint8_t opcode,
     uint8_t buf[4] = {0};
     if (nominal_operand_len_byte_count > byte_stream.size()) {
         nominal_operand_len_byte_count = byte_stream.size();
-        fprintf(stderr, "Non-standard Script: push past end\n");
+        cerr << "Non-standard Script: push past end" << endl;
     }
-    memcpy(buf, byte_stream.data(), nominal_operand_len_byte_count);
-    // OP_PUSHDATA_size == 0 and byte_stream.begin() == end() are both valid.
+    if (nominal_operand_len_byte_count > 0) {
+        memcpy(buf, byte_stream.data(), nominal_operand_len_byte_count);
+    }
+    
     return buf[0] << 0 | buf[1] << 8 | buf[2] << 16 | buf[3] << 24;
 }
 
