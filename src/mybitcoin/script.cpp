@@ -11,7 +11,8 @@ Script::Script(vector<uint8_t>& d) {
     uint8_t cb = 0; // current byte
     cmds.clear();
     is_opcode.clear();
-    const char cmd_names[][13] = {"OP_PUSHDATA1", "OP_PUSHDATA2", "OP_PUSHDATA4"};
+    const char cmd_names[][13] = {"OP_PUSHDATA1", "OP_PUSHDATA2",
+        "OP_PUSHDATA4"};
     while (remaining_script_len > 0) {
         if (d.size() == 0) {
             throw invalid_argument("byte_stream ends unexpectedly");
@@ -58,12 +59,16 @@ Script::Script(vector<uint8_t>& d) {
             cmds.push_back(vector<uint8_t>{ cb });
             is_opcode.push_back(true);
             size_t OP_PUSHDATA_size = (
-                remaining_script_len > (size_t)get_nominal_operand_len_byte_count_after_op_pushdata(cb) ?
-                get_nominal_operand_len_byte_count_after_op_pushdata(cb) : remaining_script_len
+                remaining_script_len > 
+                get_nominal_operand_len_byte_count_after_op_pushdata(cb) ?
+                get_nominal_operand_len_byte_count_after_op_pushdata(cb) :
+                remaining_script_len
             );
-            if (OP_PUSHDATA_size < get_nominal_operand_len_byte_count_after_op_pushdata(cb)) {
+            if (OP_PUSHDATA_size < 
+                get_nominal_operand_len_byte_count_after_op_pushdata(cb)) {
                 // Will only enter this branch if the coming operand is the last one.
-                // It also implies that OP_PUSHDATA pushes nothing at all! (as it has already reached the end of d.)
+                // It also implies that OP_PUSHDATA pushes nothing at all!
+                // (as it has already reached the end of d.)
                 fprintf(stderr, "Non-standard Script: %lu too short for %s and "
                         "it pushes no data at all\n", remaining_script_len,
                         cmd_names[cb-76]);
@@ -78,7 +83,7 @@ Script::Script(vector<uint8_t>& d) {
             }
 
             if (actual_operand_len > 520) {
-                fprintf(stderr, "Non-standard Script: actual_operand_len > 520\n");
+                cerr << "Non-standard Script: actual_operand_len > 520" << endl;
                 if (actual_operand_len > 4096) {
                     throw invalid_argument("Non-standard Script: "
                     "actual_operand_len > 4096");
@@ -181,7 +186,8 @@ vector<uint8_t> Script::serialize() {
                 }
             }
             if (operand_len != cmds[idx].size() +
-                get_nominal_operand_len_byte_count_after_op_pushdata(cmds[idx-1][0])) {
+                get_nominal_operand_len_byte_count_after_op_pushdata(
+                    cmds[idx-1][0])) {
                 cerr << "Non-standard Script: operand_len (" << operand_len
                      << ") is different from operand.size() + bytes used to "
                     "store operand_len ("
@@ -299,7 +305,8 @@ string Script::get_asm() {
             }
             if (i == cmds.size() - 1) {
                 if (last_operand.size() < 
-                    get_nominal_operand_len_byte_count_after_op_pushdata(cmds[i-1][0])) {
+                    get_nominal_operand_len_byte_count_after_op_pushdata(
+                        cmds[i-1][0])) {
                     // This is how blockstream.info handles this case:
                     // we need to dial back the "OP_PUSHDATA" opcode to match 
                     // its.
