@@ -174,5 +174,6 @@ int main(int argc, char **argv) {
         ++block_height;
     }
     curl_global_cleanup();
+    cout << "tx-test quits without error" << endl;
     return EXIT_SUCCESS;
 }
