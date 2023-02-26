@@ -98,14 +98,15 @@ Unfortunately, this part is not automated.
 
 ## `bitcoin-cli` useful commands and their Python equivalents
 
-* Get block hash by block height: `bitcoin-cli getblockhash 481824`
-* Get block content by block hash: `bitcoin-cli getblock 0000000000000000001c8018d9cb3b742ef25114f27563e3fc4a1902167f9893 [0,1,2]`
+* Get block hash by block height: `bitcoin-cli getblockhash 123456`
+* Get block content by block hash: `bitcoin-cli getblock 0000000000002917ed80650c6174aac8dfc46f5fe36480aaef682ff6cd83c3ca [0,1,2]`
 * Get transaction by transaction id: `bitcoin-cli getrawtransaction da917699942e4a96272401b534381a75512eeebe8403084500bd637bd47168b3`
 * Get information of nodes currently being connected to: `bitcoin-cli getpeerinfo`
 
 
-### Python equivalent
+### Python one-liner
 
-* `requests.post('http://127.0.0.1:8332', auth=('rpcuser', 'rpcpassword'), `
-  `json={"method": "getrawtransaction", "params": ['da917699942e4a96272401b53`
-  `4381a75512eeebe8403084500bd637bd47168b3']}).json()['result']`
+```Python
+import requests
+result = requests.post(url='http://127.0.0.1:8332', auth=('rpcuser', 'rpcpassword'), json={"method": "getblock", "params": ['0000000000002917ed80650c6174aac8dfc46f5fe36480aaef682ff6cd83c3ca', 1]}).json()['result']
+```
