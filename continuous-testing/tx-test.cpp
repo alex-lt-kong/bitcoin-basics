@@ -55,9 +55,16 @@ int main(int argc, char **argv) {
             "params": [")" + block_hash + R"(", 2]
         })";
         data = bitcoind_rpc(post_data);
-        cout << "Testing block " << block_height
-             << " (nTx: " << data["result"]["nTx"] << ")" << endl;
         
+        cout << "Testing block " << block_height
+             << " (nTx: " << data["result"]["nTx"]
+        #ifdef SANITIZER_NAME
+             << ", " << SANITIZER_NAME << " enabled)"
+        #else
+             << ")"
+        #endif
+             << endl;
+
         for (int i = 0; i < data["result"]["nTx"]; ++i) {
             json tx = data["result"]["tx"][i];
             int64_t input_bytes_len;
