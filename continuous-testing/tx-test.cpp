@@ -2,9 +2,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
+#include <string>
 
 #include <nlohmann/json.hpp>
 #include <mycrypto/misc.hpp>
+#include <spdlog/spdlog.h>
 
 #include "mybitcoin/tx.h"
 #include "mybitcoin/script.h"
@@ -37,8 +39,15 @@ int main(int argc, char **argv) {
     data = bitcoind_rpc(post_data);
     int latest_height = data["result"]["height"];
 
-    cout << "latest_block_hash: "<< latest_block_hash << endl;
-    cout << "latest_height: " << latest_height << endl;
+    string san_suffix = "";
+    #ifdef SANITIZER_NAME
+        san_suffix += string(", ");
+        san_suffix += SANITIZER_NAME;
+        san_suffix += " enabled";        
+    #endif
+
+    spdlog::info("latest_block_hash: {}", latest_block_hash);
+    spdlog::info("latest_height: {}", latest_height);
 
     int block_height = since_block_height;
     while (block_height <= latest_height) {
@@ -55,15 +64,8 @@ int main(int argc, char **argv) {
             "params": [")" + block_hash + R"(", 2]
         })";
         data = bitcoind_rpc(post_data);
-        
-        cout << "Testing block " << block_height
-             << " (nTx: " << data["result"]["nTx"]
-        #ifdef SANITIZER_NAME
-             << ", " << SANITIZER_NAME << " enabled)"
-        #else
-             << ")"
-        #endif
-             << endl;
+        spdlog::info("Testing block {}, (nTx: {}{})", block_height,
+            data["result"]["nTx"].get<int>(), san_suffix);
 
         for (int i = 0; i < data["result"]["nTx"]; ++i) {
             json tx = data["result"]["tx"][i];
@@ -181,6 +183,6 @@ int main(int argc, char **argv) {
         ++block_height;
     }
     curl_global_cleanup();
-    cout << "tx-test quits without error" << endl;
+    spdlog::info("tx-test quits without error");
     return EXIT_SUCCESS;
 }

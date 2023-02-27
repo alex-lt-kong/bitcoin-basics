@@ -37,8 +37,9 @@ and it evolves to be a full-fledged bitcoin library.
 
 ## Dependencies
 
-* Boost for 256-bit integer support: `apt install libboost-all-dev` 
-* cURL for network communication: `apt install libcurl4-gnutls-dev`
+* `Boost` for 256-bit integer support: `apt install libboost-all-dev` 
+* `cURL` for network communication: `apt install libcurl4-gnutls-dev`
+* `spdlog` for logging: `apt install libspdlog-dev`
 * [libmycrypto](https://github.com/alex-lt-kong/libmycrypto) for cryptographic
 algorithms.
 * `nlohmann-json` for JSON support: `apt install nlohmann-json3-dev`
@@ -88,9 +89,11 @@ against the result from a Bitcoin blockchain explorer called
 ## Quality assurance
 
 
-* Instead of `cmake ../`, run `cmake .. -DBUILD_ASAN=ON` then `make test` to
-test memory error with
-[AddressSanitizer](https://github.com/google/sanitizers/wiki/AddressSanitizer).
+* Instead of `cmake ../`, run `cmake .. -DBUILD_ASAN=ON`/
+`cmake .. -DBUILD_UBSAN=ON` then `make test` to test memory/undefiend behavior
+error with
+[AddressSanitizer](https://github.com/google/sanitizers/wiki/AddressSanitizer) /
+[UndefinedBehaviorSanitizer](https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html).
 * The repo is also tested with `Valgrind` from time to time:
 `valgrind --leak-check=yes --log-file=valgrind.rpt ./build/chapter-test/test_ch01`.
 Unfortunately, this part is not automated.

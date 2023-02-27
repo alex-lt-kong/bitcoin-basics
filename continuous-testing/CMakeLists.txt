@@ -1,10 +1,15 @@
 include_directories (${PROJECT_SOURCE_DIR}/src/) 
 
+if(NOT TARGET spdlog)
+    # Stand-alone build
+    find_package(spdlog REQUIRED)
+endif()
+
 add_executable(script-test ./script-test.cpp)
 add_executable(tx-test ./tx-test.cpp)
 add_executable(aes ./aes.cpp)
 target_link_libraries(script-test boost_random mycrypto mybitcoin)
-target_link_libraries(tx-test boost_random mycrypto mybitcoin curl)
+target_link_libraries(tx-test boost_random mycrypto mybitcoin curl spdlog::spdlog)
 target_link_libraries(aes crypto++)
 
 find_library(CRYPTOPP_LIB crypto++)
