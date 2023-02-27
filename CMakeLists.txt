@@ -27,14 +27,13 @@ if(${COUNTER} GREATER 1)
 endif()
 
 
-
+set(SANITIZER_NAME "None")
 if(BUILD_ASAN)
     message("-- AddressSanitizer WILL be compiled in as BUILD_ASAN=ON")
     add_compile_options(-fsanitize=address -fno-omit-frame-pointer -g)
     add_link_options(-fsanitize=address)
     set(SANITIZER_NAME "AddressSanitizer")
-    add_definitions(-DSANITIZER_NAME="${SANITIZER_NAME}")
-    
+    add_definitions(-DSANITIZER_NAME="${SANITIZER_NAME}")    
 else()
     message("-- AddressSanitizer will NOT be compiled in as BUILD_ASAN=OFF")
 endif()
@@ -48,9 +47,6 @@ else()
     message("-- UndefinedBehaviorSanitizer will NOT be compiled in as BUILD_UBSAN=OFF")
 endif()
 
-if(${COUNTER} EQUAL 0)
-    set(SANITIZER_NAME "None")
-endif()
 
 add_compile_options(-Wall -Wextra -pedantic -O3)
 
