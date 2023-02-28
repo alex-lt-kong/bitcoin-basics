@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import typing
 from confluent_kafka import Producer
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
@@ -10,18 +11,22 @@ import logging
 import requests
 import socket
 import subprocess
+import sys
 import time
 import os
 
 test_program = os.path.join(os.path.dirname(__file__), 'script-test')
+state_file_path = os.path.join(
+    os.path.expanduser("~/.config/"), f'{os.path.basename(__file__)}.json'
+)
 lgr = logging.getLogger()
-#stream_handler = logging.StreamHandler(sys.stdout)
-file_handler = logging.FileHandler('/var/log/libmybitcoin/script-test.log')
-file_handler.setFormatter(
-    fmt=logging.Formatter('%(asctime)s | %(levelname)s | %(message)s',
+handler = logging.StreamHandler(sys.stdout)
+#handler = logging.FileHandler('/var/log/libmybitcoin/script-test.log')
+handler.setFormatter(
+    fmt=logging.Formatter('%(asctime)s | %(levelname)7s | %(message)s',
     datefmt='%Y-%m-%d %H:%M'
 ))
-lgr.addHandler(file_handler)
+lgr.addHandler(handler)
 lgr.setLevel(logging.INFO)
 
 if (
@@ -41,7 +46,9 @@ def kafka_cb(err, msg):
         lgr.error(f'Failed to deliver message [{msg}], reason: {err}')
 
 
-def send_to_kafka(block_metadata: object, status: str) -> None:
+def send_to_kafka(
+    block_metadata: typing.Dict[str, typing.Any], status: str
+) -> None:
 
     def aes_encrypt(raw):
         key = os.getenv('LIBMYBITCOIN_KAFKA_32BYTE_ENC_KEY')
@@ -108,7 +115,19 @@ def main() -> None:
     try:
         since_block_height = int(args['since-block'])
     except Exception:
-        since_block_height = latest_height
+        try:
+            with open(state_file_path) as f:
+                since_block_height = json.load(f)['since_block']
+            if latest_height - since_block_height < 5:
+                since_block_height = 0
+                lgr.warn(
+                    f'since_block_height ({since_block_height}) is very close '
+                    f'to latest_height ({latest_height}), will start from 0 '
+                    'again'
+                )
+
+        except Exception:
+            since_block_height = 0
     lgr.info(
         f'the test script will test since block {since_block_height:,} '
         f'to {latest_height:,}'
@@ -141,7 +160,9 @@ def main() -> None:
                     {'height': -1,'timestamp': -1, 'tx_count': -1}, err_msg
                 )
                 raise RuntimeError(err_msg)
-            lgr.warning(f'0 blocks are fetched from {url_block_by_height}, will sleep() then retry...')
+            lgr.warning(
+                f'0 blocks are fetched from {url_block_by_height}, will sleep() then retry...'
+            )
             time.sleep(30)
             retry += 1
             continue
@@ -149,11 +170,13 @@ def main() -> None:
         lgr.info(f"block_metadata fetched, tx_count: {tx_count}")
         lgr.handlers.clear()
         formatter = logging.Formatter(
-            fmt=f'%(asctime)s | %(levelname)7s | {height},{tx_count} | %(message)s', datefmt='%Y-%m-%d %H:%M'
+            fmt=f'%(asctime)s | %(levelname)7s | {height},{tx_count} | %(message)s',
+            datefmt='%Y-%m-%d %H:%M'
         )
-        file_handler = logging.FileHandler('/var/log/libmybitcoin/script-test.log')
-        file_handler.setFormatter(formatter)
-        lgr.addHandler(file_handler)
+        handler = logging.StreamHandler(sys.stdout)
+        #handler = logging.FileHandler('/var/log/libmybitcoin/script-test.log')
+        handler.setFormatter(formatter)
+        lgr.addHandler(handler)
 
         total_idx = 0
         
@@ -162,7 +185,9 @@ def main() -> None:
             paged_tx_url = f'https://blockstream.info/api/block/{block_hash}/txs/{total_idx}'
 
             try:                
-                lgr.info(f'HTTP GETing tx [{total_idx}, {total_idx+25}]through {paged_tx_url}')
+                lgr.info(
+                    f'HTTP GETing tx [{total_idx}, {total_idx+25}]through {paged_tx_url}'                         
+                )
                 resp = requests.get(paged_tx_url, timeout=600)
                 paged_txes = resp.json()
                 lgr.info(f"tx GET'ed")
@@ -185,7 +210,10 @@ def main() -> None:
                     lgr.debug(f'[{total_idx+i}] testing {j}-th input...')
                     try:
                         test_script(str(tx_in['scriptsig']), str(tx_in['scriptsig_asm']))
-                        lgr.info(f'{j + 1:02}-th in  of {total_idx + i:,}-th tx: test program reports okay.')
+                        lgr.info(
+                            f'{j + 1:02}-th in  of {total_idx + i:,}-th tx: '
+                            f'test program reports okay.'
+                        )
                     except Exception as ex:
                         err_msg = f'testing {str(tx_in["scriptsig"])} (ASM: {str(tx_in["scriptsig_asm"])}),'
                         err_msg += f'height: {height}, transaction idx: {total_idx+i}: {ex}'
@@ -209,7 +237,9 @@ def main() -> None:
                         raise RuntimeError(err_msg)
                 
             total_idx += 25
-        send_to_kafka(block_metadata, 'okay')            
+        send_to_kafka(block_metadata, 'okay')
+        with open(state_file_path, 'w') as f:
+            json.dump({'since_block': height}, f)
         height += 1
 
 

@@ -18,4 +18,9 @@ if(NOT CRYPTOPP_LIB)
 endif()
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/script-test-driver.py
-     DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+     DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/../../)
+
+add_custom_command(TARGET tx-test POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:tx-test> ../../)
+    add_custom_command(TARGET script-test POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:script-test> ../../)

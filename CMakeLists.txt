@@ -52,5 +52,5 @@ add_compile_options(-Wall -Wextra -pedantic -O3)
 
 
 add_subdirectory(src/mybitcoin)
-add_subdirectory(chapter-test)
-add_subdirectory(continuous-testing)
+add_subdirectory(src/chapter-test)
+add_subdirectory(src/continuous-testing)

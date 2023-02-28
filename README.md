@@ -68,23 +68,24 @@ perform continuous testing.
 
 ## Repo structure
 
-* `chapter-test`: driver functions that run unit tests on Bitcoin client's
-functionalities. There is one test driver source code file
-for each chapter in Jimmy's book
 * `src`: source code that implements a Bitcoin client
-  * `ecc.h`/`ecc.cpp`: implementation of the ECDSA algorithm from scratch.
-  * `script.cpp`/`script.h`: parser and serializer of Bitcoin's Script language.
-  * `tx.h`/`tx.cpp`: transaction parser and serializer.
-  * `op.h`/`op.cpp`: define operations of Bitcoin's Script virtual machine.
-  * `utils.h`/`utils.cpp`: utility functions
-* `continuous-testing`: driver functions that test some critical functionalities
-against the result from a Bitcoin blockchain explorer called
+  * `mybitcoin`
+    * `ecc.h`/`ecc.cpp`: implementation of the ECDSA algorithm from scratch.
+    * `script.cpp`/`script.h`: parser and serializer of Bitcoin's Script language.
+    * `tx.h`/`tx.cpp`: transaction parser and serializer.
+    * `op.h`/`op.cpp`: define operations of Bitcoin's Script virtual machine.
+    * `utils.h`/`utils.cpp`: utility functions
+  * `chapter-test`: driver functions that run unit tests on Bitcoin client's
+  functionalities. There is one test driver source code file
+  for each chapter in Jimmy's book
+  * `continuous-testing`: driver functions that test some critical
+  functionalities against the result from a Bitcoin blockchain explorer called
 [Blockstream explorer](https://blockstream.info).
-  * `script-test-driver.py`: Parse all Script components of Bitcoin blocks
-  against Blockstream exlporer. Apache Kafka is supported to send real-time
-  test results to any interested clients.
-  * `tx-text.cpp`: Parse transactions from Bitcoin blocks against Bitcoin Core's
-  `bitcoind` daemon.
+    * `script-test-driver.py`: Parse all Script components of Bitcoin blocks
+    against Blockstream exlporer. Apache Kafka is supported to send real-time
+    test results to any interested clients.
+    * `tx-text.cpp`: Parse transactions from Bitcoin blocks against Bitcoin
+    Core's `bitcoind` daemon.
 
 ## Quality assurance
 
