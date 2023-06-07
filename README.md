@@ -98,7 +98,15 @@ error with
 * The repo is also tested with `Valgrind` from time to time:
 `valgrind --leak-check=yes --log-file=valgrind.rpt ./build/chapter-test/test_ch01`.
 Unfortunately, this part is not automated.
-
+* Test with AFL++:
+```
+cmake -DCMAKE_C_COMPILER=afl-clang-fast -DCMAKE_CXX_COMPILER=afl-clang-fast++ \
+      -DCMAKE_CXX_FLAGS="-frtti -fsanitize=undefined -fno-sanitize-recover=all -g" \
+	  -DCMAKE_C_FLAGS="-frtti -fsanitize=undefined -fno-sanitize-recover=all -g" \
+	  -DCMAKE_EXE_LINKER_FLAGS=" -frtti -fsanitize=undefined -fno-sanitize-recover=all" \
+	  -DCMAKE_MODULE_LINKER_FLAGS="-frtti -fsanitize=undefined -fno-sanitize-recover=all" \
+	  ..
+```
 
 ## `bitcoin-cli` useful commands and their Python equivalents
 
