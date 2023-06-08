@@ -1,3 +1,4 @@
+#include <getopt.h>
 #include <inttypes.h>
 #include <mycrypto/misc.hpp>
 #include <stdio.h>
@@ -10,17 +11,80 @@
 
 using namespace std;
 
+void print_usage(string binary_name) {
+
+  cerr << "Usage: " << binary_name << " [OPTION] \n"
+       << "Description : This program tests the bi-directional conversion "
+          " between assembly representation and hexadecimal representation of "
+          "Bitcoin Script.\n\n"
+       << "Options:\n"
+       << "--help,-h display this help and exit\n"
+       << "--script-hex,-x       the hexadecimal representation a Bitcoin "
+          "Script\n"
+       << "--script-asm,-a       Bitcoin Script's assembly representation in "
+          "blockstream.info's format\n"
+       << "--test-case-path,-p   Alternatively you can pass a file that "
+          "contains the above in a test case file\n"
+       << endl;
+  cerr << "Example: \n"
+       << binary_name << " "
+       << "--script-hex \"a91430cb7e8fb58388a0ee83935d84e4c96a7c83a23487\" "
+       << "--script-asm \"OP_HASH160 "
+          "OP_PUSHBYTES_20 30cb7e8fb58388a0ee83935d84e4c96a7c83a234 "
+          "OP_EQUAL\""
+       << endl;
+  cerr << binary_name << " /tmp/test.case" << endl;
+}
+
 int main(int argc, char **argv) {
-  if (argc != 3 && argc != 2) {
-    cerr << "Usage " << argv[0] << " <script hex> <script asm>" << endl;
-    cerr << "Usage " << argv[0] << " <testcase path>" << endl;
-    return 1;
+
+  int opt;
+  string script_hex;
+  string script_asm;
+  string test_case_path;
+
+  static struct option long_options[] = {
+      {"test-case-path", required_argument, 0, 'p'},
+      {"script-hex", required_argument, 0, 'x'},
+      {"script-asm", required_argument, 0, 'a'},
+      {"help", optional_argument, 0, 'h'},
+      {0, 0, 0, 0}};
+
+  int option_index = 0;
+
+  while ((opt = getopt_long(argc, argv, "p:x:a:h", long_options,
+                            &option_index)) != -1) {
+    switch (opt) {
+    case 'p':
+      if (optarg != NULL) {
+        test_case_path = string(optarg);
+      }
+      break;
+    case 'x':
+      if (optarg != NULL) {
+        script_hex = string(optarg);
+      }
+      break;
+    case 'a':
+      if (optarg != NULL) {
+        script_asm = string(optarg);
+      }
+      break;
+    default:
+      print_usage(argv[0]);
+      exit(EXIT_FAILURE);
+    }
   }
+  if ((!script_hex.empty() && !script_asm.empty()) || !test_case_path.empty()) {
+  } else {
+    cerr << script_hex.empty() << script_asm.empty() << test_case_path.empty()
+         << endl;
+    print_usage(argv[0]);
+    exit(EXIT_FAILURE);
+  }
+
   int64_t input_bytes_len;
   size_t varint_len;
-
-  string script_hex = argv[1];
-  string script_asm = argv[2];
 
   unique_fptr<uint8_t[]> input_bytes(
       hex_string_to_bytes(script_hex.c_str(), &input_bytes_len));
