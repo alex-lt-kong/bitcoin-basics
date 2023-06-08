@@ -1,5 +1,7 @@
+#include <fstream>
 #include <getopt.h>
 #include <inttypes.h>
+#include <iostream>
 #include <mycrypto/misc.hpp>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,27 +15,34 @@ using namespace std;
 
 void print_usage(string binary_name) {
 
-  cerr << "Usage: " << binary_name << " [OPTION] \n"
-       << "Description : This program tests the bi-directional conversion "
-          " between assembly representation and hexadecimal representation of "
-          "Bitcoin Script.\n\n"
-       << "Options:\n"
-       << "--help,-h display this help and exit\n"
-       << "--script-hex,-x       the hexadecimal representation a Bitcoin "
+  cerr << "Usage: " << binary_name << " [OPTION]\n\n";
+
+  cerr << "Description:\n  This program tests the bi-directional conversion "
+          "between assembly representation and hexadecimal representation of "
+          "Bitcoin Script.\n\n";
+
+  cerr << "Options:\n"
+       << "  --help,-h display this help and exit\n"
+       << "  --script-hex,-x       the hexadecimal representation a Bitcoin "
           "Script\n"
-       << "--script-asm,-a       Bitcoin Script's assembly representation in "
+       << "  --script-asm,-a       Bitcoin Script's assembly representation in "
           "blockstream.info's format\n"
-       << "--test-case-path,-p   Alternatively you can pass a file that "
+       << "  --test-case-path,-p   alternatively you can pass a file that "
           "contains the above in a test case file\n"
        << endl;
+
   cerr << "Example: \n"
-       << binary_name << " "
+       << "  " << binary_name << " "
        << "--script-hex \"a91430cb7e8fb58388a0ee83935d84e4c96a7c83a23487\" "
        << "--script-asm \"OP_HASH160 "
           "OP_PUSHBYTES_20 30cb7e8fb58388a0ee83935d84e4c96a7c83a234 "
-          "OP_EQUAL\""
+          "OP_EQUAL\"\n";
+  cerr << "  " << binary_name << " /tmp/test.case\n" << endl;
+  cerr << "Format of test.case:\n"
+       << "a91430cb7e8fb58388a0ee83935d84e4c96a7c83a23487\n"
+       << "OP_HASH160 OP_PUSHBYTES_20 30cb7e8fb58388a0ee83935d84e4c96a7c83a234 "
+          "OP_EQUAL"
        << endl;
-  cerr << binary_name << " /tmp/test.case" << endl;
 }
 
 int main(int argc, char **argv) {
@@ -75,10 +84,18 @@ int main(int argc, char **argv) {
       exit(EXIT_FAILURE);
     }
   }
-  if ((!script_hex.empty() && !script_asm.empty()) || !test_case_path.empty()) {
+  if (!script_hex.empty() && !script_asm.empty()) {
+
+  } else if (!test_case_path.empty()) {
+    ifstream f(test_case_path);
+    if (!f.good()) {
+      cerr << "File does not exist" << endl;
+      return 0;
+    }
+    getline(f, script_hex);
+    getline(f, script_asm);
+    f.close();
   } else {
-    cerr << script_hex.empty() << script_asm.empty() << test_case_path.empty()
-         << endl;
     print_usage(argv[0]);
     exit(EXIT_FAILURE);
   }
