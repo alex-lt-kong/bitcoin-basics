@@ -100,13 +100,12 @@ int main(int argc, char **argv) {
     exit(EXIT_FAILURE);
   }
 
-  int64_t input_bytes_len;
+  ssize_t input_bytes_len;
   size_t varint_len;
-
   unique_fptr<uint8_t[]> input_bytes(
       hex_string_to_bytes(script_hex.c_str(), &input_bytes_len));
-  if (input_bytes.get() == NULL) {
-    fprintf(stderr, "invalid script_hex: %s\n", script_hex.c_str());
+  if (input_bytes.get() == NULL || input_bytes_len < 0) {
+    cerr << "invalid script_hex: " << script_hex << endl;
     return 1;
   }
 
@@ -118,7 +117,13 @@ int main(int argc, char **argv) {
   }
   free(input_len_varint);
 
-  Script my_script = Script(d);
+  Script my_script;
+  try {
+    my_script = Script(d);
+  } catch (invalid_argument &e) {
+    cerr << "Failed to initialize a Script object: " << e.what() << endl;
+    return 1;
+  }
   size_t cmds_size = my_script.get_cmds().size();
   if (cmds_size < 1) {
     fprintf(stderr, "unexpected cmds_size: %lu\n", cmds_size);
